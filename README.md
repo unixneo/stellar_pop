@@ -53,7 +53,7 @@ Then open `http://localhost:3000`.
 
 - Visit `/` to access `SynthesisRuns#index`.
 - Create a synthesis run from `/synthesis_runs/new` with IMF, age, metallicity,
-  SFH, and SDSS coordinate inputs.
+  and SFH inputs.
 - Inspect individual runs at `/synthesis_runs/:id`.
 - Sidekiq dashboard is available at `/sidekiq`.
 
@@ -64,7 +64,7 @@ You can interact directly with knowledge sources:
 ```ruby
 imf = StellarPop::KnowledgeSources::ImfSampler.new(seed: 42)
 masses = imf.sample(1000)
-counts = imf.count_by_type
+counts = imf.count_by_type(masses)
 
 spectra = StellarPop::KnowledgeSources::StellarSpectra.new
 g_spectrum = spectra.spectrum("G", 350..900)
