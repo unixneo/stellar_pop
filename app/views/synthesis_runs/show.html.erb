@@ -11,10 +11,14 @@
 <p><strong>SFH model:</strong> <%= @synthesis_run.sfh_model %></p>
 <p><strong>SDSS RA:</strong> <%= @synthesis_run.sdss_ra %></p>
 <p><strong>SDSS Dec:</strong> <%= @synthesis_run.sdss_dec %></p>
+<% if !@synthesis_run.chi_squared.nil? %>
+  <p><strong>Chi-squared:</strong> <%= format("%.6f", @synthesis_run.chi_squared) %></p>
+<% end %>
 
 <% if @spectrum_result.present? %>
   <% wavelengths = JSON.parse(@spectrum_result.wavelength_data || "[]") rescue [] %>
   <% fluxes = JSON.parse(@spectrum_result.flux_data || "[]") rescue [] %>
+  <% sdss_photometry = JSON.parse(@spectrum_result.sdss_photometry || "{}") rescue {} %>
 
   <h2>Composite Spectrum</h2>
   <table>
@@ -33,6 +37,27 @@
       <% end %>
     </tbody>
   </table>
+
+  <% if sdss_photometry.present? %>
+    <h2>SDSS Photometry</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Band</th>
+          <th>Magnitude</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% %w[u g r i z].each do |band| %>
+          <% next if sdss_photometry[band].nil? %>
+          <tr>
+            <td><%= band %></td>
+            <td><%= sdss_photometry[band] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
 <% else %>
   <p>No spectrum result yet.</p>
 <% end %>
