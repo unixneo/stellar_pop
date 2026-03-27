@@ -1,0 +1,2 @@
+class SynthesisRun < ApplicationRecord
+end

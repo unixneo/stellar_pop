@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  synthesis_run: one
+  wavelength_data: MyText
+  flux_data: MyText
+  sdss_photometry: MyText
+
+two:
+  synthesis_run: two
+  wavelength_data: MyText
+  flux_data: MyText
+  sdss_photometry: MyText
