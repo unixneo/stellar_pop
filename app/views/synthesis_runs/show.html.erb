@@ -1,10 +1,40 @@
+<% if %w[pending running].include?(@synthesis_run.status.to_s) %>
+  <meta http-equiv="refresh" content="5">
+<% end %>
+
 <h1><%= @synthesis_run.name.presence || "Synthesis Run ##{@synthesis_run.id}" %></h1>
 
+<p><strong>Status:</strong> <%= @synthesis_run.status %></p>
 <p><strong>IMF type:</strong> <%= @synthesis_run.imf_type %></p>
 <p><strong>Age (Gyr):</strong> <%= @synthesis_run.age_gyr %></p>
 <p><strong>Metallicity (Z):</strong> <%= @synthesis_run.metallicity_z %></p>
 <p><strong>SFH model:</strong> <%= @synthesis_run.sfh_model %></p>
 <p><strong>SDSS RA:</strong> <%= @synthesis_run.sdss_ra %></p>
 <p><strong>SDSS Dec:</strong> <%= @synthesis_run.sdss_dec %></p>
+
+<% if @spectrum_result.present? %>
+  <% wavelengths = JSON.parse(@spectrum_result.wavelength_data || "[]") rescue [] %>
+  <% fluxes = JSON.parse(@spectrum_result.flux_data || "[]") rescue [] %>
+
+  <h2>Composite Spectrum</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Wavelength (nm)</th>
+        <th>Flux</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% wavelengths.each_with_index do |wavelength, idx| %>
+        <tr>
+          <td><%= wavelength %></td>
+          <td><%= fluxes[idx] %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>No spectrum result yet.</p>
+<% end %>
 
 <p><%= link_to "Back to Runs", synthesis_runs_path %></p>

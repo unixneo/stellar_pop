@@ -8,32 +8,32 @@
 
   <p>
     <%= f.label :imf_type %><br>
-    <%= f.text_field :imf_type %>
+    <%= f.select :imf_type, [["kroupa", "kroupa"], ["salpeter", "salpeter"]] %>
   </p>
 
   <p>
     <%= f.label :age_gyr %><br>
-    <%= f.number_field :age_gyr, step: :any %>
+    <%= f.number_field :age_gyr, step: 0.1, min: 0.1, max: 13.8 %>
   </p>
 
   <p>
     <%= f.label :metallicity_z %><br>
-    <%= f.number_field :metallicity_z, step: :any %>
+    <%= f.number_field :metallicity_z, step: 0.001, min: 0.001, max: 0.05 %>
   </p>
 
   <p>
     <%= f.label :sfh_model %><br>
-    <%= f.text_field :sfh_model %>
+    <%= f.select :sfh_model, [["exponential", "exponential"], ["constant", "constant"], ["burst", "burst"]] %>
   </p>
 
   <p>
     <%= f.label :sdss_ra %><br>
-    <%= f.number_field :sdss_ra, step: :any %>
+    <%= f.number_field :sdss_ra, step: 0.0001 %>
   </p>
 
   <p>
     <%= f.label :sdss_dec %><br>
-    <%= f.number_field :sdss_dec, step: :any %>
+    <%= f.number_field :sdss_dec, step: 0.0001 %>
   </p>
 
   <p><%= f.submit "Create Synthesis Run" %></p>
