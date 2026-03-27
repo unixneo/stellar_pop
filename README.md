@@ -35,6 +35,19 @@ Knowledge sources currently implemented:
 - `StellarPop::KnowledgeSources::Isochrone`
 - `StellarPop::KnowledgeSources::SfhModel`
 
+Integrator currently implemented:
+
+- `StellarPop::Integrator::SpectralIntegrator`
+  - Reads IMF samples, age bins, SFH weights, metallicity, and wavelength range
+    from the blackboard.
+  - Builds per-star spectra with temperature and evolutionary corrections.
+  - Uses two-pass weighting: first computes raw star weights from stellar mass,
+    then normalizes weights so they sum to 1.0.
+  - Normalizes each star spectrum by unit integral (sum of flux over the sampled
+    wavelength grid) before accumulation.
+  - Writes the composite spectrum back to the blackboard and performs final
+    peak normalization to 1.0.
+
 ## Getting Started
 
 ```bash

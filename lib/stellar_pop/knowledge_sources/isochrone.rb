@@ -25,12 +25,7 @@ module StellarPop
       private
 
       def giant_correction(mass)
-        m = mass.to_f
-        return 2.0 if m < 0.8
-        return 8.0 if m < 1.5
-        return 20.0 if m < 3.0
-
-        50.0
+        [mass.to_f**3.5, 10.0].min
       end
 
       def validate_positive!(value, name)

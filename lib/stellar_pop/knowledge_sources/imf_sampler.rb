@@ -21,7 +21,7 @@ module StellarPop
       }.freeze
 
       def initialize(seed: nil)
-        @random = Random.new(seed)
+        @random = seed.nil? ? Random.new : Random.new(seed)
         @last_sample = nil
         @normalized_segments = build_normalized_segments
       end
@@ -44,6 +44,10 @@ module StellarPop
         end
 
         counts
+      end
+
+      def spectral_type_for_mass(mass)
+        classify_mass(mass.to_f)
       end
 
       private
