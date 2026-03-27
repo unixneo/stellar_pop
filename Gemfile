@@ -9,7 +9,20 @@ gem "rails", "~> 7.1.6"
 gem "propshaft"
 
 # Use sqlite3 as the database for Active Record
-gem "sqlite3", ">= 1.4"
+gem 'sqlite3', '~> 1.7'
+
+# Async jobs
+gem "sidekiq"
+
+# HTTP client for SDSS SkyServer API
+gem "faraday"
+
+# Real-time push to spectrum viewer
+gem "actioncable"   # already in Rails, just ensure it's not commented out
+
+group :development, :test do
+  gem "debug"
+end
 
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
