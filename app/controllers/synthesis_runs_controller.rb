@@ -5,6 +5,7 @@ class SynthesisRunsController < ApplicationController
 
   def show
     @synthesis_run = SynthesisRun.find(params[:id])
+    @spectrum_result = SpectrumResult.find_by(synthesis_run_id: @synthesis_run.id)
   end
 
   def new
@@ -13,8 +14,10 @@ class SynthesisRunsController < ApplicationController
 
   def create
     @synthesis_run = SynthesisRun.new(synthesis_run_params)
+    @synthesis_run.status = "pending"
 
     if @synthesis_run.save
+      SynthesisPipelineJob.perform_later(@synthesis_run.id)
       redirect_to @synthesis_run, notice: "Synthesis run created."
     else
       render :new, status: :unprocessable_entity
