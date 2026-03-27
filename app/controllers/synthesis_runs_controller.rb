@@ -31,8 +31,8 @@ class SynthesisRunsController < ApplicationController
       age_gyr: 5.0,
       metallicity_z: 0.02,
       sfh_model: "exponential",
-      sdss_ra: 0.0,
-      sdss_dec: 0.0,
+      sdss_ra: 187.2779,
+      sdss_dec: 2.0523,
       status: "pending"
     )
 
