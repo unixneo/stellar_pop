@@ -24,6 +24,22 @@ class SynthesisRunsController < ApplicationController
     end
   end
 
+  def seed_test
+    synthesis_run = SynthesisRun.create!(
+      name: "test_run_1",
+      imf_type: "kroupa",
+      age_gyr: 5.0,
+      metallicity_z: 0.02,
+      sfh_model: "exponential",
+      sdss_ra: 0.0,
+      sdss_dec: 0.0,
+      status: "pending"
+    )
+
+    SynthesisPipelineJob.perform_later(synthesis_run.id)
+    redirect_to synthesis_run_path(synthesis_run), notice: "Test run enqueued."
+  end
+
   private
 
   def synthesis_run_params

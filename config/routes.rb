@@ -9,6 +9,7 @@ Rails.application.routes.draw do
 
   mount Sidekiq::Web => "/sidekiq"
 
+  get "/synthesis_runs/seed_test", to: "synthesis_runs#seed_test", as: :seed_test_synthesis_runs
   resources :synthesis_runs, only: %i[index show new create]
   root "synthesis_runs#index"
 
