@@ -1,0 +1,4 @@
+:concurrency: 2
+:queues:
+  - [synthesis, 2]
+  - [default, 1]

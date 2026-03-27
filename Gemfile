@@ -20,10 +20,6 @@ gem "faraday"
 # Real-time push to spectrum viewer
 gem "actioncable"   # already in Rails, just ensure it's not commented out
 
-group :development, :test do
-  gem "debug"
-end
-
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 
