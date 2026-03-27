@@ -5,13 +5,17 @@
 
 <% if @synthesis_runs.any? %>
   <style>
-    .gray { background-color: #f1f3f5; color: #111827; }
-    .yellow { background-color: #fff3bf; color: #111827; }
-    .green { background-color: #d3f9d8; color: #111827; }
-    .red { background-color: #ffe3e3; color: #111827; }
-    .gray a, .yellow a, .green a, .red a { color: #1f2937; }
     table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th, td { border: 1px solid #1f2937; padding: 8px; text-align: left; color: #e5e7eb; }
+    th { background-color: #111827; color: #a7f3d0; }
+    tbody tr { background-color: #0f1720; }
+    tbody tr:nth-child(even) { background-color: #111827; }
+    tbody tr a { color: #7dd3fc; }
+    .gray { background-color: #374151; color: #f3f4f6; }
+    .yellow { background-color: #7c2d12; color: #fed7aa; }
+    .green { background-color: #14532d; color: #bbf7d0; }
+    .red { background-color: #7f1d1d; color: #fecaca; }
+    .gray a, .yellow a, .green a, .red a { color: #e5e7eb; }
   </style>
 
   <table>
