@@ -1,0 +1,10 @@
+<h1><%= @synthesis_run.name.presence || "Synthesis Run ##{@synthesis_run.id}" %></h1>
+
+<p><strong>IMF type:</strong> <%= @synthesis_run.imf_type %></p>
+<p><strong>Age (Gyr):</strong> <%= @synthesis_run.age_gyr %></p>
+<p><strong>Metallicity (Z):</strong> <%= @synthesis_run.metallicity_z %></p>
+<p><strong>SFH model:</strong> <%= @synthesis_run.sfh_model %></p>
+<p><strong>SDSS RA:</strong> <%= @synthesis_run.sdss_ra %></p>
+<p><strong>SDSS Dec:</strong> <%= @synthesis_run.sdss_dec %></p>
+
+<p><%= link_to "Back to Runs", synthesis_runs_path %></p>

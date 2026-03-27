@@ -9,6 +9,9 @@ Rails.application.routes.draw do
 
   mount Sidekiq::Web => "/sidekiq"
 
+  resources :synthesis_runs, only: %i[index show new create]
+  root "synthesis_runs#index"
+
   # Defines the root path route ("/")
   # root "posts#index"
 end

@@ -1,0 +1,42 @@
+<h1>New Synthesis Run</h1>
+
+<%= form_with model: @synthesis_run do |f| %>
+  <p>
+    <%= f.label :name %><br>
+    <%= f.text_field :name %>
+  </p>
+
+  <p>
+    <%= f.label :imf_type %><br>
+    <%= f.text_field :imf_type %>
+  </p>
+
+  <p>
+    <%= f.label :age_gyr %><br>
+    <%= f.number_field :age_gyr, step: :any %>
+  </p>
+
+  <p>
+    <%= f.label :metallicity_z %><br>
+    <%= f.number_field :metallicity_z, step: :any %>
+  </p>
+
+  <p>
+    <%= f.label :sfh_model %><br>
+    <%= f.text_field :sfh_model %>
+  </p>
+
+  <p>
+    <%= f.label :sdss_ra %><br>
+    <%= f.number_field :sdss_ra, step: :any %>
+  </p>
+
+  <p>
+    <%= f.label :sdss_dec %><br>
+    <%= f.number_field :sdss_dec, step: :any %>
+  </p>
+
+  <p><%= f.submit "Create Synthesis Run" %></p>
+<% end %>
+
+<p><%= link_to "Back to Runs", synthesis_runs_path %></p>

@@ -1,0 +1,15 @@
+<h1>Synthesis Runs</h1>
+
+<p><%= link_to "New Synthesis Run", new_synthesis_run_path %></p>
+
+<% if @synthesis_runs.any? %>
+  <ul>
+    <% @synthesis_runs.each do |run| %>
+      <li>
+        <%= link_to(run.name.presence || "Run ##{run.id}", synthesis_run_path(run)) %>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p>No synthesis runs yet.</p>
+<% end %>
