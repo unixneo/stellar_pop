@@ -1,0 +1,152 @@
+body {
+  margin: 0;
+  font-family: "JetBrains Mono", "Fira Code", "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #d1fae5;
+  background: #0b0f14;
+}
+
+.page-header {
+  background: #06090d;
+  color: #ccfbf1;
+  padding: 14px 20px;
+  border-bottom: 1px solid #134e4a;
+  box-shadow: 0 1px 0 #042f2e;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+  color: #5eead4;
+}
+
+.nav-links {
+  margin-top: 8px;
+}
+
+.nav-links a {
+  color: #93c5fd;
+  margin-right: 14px;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.nav-links a:hover {
+  color: #67e8f9;
+  text-decoration: underline;
+}
+
+main {
+  max-width: 1100px;
+  margin: 20px auto;
+  padding: 0 16px 24px;
+}
+
+a {
+  color: #7dd3fc;
+}
+
+a:hover {
+  color: #67e8f9;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #0f1720;
+}
+
+th,
+td {
+  border: 1px solid #1f2937;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+thead th {
+  background: #111827;
+  color: #a7f3d0;
+}
+
+tbody tr:nth-child(even) {
+  background: #0c131c;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.status-badge.pending,
+.gray {
+  background: #374151;
+  color: #e5e7eb;
+}
+
+.status-badge.running,
+.yellow {
+  background: #7c2d12;
+  color: #fed7aa;
+}
+
+.status-badge.complete,
+.green {
+  background: #14532d;
+  color: #bbf7d0;
+}
+
+.status-badge.failed,
+.red {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+form {
+  background: #0f1720;
+  border: 1px solid #1f2937;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+form p {
+  margin: 0 0 12px;
+}
+
+label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+  color: #a7f3d0;
+}
+
+input[type="text"],
+input[type="number"],
+select {
+  width: 100%;
+  max-width: 380px;
+  padding: 8px;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  box-sizing: border-box;
+  background: #0b1320;
+  color: #e2e8f0;
+}
+
+input[type="submit"] {
+  background: #0f766e;
+  color: #ecfeff;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+input[type="submit"]:hover {
+  background: #0d9488;
+}

@@ -7,9 +7,20 @@
     <%= csp_meta_tag %>
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "stellar_pop", "data-turbo-track": "reload" %>
   </head>
 
   <body>
-    <%= yield %>
+    <header class="page-header">
+      <h1>StellarPop</h1>
+      <nav class="nav-links">
+        <%= link_to "Runs", synthesis_runs_path %>
+        <%= link_to "New Run", new_synthesis_run_path %>
+        <%= link_to "Run Test", seed_test_synthesis_runs_path %>
+      </nav>
+    </header>
+    <main>
+      <%= yield %>
+    </main>
   </body>
 </html>
