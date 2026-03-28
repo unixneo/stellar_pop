@@ -20,9 +20,12 @@ implemented end-to-end in Ruby on Rails, with:
 - reproducible async processing via Sidekiq jobs,
 - and an inspectable web UI for runs, spectra, and fit quality.
 
-StellarPop is a small, practical contribution to that effort: a fitting tool
-that is deployable, reproducible, and accessible without requiring specialized
-Python or Fortran environments, so more researchers can participate.
+StellarPop provides a self-contained stellar population fitting pipeline
+that runs in a browser, requires no local scientific computing environment,
+and produces version-controlled reproducible results. A researcher with
+a list of galaxy coordinates and observed photometry can run parameter
+fits, compare models, and export results without installing Python,
+Fortran, or any astronomy library.
 
 ## Scientific Purpose
 
