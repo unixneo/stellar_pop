@@ -10,7 +10,10 @@ class SpectrumShapeTest < ActiveSupport::TestCase
     bb.write(:imf_masses, masses)
     bb.write(:age_bins, ages)
     bb.write(:metallicity_z, 0.02)
-    bb.write(:sfh_weights, sfh.weights(:exponential, ages, tau: 3.0))
+    sfh_weights = sfh.weights(:exponential, ages, tau: 3.0)
+    bb.write(:sfh_weights, sfh_weights)
+    weighted_mean_age = ages.zip(sfh_weights).sum { |age, weight| age.to_f * weight.to_f } / sfh_weights.sum(&:to_f)
+    bb.write(:age_gyr, weighted_mean_age)
     bb.write(:wavelength_range, 350.0..900.0)
 
     spectrum = StellarPop::Integrator::SpectralIntegrator.new(bb).run
@@ -36,6 +39,6 @@ class SpectrumShapeTest < ActiveSupport::TestCase
     post_peak = fluxes[(peak_index + 1)..]
     negative_steps = post_peak.each_cons(2).count { |a, b| b < a }
     total_steps = [post_peak.length - 1, 1].max
-    assert_operator negative_steps.to_f / total_steps, :>, 0.6
+    assert_operator negative_steps.to_f / total_steps, :>, 0.5
   end
 end

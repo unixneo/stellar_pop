@@ -96,6 +96,7 @@ StellarPop follows a **blackboard pattern**:
 - `StellarPop::KnowledgeSources::ImfSampler`
 - `StellarPop::KnowledgeSources::StellarSpectra`
 - `StellarPop::KnowledgeSources::Isochrone`
+- `StellarPop::KnowledgeSources::MistIsochrone`
 - `StellarPop::KnowledgeSources::SfhModel`
 - `StellarPop::KnowledgeSources::BaselSpectra`
 - `StellarPop::Integrator::SpectralIntegrator`
@@ -127,7 +128,7 @@ StellarPop follows a **blackboard pattern**:
 - Reads IMF masses, age bins, SFH weights, metallicity, and wavelength range from blackboard.
 - Builds per-star spectra from either `BaselSpectra` or `StellarSpectra` (Planck), based on run `spectra_model`.
 - Normalizes each star spectrum by unit integral over the wavelength grid.
-- Uses two-pass mass-based weights (`mass ** 1.0`) normalized to sum to `1.0`.
+- Uses two-pass luminosity weights from `MistIsochrone` (Choi et al. 2016) via `luminosity_solar`, with fallback to `mass ** 1.0` for out-of-grid stars, then normalizes weights to sum to `1.0`.
 - Interpolates all stellar spectra onto a fixed 5.0nm grid over `wavelength_range`.
 - Applies 11-point boxcar smoothing to the composite before final scaling.
 - Normalizes final peak flux to `1.0`.
@@ -215,6 +216,8 @@ phot = client.fetch_photometry(187.2779, 2.0523)
 - BaSeL 3.1 stellar spectral energy distribution library (Westera, Lejeune,
   Buser, Cuisinier & Bruzual 2002, A&A 381, 524) — solar metallicity
   spectra sourced from the FSPS repository (Conroy et al.)
+- MIST isochrone grid v1.2 (Choi et al. 2016, ApJ 823, 102) — solar
+  metallicity isochrone at [Fe/H]=0.00 sourced from the FSPS repository
 - Local SDSS photometry catalog (`lib/data/sdss/photometry.csv`) for well-known reference objects
 - SDSS SkyServer DR18 — observed photometry via public SQL API
 

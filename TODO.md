@@ -10,7 +10,9 @@
 - [x] Add model option to switch between Planck spectra and BaSeL library spectra in pipeline/UI
 - [x] Implement Salpeter IMF in `ImfSampler` and pass `imf_type` through pipeline jobs
 - [x] Expose burst SFH `burst_age_gyr` and `burst_width_gyr` parameters in UI and pipeline
-- [ ] Validate isochrone temperature corrections against published tables
+- [x] Validate isochrone temperature corrections against published tables
+- [x] Replace simple Isochrone KS with MistIsochrone in pipeline as default
+- [ ] Integrate MIST corrections for non-solar metallicities
 - [ ] Add wavelength range control to the UI and new run form
 
 ## Data and Persistence

@@ -21,9 +21,10 @@ class SynthesisPipelineJob < ApplicationJob
     sfh_model = StellarPop::KnowledgeSources::SfhModel.new
     sfh_model_symbol = normalize_sfh_model(synthesis_run.sfh_model)
     sfh_weights = build_sfh_weights(sfh_model, sfh_model_symbol, synthesis_run)
+    weighted_mean_age_gyr = weighted_mean_age(AGE_BINS_GYR, sfh_weights)
 
     blackboard.write(:imf_masses, imf_masses)
-    blackboard.write(:age_gyr, synthesis_run.age_gyr.to_f)
+    blackboard.write(:age_gyr, weighted_mean_age_gyr)
     blackboard.write(:metallicity_z, synthesis_run.metallicity_z.to_f)
     blackboard.write(:sfh_model, sfh_model_symbol)
     blackboard.write(:sdss_ra, synthesis_run.sdss_ra)
@@ -120,6 +121,14 @@ class SynthesisPipelineJob < ApplicationJob
     return StellarPop::KnowledgeSources::StellarSpectra.new if model == "planck"
 
     StellarPop::KnowledgeSources::BaselSpectra.new
+  end
+
+  def weighted_mean_age(age_bins, sfh_weights)
+    numerator = age_bins.zip(sfh_weights).sum { |age, weight| age.to_f * weight.to_f }
+    denominator = sfh_weights.sum(&:to_f)
+    return age_bins.first.to_f unless denominator.positive?
+
+    numerator / denominator
   end
 
   def non_zero_coordinates?(ra, dec)

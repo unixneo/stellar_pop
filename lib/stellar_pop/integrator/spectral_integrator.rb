@@ -10,13 +10,14 @@ module StellarPop
         masses = read_required(:imf_masses)
         sfh_weights = read_required(:sfh_weights)
         age_bins = read_required(:age_bins)
+        age_gyr = read_required(:age_gyr).to_f
         metallicity_z = read_required(:metallicity_z).to_f
         wavelength_range = read_required(:wavelength_range)
 
-        validate_inputs!(masses, sfh_weights, age_bins, metallicity_z, wavelength_range)
+        validate_inputs!(masses, sfh_weights, age_bins, age_gyr, metallicity_z, wavelength_range)
 
         imf_sampler = StellarPop::KnowledgeSources::ImfSampler.new
-        isochrone = StellarPop::KnowledgeSources::Isochrone.new
+        mist_isochrone = StellarPop::KnowledgeSources::MistIsochrone.new
 
         composite = {}
         star_contributions = []
@@ -27,9 +28,13 @@ module StellarPop
           star_flux_sum = base_spectrum.values.sum.to_f
           next unless star_flux_sum.positive?
 
-          sfh_weight = sfh_weight_for_mass(mass_f, age_bins, sfh_weights)
-          luminosity_correction = isochrone.luminosity_correction(mass_f, age_bins.last.to_f, metallicity_z)
-          raw_weight = (mass_f**1.0) * sfh_weight * luminosity_correction
+          mist_row = mist_isochrone.lookup(mass_f, age_gyr)
+          mist_luminosity = mist_row && mist_row[:luminosity_solar].to_f
+          raw_weight = if mist_luminosity&.positive?
+            mist_luminosity
+          else
+            mass_f**1.0
+          end
           next unless raw_weight.positive?
 
           star_contributions << {
@@ -71,19 +76,14 @@ module StellarPop
         value
       end
 
-      def validate_inputs!(masses, sfh_weights, age_bins, metallicity_z, wavelength_range)
+      def validate_inputs!(masses, sfh_weights, age_bins, age_gyr, metallicity_z, wavelength_range)
         raise ArgumentError, "imf_masses must be a non-empty Array" unless masses.is_a?(Array) && !masses.empty?
         raise ArgumentError, "sfh_weights must be a non-empty Array" unless sfh_weights.is_a?(Array) && !sfh_weights.empty?
         raise ArgumentError, "age_bins must be a non-empty Array" unless age_bins.is_a?(Array) && !age_bins.empty?
         raise ArgumentError, "sfh_weights and age_bins must have the same length" unless sfh_weights.length == age_bins.length
+        raise ArgumentError, "age_gyr must be > 0" unless age_gyr.positive?
         raise ArgumentError, "metallicity_z must be > 0" unless metallicity_z.positive?
         raise ArgumentError, "wavelength_range must be an inclusive Range" unless wavelength_range.is_a?(Range) && !wavelength_range.exclude_end?
-      end
-
-      def sfh_weight_for_mass(mass, age_bins, sfh_weights)
-        t_ms = 10.0 * (mass**-2.5)
-        closest_index = age_bins.each_with_index.min_by { |age, _idx| (age.to_f - t_ms).abs }[1]
-        sfh_weights[closest_index].to_f
       end
 
       def build_base_spectrum(mass_f, wavelength_range, metallicity_z, imf_sampler)
