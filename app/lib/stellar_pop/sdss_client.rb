@@ -4,7 +4,7 @@ require "json"
 module StellarPop
   class SdssClient
     API_URL = "https://skyserver.sdss.org/dr18/SkyServerWS/SearchTools/SqlSearch".freeze
-    TIMEOUT_SECONDS = 10
+    TIMEOUT_SECONDS = 30
 
     def initialize(connection: nil)
       @connection = connection || Faraday.new(
