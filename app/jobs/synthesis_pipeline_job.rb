@@ -12,7 +12,10 @@ class SynthesisPipelineJob < ApplicationJob
 
     blackboard = StellarPop::Blackboard.new
 
-    imf_sampler = StellarPop::KnowledgeSources::ImfSampler.new(seed: synthesis_run.id.to_i)
+    imf_sampler = StellarPop::KnowledgeSources::ImfSampler.new(
+      seed: synthesis_run.id.to_i,
+      imf_type: synthesis_run.imf_type.to_sym
+    )
     imf_masses = imf_sampler.sample(1000)
 
     sfh_model = StellarPop::KnowledgeSources::SfhModel.new

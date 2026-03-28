@@ -9,6 +9,9 @@ module StellarPop
         { min: 0.5, max: 1.0, slope: -2.3, coeff: 0.5 },
         { min: 1.0, max: 150.0, slope: -2.3, coeff: 0.5 }
       ].freeze
+      SALPETER_SEGMENTS = [
+        { min: 0.1, max: 150.0, slope: -2.35, coeff: 1.0 }
+      ].freeze
 
       SPECTRAL_TYPE_BOUNDS = {
         "O" => 16.0..Float::INFINITY,
@@ -20,9 +23,10 @@ module StellarPop
         "M" => 0.08...0.45
       }.freeze
 
-      def initialize(seed: nil)
+      def initialize(seed: nil, imf_type: :kroupa)
         @random = seed.nil? ? Random.new : Random.new(seed)
         @last_sample = nil
+        @segments = select_segments(imf_type)
         @normalized_segments = build_normalized_segments
       end
 
@@ -53,14 +57,22 @@ module StellarPop
       private
 
       def build_normalized_segments
-        total_weight = SEGMENTS.sum { |segment| segment[:coeff] * integral_power_law(segment) }
+        total_weight = @segments.sum { |segment| segment[:coeff] * integral_power_law(segment) }
         cumulative = 0.0
 
-        SEGMENTS.map do |segment|
+        @segments.map do |segment|
           weight = (segment[:coeff] * integral_power_law(segment)) / total_weight
           cumulative += weight
           segment.merge(probability: weight, cumulative_probability: cumulative)
         end
+      end
+
+      def select_segments(imf_type)
+        type = imf_type.to_sym
+        return SEGMENTS if type == :kroupa
+        return SALPETER_SEGMENTS if type == :salpeter
+
+        raise ArgumentError, "imf_type must be :kroupa or :salpeter"
       end
 
       def draw_mass

@@ -31,4 +31,17 @@ class ImfSamplerTest < ActiveSupport::TestCase
 
     assert_raises(ArgumentError) { sampler.count_by_type }
   end
+
+  test "salpeter produces lower high-mass fraction than kroupa" do
+    sample_size = 20_000
+    seed = 4242
+
+    kroupa = StellarPop::KnowledgeSources::ImfSampler.new(seed: seed, imf_type: :kroupa).sample(sample_size)
+    salpeter = StellarPop::KnowledgeSources::ImfSampler.new(seed: seed, imf_type: :salpeter).sample(sample_size)
+
+    kroupa_above_one = kroupa.count { |m| m > 1.0 }.to_f / sample_size
+    salpeter_above_one = salpeter.count { |m| m > 1.0 }.to_f / sample_size
+
+    assert_operator salpeter_above_one, :<, kroupa_above_one
+  end
 end
