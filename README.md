@@ -20,6 +20,32 @@ implemented end-to-end in Ruby on Rails, with:
 - reproducible async processing via Sidekiq jobs,
 - and an inspectable web UI for runs, spectra, and fit quality.
 
+## Scientific Purpose
+
+Stellar population synthesis fitting lets us infer a galaxy's physical history
+from integrated light alone. By comparing synthetic spectra against observed
+photometry, we can estimate which combination of age, metallicity, and star
+formation history most plausibly produced the observed fluxes.
+
+This matters because it connects observed galaxy light to core astrophysical
+questions: the cosmic star formation history, galaxy evolution and quenching,
+and stellar mass estimation. For example, if NGC3379 is best fit by a model
+with age ~10 Gyr, solar metallicity, and an exponential SFH, the interpretation
+is that most stars formed rapidly about 10 billion years ago and the system has
+since evolved passively, consistent with a red-and-dead elliptical in the Virgo
+cluster.
+
+StellarPop provides a deployable, reproducible, browser-based fitting workflow
+for researchers working on smaller targeted samples who still need citable,
+version-controlled outputs without maintaining a Python or Fortran stack. It is
+not intended to replace FSPS or PEGASE for large-survey production, but it is a
+practical option for focused studies of roughly 10-50 galaxies.
+
+The chi-squared metric is the fit-quality score: it measures how closely the
+synthetic spectrum matches observed SDSS `ugriz` photometry. Lower values mean
+better agreement. Searching parameter combinations for the minimum chi-squared
+is the inference step that maps observed light to physical galaxy properties.
+
 ## Why SPS Matters
 
 Stellar population synthesis (SPS) is used to infer unresolved stellar content
