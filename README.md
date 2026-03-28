@@ -18,6 +18,46 @@ implemented end-to-end in Ruby on Rails, with:
 - reproducible async processing via Sidekiq jobs,
 - and an inspectable web UI for runs, spectra, and fit quality.
 
+## Why SPS Matters
+
+Stellar population synthesis (SPS) is used to infer unresolved stellar content
+from integrated galaxy light. Instead of observing individual stars, astronomers
+model the combined spectrum or broadband photometry of entire galaxies and
+estimate the underlying stellar age distribution, star formation history,
+metallicity, and total stellar mass.
+
+SPS is widely used in observational and survey astronomy (for example SDSS,
+HST, JWST, and Euclid) to:
+
+- estimate stellar masses across cosmic time,
+- infer when galaxies formed most of their stars,
+- track metallicity evolution with redshift,
+- classify star-forming versus quiescent systems,
+- and support photometric-redshift calibration workflows.
+
+Cosmology and instrumentation workflows also consume SPS outputs, including
+large-scale structure modeling and exposure-time planning.
+
+## Where StellarPop Fits
+
+Established SPS toolchains such as FSPS, PEGASE, and BC03 are scientifically
+powerful, but are typically code-first workflows in Python/Fortran ecosystems.
+StellarPop focuses on a complementary mode: a deployable web application with a
+browser UI, asynchronous pipeline execution, and version-controlled,
+reproducible runs.
+
+The blackboard architecture keeps the pipeline modular: IMF, SFH, spectral
+source, and correction models can be swapped independently without rewriting
+the orchestration layer.
+
+## Current Limitations
+
+The current physics model is intentionally simplified compared with production
+SPS frameworks. In particular, StellarPop does not yet include full
+state-of-the-art isochrone tracks (for example Padova or MIST). Stabilizing
+and validating the BaSeL-based workflow is a prerequisite before deeper
+isochrone upgrades.
+
 ## Scientific Background
 
 This project models stellar populations using core components:
