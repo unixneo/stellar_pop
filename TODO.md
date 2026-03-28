@@ -28,8 +28,6 @@
 
 - [x] Review fail2ban setup for static asset and app endpoints
 - [ ] Add production environment configuration
-- [ ] Add systemd unit file for Sidekiq process management
-- [ ] Add log rotation configuration
 - [ ] Add database backup strategy
 - [x] Add health check endpoint
 
