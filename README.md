@@ -163,6 +163,7 @@ Then open `http://localhost:3000`.
 - `/synthesis_runs/:id` shows:
   - animated "Processing synthesis pipeline..." banner for pending/running runs
   - run parameters and status
+  - pipeline configuration (active spectra library, IMF, MIST isochrone weighting, SFH model, and chi-squared method)
   - informational SDSS note (local/live/fetch-unavailable) on completed runs
   - canvas-based spectrum viewer
   - chi-squared (if available)

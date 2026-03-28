@@ -45,6 +45,7 @@
 ## UI/UX
 
 - [x] Add canvas-based spectrum viewer on `SynthesisRun#show`
+- [x] Show pipeline configuration panel with active scientific model selections and citations
 - [ ] Add zoom and pan to canvas spectrum viewer
 - [ ] Add progress indicator beyond status polling
 - [x] Add visible processing banner for pending/running runs
