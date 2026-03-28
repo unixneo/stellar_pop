@@ -1,6 +1,6 @@
 # StellarPop
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19274470.svg)](https://doi.org/10.5281/zenodo.19274470)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19277971.svg)](https://doi.org/10.5281/zenodo.19277971)
 
 ## What This App Does
 
@@ -217,7 +217,7 @@ phot = client.fetch_photometry(187.2779, 2.0523)
 ## Citation
 
 If you use StellarPop, cite the software DOI:
-https://doi.org/10.5281/zenodo.19274470
+https://doi.org/10.5281/zenodo.19277971
 
 ## Milestone Validation
 
