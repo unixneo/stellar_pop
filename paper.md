@@ -39,6 +39,10 @@ The pipeline is organized around knowledge sources:
 
 Asynchronous execution is handled by Sidekiq through a dedicated synthesis queue. Each synthesis run is persisted in Rails models, executed in a background job, and stored as a composite spectrum in the database. During integration, per-star spectra are interpolated onto a fixed wavelength grid, combined with IMF/SFH/isochrone weighting, and smoothed before final normalization. For observational comparison, StellarPop first checks a local SDSS photometry catalog keyed by sky position and falls back to the SDSS SkyServer DR18 SQL API on catalog misses. Chi-squared is then computed using SDSS filter-convolved synthetic fluxes (ugriz) rather than nearest-wavelength approximations.
 
+## Isochrone validation
+
+Validation against MIST isochrone tables (Choi et al. 2016) indicates that the simple corrections in `StellarPop::KnowledgeSources::Isochrone` agree with MIST to within 2% for solar-mass stars at ages 1-5 Gyr, but diverge significantly for evolved stars and sub-solar masses. `StellarPop::KnowledgeSources::MistIsochrone` is included in the codebase as a validated alternative parser for the solar-metallicity MIST grid, and direct integration of MIST-based corrections into the synthesis pipeline is planned for a future release.
+
 # Acknowledgements
 
 None at this time.
