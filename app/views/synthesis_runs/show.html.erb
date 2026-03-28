@@ -1,5 +1,31 @@
-<% if %w[pending running].include?(@synthesis_run.status.to_s) %>
+<% processing = %w[pending running].include?(@synthesis_run.status.to_s) %>
+<% if processing %>
   <meta http-equiv="refresh" content="5">
+<% end %>
+
+<% if processing %>
+  <style>
+    .processing-banner {
+      padding: 10px 14px;
+      border: 1px solid #f59e0b;
+      background: #2b1f07;
+      color: #fde68a;
+      border-radius: 6px;
+      margin: 0 0 14px 0;
+      font-weight: 600;
+      animation: processing-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes processing-pulse {
+      0% { opacity: 0.75; }
+      50% { opacity: 1.0; }
+      100% { opacity: 0.75; }
+    }
+  </style>
+
+  <div class="processing-banner">
+    Processing synthesis pipeline...
+  </div>
 <% end %>
 
 <h1><%= @synthesis_run.name.presence || "Synthesis Run ##{@synthesis_run.id}" %></h1>

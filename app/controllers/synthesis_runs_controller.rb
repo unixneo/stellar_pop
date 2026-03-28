@@ -30,11 +30,11 @@ class SynthesisRunsController < ApplicationController
 
   def seed_test
     synthesis_run = SynthesisRun.create!(
-      name: "test_run_1",
-      imf_type: "kroupa",
-      age_gyr: 5.0,
-      metallicity_z: 0.02,
-      sfh_model: "exponential",
+      name: "test_run_#{SecureRandom.hex(4)}",
+      imf_type: %w[kroupa salpeter].sample,
+      age_gyr: [1.0, 3.0, 5.0, 8.0, 10.0, 12.0].sample,
+      metallicity_z: [0.008, 0.02, 0.03].sample,
+      sfh_model: %w[exponential constant burst].sample,
       sdss_ra: 187.2779,
       sdss_dec: 2.0523,
       status: "pending"

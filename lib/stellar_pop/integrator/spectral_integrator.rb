@@ -126,8 +126,8 @@ module StellarPop
         smoothed = {}
 
         wavelengths.each_with_index do |wavelength, index|
-          window_start = [index - 2, 0].max
-          window_end = [index + 2, wavelengths.length - 1].min
+          window_start = [index - 5, 0].max
+          window_end = [index + 5, wavelengths.length - 1].min
           window = wavelengths[window_start..window_end]
           mean_flux = window.sum { |wl| spectrum[wl].to_f } / window.length.to_f
           smoothed[wavelength] = mean_flux
