@@ -1,4 +1,5 @@
 <% processing = %w[pending running].include?(@grid_fit.status.to_s) %>
+<% elapsed_start_seconds = [Time.current.to_i - @grid_fit.created_at.to_i, 0].max %>
 <% if processing %>
   <meta http-equiv="refresh" content="5">
 <% end %>
@@ -25,7 +26,7 @@
 
   <div class="processing-banner">
     Running parameter grid sweep...
-    <span id="processing-elapsed" style="margin-left: 8px; font-family: monospace;">(elapsed: 0s)</span>
+    <span id="processing-elapsed" data-elapsed-seconds="<%= elapsed_start_seconds %>" style="margin-left: 8px; font-family: monospace;">(elapsed: 0s)</span>
   </div>
 
   <script>
@@ -33,7 +34,7 @@
       const elapsedEl = document.getElementById("processing-elapsed");
       if (!elapsedEl) return;
 
-      let elapsedSeconds = 0;
+      let elapsedSeconds = parseInt(elapsedEl.dataset.elapsedSeconds || "0", 10);
       function formatElapsed(seconds) {
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -41,6 +42,7 @@
         return secs + "s";
       }
 
+      elapsedEl.textContent = "(elapsed: " + formatElapsed(elapsedSeconds) + ")";
       setInterval(function() {
         elapsedSeconds += 1;
         elapsedEl.textContent = "(elapsed: " + formatElapsed(elapsedSeconds) + ")";
