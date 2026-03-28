@@ -66,12 +66,14 @@
      when "burst" then "Burst"
      else "Constant"
      end %>
+<% mist_selected_feh = StellarPop::KnowledgeSources::MistIsochrone.nearest_feh_for_metallicity(@synthesis_run.metallicity_z.to_f) %>
 
 <h2>Pipeline Configuration</h2>
 <div style="font-family: monospace;">
   <p><strong>Spectra library:</strong> <%= spectra_library_label %></p>
   <p><strong>IMF:</strong> <%= imf_label %></p>
   <p><strong>Isochrone weighting:</strong> MIST v1.2 (Choi et al. 2016)</p>
+  <p><strong>MIST selected [Fe/H] bin:</strong> <%= format("%.2f", mist_selected_feh) %></p>
   <p><strong>SFH model:</strong> <%= sfh_label %></p>
   <p><strong>Chi-squared method:</strong> SDSS ugriz filter convolution (Fukugita et al. 1996)</p>
 </div>

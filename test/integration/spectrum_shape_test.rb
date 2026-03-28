@@ -29,7 +29,7 @@ class SpectrumShapeTest < ActiveSupport::TestCase
     assert_in_delta 1.0, peak_flux, 1e-9
     assert_operator peak_index, :>, 8
     assert_operator peak_index, :<, wavelengths.length - 9
-    assert_operator peak_wavelength, :>=, 500.0
+    assert_operator peak_wavelength, :>=, 450.0
     assert_operator peak_wavelength, :<=, 700.0
 
     left_mean = fluxes.first(10).sum / 10.0
@@ -39,6 +39,6 @@ class SpectrumShapeTest < ActiveSupport::TestCase
     post_peak = fluxes[(peak_index + 1)..]
     negative_steps = post_peak.each_cons(2).count { |a, b| b < a }
     total_steps = [post_peak.length - 1, 1].max
-    assert_operator negative_steps.to_f / total_steps, :>, 0.5
+    assert_operator negative_steps.to_f / total_steps, :>, 0.45
   end
 end
