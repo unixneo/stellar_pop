@@ -50,4 +50,4 @@ Planck Collaboration. (2018). Planck 2018 results. I. Overview, and the cosmolog
 
 Ahumada, R., Allende Prieto, C., Almeida, A., et al. (2020). The 16th Data Release of the Sloan Digital Sky Surveys: First Release from the APOGEE-2 Southern Survey and Full Release of eBOSS Spectra. *The Astrophysical Journal Supplement Series, 249*(1), 3. https://doi.org/10.3847/1538-4365/ab929e
 
-Bass, T. (2025). Blackboard architecture for situational awareness systems (prior work).
+Bass, T. (2026). Blackboard SA. *ACM DTRAP* (under review). Preprint: https://doi.org/10.5281/zenodo.18824512
