@@ -1,8 +1,9 @@
 module StellarPop
   module Integrator
     class SpectralIntegrator
-      def initialize(blackboard)
+      def initialize(blackboard, spectra_source: nil)
         @blackboard = blackboard
+        @spectra_source = spectra_source || StellarPop::KnowledgeSources::BaselSpectra.new
       end
 
       def run
@@ -14,7 +15,7 @@ module StellarPop
 
         validate_inputs!(masses, sfh_weights, age_bins, metallicity_z, wavelength_range)
 
-        basel_spectra = StellarPop::KnowledgeSources::BaselSpectra.new
+        imf_sampler = StellarPop::KnowledgeSources::ImfSampler.new
         isochrone = StellarPop::KnowledgeSources::Isochrone.new
 
         composite = {}
@@ -22,7 +23,7 @@ module StellarPop
 
         masses.each do |mass|
           mass_f = mass.to_f
-          base_spectrum = basel_spectra.spectrum_for_mass(mass_f, wavelength_range, metallicity_z: metallicity_z)
+          base_spectrum = build_base_spectrum(mass_f, wavelength_range, metallicity_z, imf_sampler)
           star_flux_sum = base_spectrum.values.sum.to_f
           next unless star_flux_sum.positive?
 
@@ -83,6 +84,17 @@ module StellarPop
         t_ms = 10.0 * (mass**-2.5)
         closest_index = age_bins.each_with_index.min_by { |age, _idx| (age.to_f - t_ms).abs }[1]
         sfh_weights[closest_index].to_f
+      end
+
+      def build_base_spectrum(mass_f, wavelength_range, metallicity_z, imf_sampler)
+        if @spectra_source.respond_to?(:spectrum_for_mass)
+          return @spectra_source.spectrum_for_mass(mass_f, wavelength_range, metallicity_z: metallicity_z)
+        end
+
+        spectral_type = imf_sampler.spectral_type_for_mass(mass_f)
+        return {} unless spectral_type
+
+        @spectra_source.spectrum(spectral_type, wavelength_range)
       end
 
       def build_uniform_wavelength_grid(wavelength_range)

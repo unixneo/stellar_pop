@@ -12,6 +12,11 @@
   </p>
 
   <p>
+    <%= f.label :spectra_model, "Spectra model" %><br>
+    <%= f.select :spectra_model, [["basel", "basel"], ["planck", "planck"]] %>
+  </p>
+
+  <p>
     <%= f.label :age_gyr %><br>
     <%= f.number_field :age_gyr, step: 0.1, min: 0.1, max: 13.8 %>
   </p>

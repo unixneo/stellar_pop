@@ -7,7 +7,7 @@
 - [x] Add BaSeL 3.1 spectral library parser (`BaselSpectra`) with Fortran-order indexing and flux sentinel filtering
 - [x] Wire BaSeL metallicity selection from `metallicity_z` (nearest zlegend bin where available)
 - [x] Implement SDSS filter convolution for chi-squared (replace nearest-wavelength approximation)
-- [ ] Add model option to switch between Planck spectra and BaSeL library spectra in pipeline/UI
+- [x] Add model option to switch between Planck spectra and BaSeL library spectra in pipeline/UI
 - [x] Implement Salpeter IMF in `ImfSampler` and pass `imf_type` through pipeline jobs
 - [x] Expose burst SFH `burst_age_gyr` and `burst_width_gyr` parameters in UI and pipeline
 - [ ] Validate isochrone temperature corrections against published tables

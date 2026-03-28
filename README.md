@@ -125,7 +125,7 @@ StellarPop follows a **blackboard pattern**:
 `StellarPop::Integrator::SpectralIntegrator` currently:
 
 - Reads IMF masses, age bins, SFH weights, metallicity, and wavelength range from blackboard.
-- Builds per-star spectra from `BaselSpectra`.
+- Builds per-star spectra from either `BaselSpectra` or `StellarSpectra` (Planck), based on run `spectra_model`.
 - Normalizes each star spectrum by unit integral over the wavelength grid.
 - Uses two-pass mass-based weights (`mass ** 1.0`) normalized to sum to `1.0`.
 - Interpolates all stellar spectra onto a fixed 5.0nm grid over `wavelength_range`.
@@ -157,6 +157,7 @@ Then open `http://localhost:3000`.
 - `/` shows all runs in a status-colored table.
 - `/synthesis_runs/new` creates a new run and enqueues processing.
   - includes an SDSS toggle to enable/disable photometry fetch + chi-squared
+  - includes a spectra model selector (`basel` or `planck`)
   - includes burst SFH controls (`burst_age_gyr`, `burst_width_gyr`) that appear when `sfh_model=burst`
 - `/synthesis_runs/:id` shows:
   - animated "Processing synthesis pipeline..." banner for pending/running runs
@@ -166,7 +167,7 @@ Then open `http://localhost:3000`.
   - chi-squared (if available)
   - composite spectrum table
   - SDSS `ugriz` photometry table (if fetched)
-- `/synthesis_runs/seed_test` creates a randomized test run (unique name, randomized model parameters) using fixed 3C 273 coordinates.
+- `/synthesis_runs/seed_test` creates a randomized test run (unique name, randomized model parameters, random local SDSS target).
 - `/sidekiq` exposes Sidekiq Web UI.
 
 ### Rails Console Access

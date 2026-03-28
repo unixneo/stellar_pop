@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_28_153000) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_28_160000) do
   create_table "spectrum_results", force: :cascade do |t|
     t.integer "synthesis_run_id", null: false
     t.text "wavelength_data"
@@ -37,6 +37,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_28_153000) do
     t.string "sdss_object_name"
     t.float "burst_age_gyr", default: 2.0
     t.float "burst_width_gyr", default: 0.5
+    t.string "spectra_model", default: "basel"
   end
 
   add_foreign_key "spectrum_results", "synthesis_runs"

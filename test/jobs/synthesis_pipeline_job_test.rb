@@ -28,7 +28,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     )
 
     composite = { 350.0 => 0.2, 360.0 => 0.8, 370.0 => 0.1 }
-    fake_integrator_factory = lambda { |blackboard|
+    fake_integrator_factory = lambda { |blackboard, **_kwargs|
       FakeIntegrator.new(blackboard, composite_spectrum: composite)
     }
 
@@ -69,7 +69,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
       763.0 => 1.0,
       900.0 => 1.0
     }
-    fake_integrator_factory = lambda { |blackboard|
+    fake_integrator_factory = lambda { |blackboard, **_kwargs|
       FakeIntegrator.new(blackboard, composite_spectrum: composite)
     }
 
@@ -121,7 +121,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
       763.0 => 1.0,
       900.0 => 1.0
     }
-    fake_integrator_factory = lambda { |blackboard|
+    fake_integrator_factory = lambda { |blackboard, **_kwargs|
       FakeIntegrator.new(blackboard, composite_spectrum: composite)
     }
 
@@ -171,7 +171,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     )
 
     composite = { 350.0 => 0.5, 360.0 => 1.0, 370.0 => 0.3 }
-    fake_integrator_factory = lambda { |blackboard|
+    fake_integrator_factory = lambda { |blackboard, **_kwargs|
       FakeIntegrator.new(blackboard, composite_spectrum: composite)
     }
 
@@ -210,7 +210,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     )
 
     composite = { 350.0 => 0.5, 360.0 => 1.0, 370.0 => 0.3 }
-    fake_integrator_factory = lambda { |blackboard|
+    fake_integrator_factory = lambda { |blackboard, **_kwargs|
       FakeIntegrator.new(blackboard, composite_spectrum: composite)
     }
 
@@ -251,7 +251,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
       sdss_dec: 0.0
     )
 
-    fake_integrator_factory = lambda { |blackboard|
+    fake_integrator_factory = lambda { |blackboard, **_kwargs|
       FakeIntegrator.new(blackboard, composite_spectrum: {}, error: RuntimeError.new("forced failure"))
     }
 

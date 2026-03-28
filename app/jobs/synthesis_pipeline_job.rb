@@ -32,7 +32,8 @@ class SynthesisPipelineJob < ApplicationJob
     blackboard.write(:sfh_weights, sfh_weights)
     blackboard.write(:wavelength_range, DEFAULT_WAVELENGTH_RANGE_NM)
 
-    integrator = StellarPop::Integrator::SpectralIntegrator.new(blackboard)
+    spectra_source = build_spectra_source(synthesis_run.spectra_model)
+    integrator = StellarPop::Integrator::SpectralIntegrator.new(blackboard, spectra_source: spectra_source)
     integrator.run
     composite_spectrum = blackboard.read(:composite_spectrum) || {}
 
@@ -112,6 +113,13 @@ class SynthesisPipelineJob < ApplicationJob
     else
       sfh_model.weights(:constant, AGE_BINS_GYR, {})
     end
+  end
+
+  def build_spectra_source(raw_spectra_model)
+    model = raw_spectra_model.to_s.strip.downcase
+    return StellarPop::KnowledgeSources::StellarSpectra.new if model == "planck"
+
+    StellarPop::KnowledgeSources::BaselSpectra.new
   end
 
   def non_zero_coordinates?(ra, dec)
