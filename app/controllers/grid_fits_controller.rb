@@ -15,7 +15,7 @@ class GridFitsController < ApplicationController
 
   def new
     @grid_fit = GridFit.new
-    @catalog_targets = StellarPop::SdssLocalCatalog.all_targets.sort_by { |target| target[:name].to_s }
+    @catalog_targets = StellarPop::SdssLocalCatalog.galaxy_targets.sort_by { |target| target[:name].to_s }
   end
 
   def create
@@ -27,7 +27,7 @@ class GridFitsController < ApplicationController
       GridFitJob.perform_later(@grid_fit.id, sweep_params)
       redirect_to @grid_fit, notice: "Grid fit created."
     else
-      @catalog_targets = StellarPop::SdssLocalCatalog.all_targets.sort_by { |target| target[:name].to_s }
+      @catalog_targets = StellarPop::SdssLocalCatalog.galaxy_targets.sort_by { |target| target[:name].to_s }
       render :new, status: :unprocessable_entity
     end
   end

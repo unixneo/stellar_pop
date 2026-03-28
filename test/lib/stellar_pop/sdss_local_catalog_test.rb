@@ -27,5 +27,14 @@ class SdssLocalCatalogTest < ActiveSupport::TestCase
     assert_not_nil target
     assert_equal %i[name ra dec u g r i z], target.keys
     assert target[:name].is_a?(String)
+    assert_not_equal "3C273", target[:name]
+  end
+
+  test "galaxy_targets excludes agn entries" do
+    targets = StellarPop::SdssLocalCatalog.galaxy_targets
+
+    assert targets.any?
+    assert targets.all? { |target| target[:agn] == false }
+    assert targets.none? { |target| target[:name] == "3C273" }
   end
 end

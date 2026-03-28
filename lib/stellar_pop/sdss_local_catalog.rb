@@ -42,7 +42,7 @@ module StellarPop
       end
 
       def random_target
-        target = catalog_rows.sample
+        target = galaxy_targets.sample
         return nil unless target
 
         {
@@ -55,6 +55,10 @@ module StellarPop
           i: target[:i],
           z: target[:z]
         }
+      end
+
+      def galaxy_targets
+        catalog_rows.reject { |row| row[:agn] }.map(&:dup)
       end
 
       def all_targets
@@ -75,9 +79,14 @@ module StellarPop
             i: row["i"].to_f,
             z: row["z"].to_f,
             type: row["type"],
-            notes: row["notes"]
+            notes: row["notes"],
+            agn: parse_boolean(row["agn"])
           }
         end
+      end
+
+      def parse_boolean(value)
+        value.to_s.strip.casecmp("true").zero?
       end
 
       def angular_separation_arcmin(ra1_deg, dec1_deg, ra2_deg, dec2_deg)
