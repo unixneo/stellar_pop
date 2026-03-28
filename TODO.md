@@ -28,7 +28,6 @@
 
 - [x] Review fail2ban setup for static asset and app endpoints
 - [ ] Add production environment configuration
-- [ ] Add database backup strategy
 - [x] Add health check endpoint
 
 ## Testing
