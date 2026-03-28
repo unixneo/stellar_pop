@@ -1,12 +1,12 @@
 class GridFitJob < ApplicationJob
   queue_as :synthesis
 
-  AGES_GYR = [1.0, 3.0, 5.0, 8.0, 10.0, 12.0].freeze
+  AGES_GYR = [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0].freeze
   METALLICITIES_Z = [0.0006, 0.0020, 0.0063, 0.0200, 0.0632].freeze
   SFH_MODELS = %w[exponential constant burst].freeze
   IMF_TYPES = %w[kroupa salpeter].freeze
   AGE_BINS_GYR = [0.1, 0.5, 1.0, 2.0, 4.0, 8.0, 12.0].freeze
-  WAVELENGTH_RANGE_NM = (350.0..900.0).freeze
+  WAVELENGTH_RANGE_NM = (350.0..2000.0).freeze
   SDSS_MAX_FETCH_ATTEMPTS = 3
   SDSS_BASE_BACKOFF_SECONDS = 0.5
 
@@ -102,10 +102,9 @@ class GridFitJob < ApplicationJob
     age_bins = build_age_bins_for_sweep(age_gyr)
     sfh = StellarPop::KnowledgeSources::SfhModel.new
     sfh_weights = build_sfh_weights(sfh, sfh_model, age_gyr, age_bins)
-    weighted_mean_age_gyr = weighted_mean_age(age_bins, sfh_weights)
 
     blackboard.write(:imf_masses, imf_masses)
-    blackboard.write(:age_gyr, weighted_mean_age_gyr)
+    blackboard.write(:age_gyr, age_gyr.to_f)
     blackboard.write(:metallicity_z, metallicity_z.to_f)
     blackboard.write(:sfh_model, sfh_model.to_sym)
     blackboard.write(:age_bins, age_bins)
@@ -189,14 +188,21 @@ class GridFitJob < ApplicationJob
       observed_fluxes[band] = observed_flux
     end
 
-    synthetic_r = synthetic_fluxes[:r].to_f
-    observed_r = observed_fluxes[:r].to_f
-    return Float::INFINITY unless synthetic_r.positive? && observed_r.positive?
-    scale_factor = observed_r / synthetic_r
-    scaled_synthetic = synthetic_fluxes.transform_values { |value| value.to_f * scale_factor }
+    synthetic_mags = synthetic_fluxes.transform_values do |flux|
+      flux_value = flux.to_f
+      flux_value.positive? ? (-2.5 * Math.log10(flux_value)) : 999.0
+    end
+    observed_mags = observed_fluxes.transform_values do |flux|
+      flux_value = flux.to_f
+      flux_value.positive? ? (-2.5 * Math.log10(flux_value)) : 999.0
+    end
+
+    norm_syn = synthetic_mags.transform_values { |magnitude| magnitude - synthetic_mags[:r] }
+    norm_obs = observed_mags.transform_values { |magnitude| magnitude - observed_mags[:r] }
 
     bands.sum do |band|
-      ((scaled_synthetic[band] - observed_fluxes[band])**2) / observed_fluxes[band]
+      delta = norm_syn[band].to_f - norm_obs[band].to_f
+      delta**2
     end
   end
 

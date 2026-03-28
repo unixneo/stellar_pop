@@ -22,11 +22,12 @@ class SynthesisPipelineJob < ApplicationJob
     sfh_model = StellarPop::KnowledgeSources::SfhModel.new
     sfh_model_symbol = normalize_sfh_model(synthesis_run.sfh_model)
     sfh_weights = build_sfh_weights(sfh_model, sfh_model_symbol, synthesis_run)
-    weighted_mean_age_gyr = weighted_mean_age(AGE_BINS_GYR, sfh_weights)
+    run_age_gyr = synthesis_run.age_gyr.to_f
+    run_age_gyr = AGE_BINS_GYR.first.to_f unless run_age_gyr.positive?
     wavelength_range = build_wavelength_range(synthesis_run)
 
     blackboard.write(:imf_masses, imf_masses)
-    blackboard.write(:age_gyr, weighted_mean_age_gyr)
+    blackboard.write(:age_gyr, run_age_gyr)
     blackboard.write(:metallicity_z, synthesis_run.metallicity_z.to_f)
     blackboard.write(:sfh_model, sfh_model_symbol)
     blackboard.write(:sdss_ra, synthesis_run.sdss_ra)
@@ -184,14 +185,21 @@ class SynthesisPipelineJob < ApplicationJob
       observed_fluxes[band] = observed_flux
     end
 
-    synthetic_r = synthetic_fluxes[:r].to_f
-    observed_r = observed_fluxes[:r].to_f
-    return nil unless synthetic_r.positive? && observed_r.positive?
-    scale_factor = observed_r / synthetic_r
-    scaled_synthetic = synthetic_fluxes.transform_values { |value| value.to_f * scale_factor }
+    synthetic_mags = synthetic_fluxes.transform_values do |flux|
+      flux_value = flux.to_f
+      flux_value.positive? ? (-2.5 * Math.log10(flux_value)) : 999.0
+    end
+    observed_mags = observed_fluxes.transform_values do |flux|
+      flux_value = flux.to_f
+      flux_value.positive? ? (-2.5 * Math.log10(flux_value)) : 999.0
+    end
+
+    norm_syn = synthetic_mags.transform_values { |magnitude| magnitude - synthetic_mags[:r] }
+    norm_obs = observed_mags.transform_values { |magnitude| magnitude - observed_mags[:r] }
 
     bands.sum do |band|
-      ((scaled_synthetic[band] - observed_fluxes[band])**2) / observed_fluxes[band]
+      delta = norm_syn[band].to_f - norm_obs[band].to_f
+      delta**2
     end
   end
 end

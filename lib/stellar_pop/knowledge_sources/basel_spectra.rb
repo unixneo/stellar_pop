@@ -53,7 +53,7 @@ module StellarPop
 
         def load_spectra_grid(metallicity_grid)
           raw = File.binread(SPECTRA_FILE)
-          floats = raw.unpack("g*")
+          floats = raw.unpack("e*")
 
           one_z_count = EXPECTED_LOGG_COUNT * EXPECTED_LOGT_COUNT * EXPECTED_WAVELENGTH_COUNT
           expected_count = EXPECTED_LOGG_COUNT * EXPECTED_LOGT_COUNT * EXPECTED_METALLICITY_COUNT * EXPECTED_WAVELENGTH_COUNT
@@ -70,7 +70,7 @@ module StellarPop
             path = SPECTRA_FILE_BY_Z[z_value]
             raise "Missing BaSeL spectra file for z=#{z_value}" unless path && File.exist?(path)
 
-            z_floats = File.binread(path).unpack("g*")
+            z_floats = File.binread(path).unpack("e*")
             unless z_floats.length == one_z_count
               raise "Unexpected spectra float count for z=#{z_value}: #{z_floats.length} (expected #{one_z_count})"
             end
@@ -115,7 +115,7 @@ module StellarPop
         @logt_grid = self.class.instance_variable_get(:@logt_grid)
         @logg_grid = self.class.instance_variable_get(:@logg_grid)
         @metallicity_grid = self.class.instance_variable_get(:@metallicity_grid)
-        @spectra_grid = self.class.instance_variable_get(:@all_fluxes)
+        @all_fluxes = self.class.instance_variable_get(:@all_fluxes)
         @metallicity_count = self.class.instance_variable_get(:@metallicity_count)
         @fluxes_by_z = self.class.instance_variable_get(:@fluxes_by_z)
       end
@@ -160,11 +160,11 @@ module StellarPop
             (logg_index * (EXPECTED_LOGT_COUNT * EXPECTED_METALLICITY_COUNT * EXPECTED_WAVELENGTH_COUNT)) +
             (teff_index * (EXPECTED_METALLICITY_COUNT * EXPECTED_WAVELENGTH_COUNT)) +
             (z_index * EXPECTED_WAVELENGTH_COUNT)
-          return @spectra_grid[start_index, EXPECTED_WAVELENGTH_COUNT]
+          return @all_fluxes[start_index, EXPECTED_WAVELENGTH_COUNT]
         end
 
         z_value = @metallicity_grid[z_index]
-        plane = (@fluxes_by_z && @fluxes_by_z[z_value]) || @spectra_grid
+        plane = (@fluxes_by_z && @fluxes_by_z[z_value]) || @all_fluxes
         start_index = (logg_index * (EXPECTED_LOGT_COUNT * EXPECTED_WAVELENGTH_COUNT)) + (teff_index * EXPECTED_WAVELENGTH_COUNT)
         plane[start_index, EXPECTED_WAVELENGTH_COUNT]
       end

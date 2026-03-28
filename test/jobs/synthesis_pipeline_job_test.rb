@@ -93,10 +93,13 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
 
     synthetic_fluxes = StellarPop::SdssFilterConvolver.new.synthetic_magnitudes(composite)
     observed_fluxes = { u: 1.0, g: 1.0, r: 1.0, i: 1.0, z: 1.0 }
-    scale_factor = observed_fluxes[:r] / synthetic_fluxes[:r]
-    scaled_synthetic = synthetic_fluxes.transform_values { |value| value * scale_factor }
+    synthetic_mags = synthetic_fluxes.transform_values { |f| f.to_f.positive? ? (-2.5 * Math.log10(f.to_f)) : 999.0 }
+    observed_mags = observed_fluxes.transform_values { |f| f.to_f.positive? ? (-2.5 * Math.log10(f.to_f)) : 999.0 }
+    norm_syn = synthetic_mags.transform_values { |m| m - synthetic_mags[:r] }
+    norm_obs = observed_mags.transform_values { |m| m - observed_mags[:r] }
     expected_chi_squared = %i[u g r i z].sum do |band|
-      ((scaled_synthetic[band] - observed_fluxes[band])**2) / observed_fluxes[band]
+      delta = norm_syn[band] - norm_obs[band]
+      delta**2
     end
 
     assert_equal "complete", run.status

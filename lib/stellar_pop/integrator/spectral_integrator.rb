@@ -24,11 +24,13 @@ module StellarPop
 
         masses.each do |mass|
           mass_f = mass.to_f
-          base_spectrum = build_base_spectrum(mass_f, wavelength_range, metallicity_z, imf_sampler)
+          mist_row = mist_isochrone.lookup(mass_f, age_gyr, metallicity_z: metallicity_z)
+          mist_phase = mist_row && mist_row[:phase].to_f
+          next if mist_phase && mist_phase >= 5.0
+
+          base_spectrum = build_base_spectrum(mass_f, wavelength_range, metallicity_z, imf_sampler, mist_row)
           star_flux_sum = base_spectrum.values.sum.to_f
           next unless star_flux_sum.positive?
-
-          mist_row = mist_isochrone.lookup(mass_f, age_gyr, metallicity_z: metallicity_z)
           mist_luminosity = mist_row && mist_row[:luminosity_solar].to_f
           raw_weight = if mist_luminosity&.positive?
             mist_luminosity
@@ -86,7 +88,15 @@ module StellarPop
         raise ArgumentError, "wavelength_range must be an inclusive Range" unless wavelength_range.is_a?(Range) && !wavelength_range.exclude_end?
       end
 
-      def build_base_spectrum(mass_f, wavelength_range, metallicity_z, imf_sampler)
+      def build_base_spectrum(mass_f, wavelength_range, metallicity_z, imf_sampler, mist_row)
+        if @spectra_source.is_a?(StellarPop::KnowledgeSources::BaselSpectra) && mist_row
+          teff_k = mist_row[:teff_k].to_f
+          logg = mist_row[:logg].to_f
+          if teff_k.positive?
+            return @spectra_source.spectrum(teff_k, logg, wavelength_range, metallicity_z: metallicity_z)
+          end
+        end
+
         if @spectra_source.respond_to?(:spectrum_for_mass)
           return @spectra_source.spectrum_for_mass(mass_f, wavelength_range, metallicity_z: metallicity_z)
         end
