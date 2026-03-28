@@ -46,6 +46,39 @@ synthetic spectrum matches observed SDSS `ugriz` photometry. Lower values mean
 better agreement. Searching parameter combinations for the minimum chi-squared
 is the inference step that maps observed light to physical galaxy properties.
 
+## Key Concepts
+
+### Metallicity
+
+In astrophysics, any element heavier than helium is called a "metal."
+Metallicity (`Z`) measures how much of this heavy-element content a star has.
+Solar metallicity (`Z=0.02`) means roughly 2% of the Sun's mass is in elements
+heavier than helium. The first stars in the universe formed with near-zero
+metallicity (almost pure hydrogen and helium). As generations of stars form,
+evolve, and explode as supernovae, they enrich surrounding gas with heavier
+elements. So metallicity tracks chemical evolution: sub-solar metallicity often
+indicates an older or less chemically evolved population, while super-solar
+metallicity suggests stars formed from already-enriched gas.
+
+### Initial Mass Function (IMF)
+
+When gas clouds collapse, they do not produce stars all at one mass. The IMF
+describes the distribution of stellar masses formed in a star formation event.
+Kroupa (2001) and Salpeter (1955) are two commonly used empirical IMF models.
+Massive stars are rare but dominate emitted light; low-mass stars are numerous
+but contribute much less light. Because of this, IMF choice changes both the
+luminosity scaling of a synthetic population and how quickly that population
+evolves over time.
+
+### Star Formation History (SFH)
+
+Galaxies generally do not form all stars in a single instant. SFH describes how
+star formation rate varies with time. An exponential-decay SFH means strong
+early star formation that declines later, typical of passive ellipticals. A
+constant SFH means ongoing star formation at a steady rate, typical of many
+late-type spirals. A burst SFH represents a short, intense star-forming episode
+at a specific epoch, often associated with merger-driven starbursts.
+
 ## Why SPS Matters
 
 Stellar population synthesis (SPS) is used to infer unresolved stellar content
