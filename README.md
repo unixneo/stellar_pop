@@ -145,8 +145,15 @@ phot = client.fetch_photometry(187.2779, 2.0523)
 - SQLite3
 - Sidekiq
 - Faraday
-- Pure Ruby astrophysics/physics modules
-- No external astronomy libraries
+- Pure Ruby astrophysics pipeline (no external code libraries)
+- BaSeL 3.1 stellar spectral library (Westera et al. 2002) -- binary data files
+
+## Data Sources
+
+- BaSeL 3.1 stellar spectral energy distribution library (Westera, Lejeune,
+  Buser, Cuisinier & Bruzual 2002, A&A 381, 524) -- solar metallicity
+  spectra sourced from the FSPS repository (Conroy et al.)
+- SDSS SkyServer DR18 -- observed photometry via public SQL API
 
 ## Note
 
