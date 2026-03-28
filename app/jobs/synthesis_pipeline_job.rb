@@ -184,15 +184,14 @@ class SynthesisPipelineJob < ApplicationJob
       observed_fluxes[band] = observed_flux
     end
 
-    synthetic_mean = synthetic_fluxes.values.sum.to_f / 5.0
-    observed_mean = observed_fluxes.values.sum.to_f / 5.0
-    return nil unless synthetic_mean.positive? && observed_mean.positive?
-
-    norm_synthetic = synthetic_fluxes.transform_values { |value| value.to_f / synthetic_mean }
-    norm_observed = observed_fluxes.transform_values { |value| value.to_f / observed_mean }
+    synthetic_r = synthetic_fluxes[:r].to_f
+    observed_r = observed_fluxes[:r].to_f
+    return nil unless synthetic_r.positive? && observed_r.positive?
+    scale_factor = observed_r / synthetic_r
+    scaled_synthetic = synthetic_fluxes.transform_values { |value| value.to_f * scale_factor }
 
     bands.sum do |band|
-      ((norm_synthetic[band] - norm_observed[band])**2) / norm_observed[band]
+      ((scaled_synthetic[band] - observed_fluxes[band])**2) / observed_fluxes[band]
     end
   end
 end

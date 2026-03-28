@@ -92,13 +92,11 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     phot = JSON.parse(result.sdss_photometry)
 
     synthetic_fluxes = StellarPop::SdssFilterConvolver.new.synthetic_magnitudes(composite)
-    synthetic_mean = synthetic_fluxes.values.sum.to_f / 5.0
     observed_fluxes = { u: 1.0, g: 1.0, r: 1.0, i: 1.0, z: 1.0 }
-    observed_mean = observed_fluxes.values.sum.to_f / 5.0
-    norm_synthetic = synthetic_fluxes.transform_values { |value| value / synthetic_mean }
-    norm_observed = observed_fluxes.transform_values { |value| value / observed_mean }
+    scale_factor = observed_fluxes[:r] / synthetic_fluxes[:r]
+    scaled_synthetic = synthetic_fluxes.transform_values { |value| value * scale_factor }
     expected_chi_squared = %i[u g r i z].sum do |band|
-      ((norm_synthetic[band] - norm_observed[band])**2) / norm_observed[band]
+      ((scaled_synthetic[band] - observed_fluxes[band])**2) / observed_fluxes[band]
     end
 
     assert_equal "complete", run.status

@@ -11,6 +11,7 @@ class GridFitJob < ApplicationJob
   SDSS_BASE_BACKOFF_SECONDS = 0.5
 
   def perform(grid_fit_id, sweep_options = {})
+    started_at = Time.current
     grid_fit = GridFit.find(grid_fit_id)
     grid_fit.update!(status: "running", error_message: nil)
     selected_ages = sanitize_float_array(sweep_options["ages_gyr"] || sweep_options[:ages_gyr], AGES_GYR)
@@ -28,7 +29,8 @@ class GridFitJob < ApplicationJob
     unless sdss_photometry
       grid_fit.update!(
         status: "failed",
-        error_message: "SDSS photometry unavailable - local catalog miss and live API timeout or no object found"
+        error_message: "SDSS photometry unavailable - local catalog miss and live API timeout or no object found",
+        runtime_seconds: elapsed_seconds(started_at)
       )
       return
     end
@@ -82,10 +84,11 @@ class GridFitJob < ApplicationJob
       best_sfh_model: best[:sfh_model],
       best_imf_type: best[:imf_type],
       best_chi_squared: best[:chi_squared],
-      result_json: ranked.to_json
+      result_json: ranked.to_json,
+      runtime_seconds: elapsed_seconds(started_at)
     )
   rescue StandardError => e
-    grid_fit&.update(status: "failed", error_message: e.message)
+    grid_fit&.update(status: "failed", error_message: e.message, runtime_seconds: elapsed_seconds(started_at))
   end
 
   private
@@ -186,15 +189,14 @@ class GridFitJob < ApplicationJob
       observed_fluxes[band] = observed_flux
     end
 
-    synthetic_mean = synthetic_fluxes.values.sum.to_f / 5.0
-    observed_mean = observed_fluxes.values.sum.to_f / 5.0
-    return Float::INFINITY unless synthetic_mean.positive? && observed_mean.positive?
-
-    norm_synthetic = synthetic_fluxes.transform_values { |value| value.to_f / synthetic_mean }
-    norm_observed = observed_fluxes.transform_values { |value| value.to_f / observed_mean }
+    synthetic_r = synthetic_fluxes[:r].to_f
+    observed_r = observed_fluxes[:r].to_f
+    return Float::INFINITY unless synthetic_r.positive? && observed_r.positive?
+    scale_factor = observed_r / synthetic_r
+    scaled_synthetic = synthetic_fluxes.transform_values { |value| value.to_f * scale_factor }
 
     bands.sum do |band|
-      ((norm_synthetic[band] - norm_observed[band])**2) / norm_observed[band]
+      ((scaled_synthetic[band] - observed_fluxes[band])**2) / observed_fluxes[band]
     end
   end
 
@@ -206,5 +208,11 @@ class GridFitJob < ApplicationJob
   def sanitize_string_array(raw_values, allowed_values)
     selected = Array(raw_values).map(&:to_s).select { |v| allowed_values.include?(v) }.uniq
     selected.empty? ? allowed_values : selected
+  end
+
+  def elapsed_seconds(started_at)
+    return nil unless started_at
+
+    [(Time.current - started_at).round, 0].max
   end
 end

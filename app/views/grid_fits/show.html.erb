@@ -1,6 +1,24 @@
 <% processing = %w[pending running].include?(@grid_fit.status.to_s) %>
 <% elapsed_start_seconds = [Time.current.to_i - @grid_fit.created_at.to_i, 0].max %>
-<% total_runtime_seconds = (@grid_fit.updated_at.to_f - @grid_fit.created_at.to_f).round(2) if @grid_fit.status.to_s == "complete" %>
+<%
+  runtime_seconds_value =
+    if @grid_fit.runtime_seconds.present?
+      @grid_fit.runtime_seconds.to_i
+    elsif @grid_fit.status.to_s == "complete"
+      [(@grid_fit.updated_at.to_i - @grid_fit.created_at.to_i), 0].max
+    end
+%>
+<%
+  status_label =
+    if @grid_fit.status.to_s == "complete"
+      total_seconds = runtime_seconds_value.to_i
+      minutes = total_seconds / 60
+      seconds = total_seconds % 60
+      "completed in #{minutes} minutes, #{seconds} seconds"
+    else
+      @grid_fit.status
+    end
+%>
 <% if processing %>
   <meta http-equiv="refresh" content="5">
 <% end %>
@@ -54,8 +72,11 @@
 
 <h1><%= @grid_fit.name.presence || "Grid Fit ##{@grid_fit.id}" %></h1>
 
-<p><strong>Status:</strong> <%= @grid_fit.status %></p>
+<p><strong>Status:</strong> <%= status_label %></p>
 <p><strong>Target:</strong> <%= @grid_fit.target_name.presence || "Unknown" %></p>
+<% if @grid_fit.status.to_s == "complete" %>
+  <p><strong>Total runtime:</strong> <%= runtime_seconds_value %> seconds</p>
+<% end %>
 <p><strong>SDSS RA:</strong> <%= @grid_fit.sdss_ra %></p>
 <p><strong>SDSS Dec:</strong> <%= @grid_fit.sdss_dec %></p>
 
@@ -70,7 +91,6 @@
 
 <% if @grid_fit.status.to_s == "complete" %>
   <h2>Best Fit</h2>
-  <p><strong>Total runtime:</strong> <%= total_runtime_seconds %> seconds</p>
   <p><strong>Best chi-squared:</strong> <%= @grid_fit.best_chi_squared ? format("%.6f", @grid_fit.best_chi_squared) : "-" %></p>
   <p><strong>Best age (Gyr):</strong> <%= @grid_fit.best_age_gyr %></p>
   <p><strong>Best metallicity (Z):</strong> <%= @grid_fit.best_metallicity_z %></p>

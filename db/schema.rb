@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_28_180000) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_28_183000) do
   create_table "grid_fits", force: :cascade do |t|
     t.string "name"
     t.string "target_name"
@@ -26,6 +26,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_28_180000) do
     t.text "error_message"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "runtime_seconds"
   end
 
   create_table "spectrum_results", force: :cascade do |t|
