@@ -35,6 +35,7 @@ class SynthesisPipelineJob < ApplicationJob
 
     sdss_photometry = nil
     chi_squared = nil
+    sdss_fetch_note = nil
     if non_zero_coordinates?(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
       sdss_client = StellarPop::SdssClient.new
       sdss_photometry = fetch_sdss_photometry_with_retry(
@@ -43,6 +44,9 @@ class SynthesisPipelineJob < ApplicationJob
         synthesis_run.sdss_dec
       )
       chi_squared = compute_chi_squared(composite_spectrum, sdss_photometry) if sdss_photometry
+      if sdss_photometry.nil?
+        sdss_fetch_note = "SDSS photometry unavailable - service timeout or no object found"
+      end
     end
 
     wavelengths = composite_spectrum.keys.sort
@@ -55,7 +59,7 @@ class SynthesisPipelineJob < ApplicationJob
       sdss_photometry: sdss_photometry&.to_json
     )
 
-    synthesis_run.update!(status: "complete", error_message: nil, chi_squared: chi_squared)
+    synthesis_run.update!(status: "complete", error_message: sdss_fetch_note, chi_squared: chi_squared)
   rescue StandardError => e
     synthesis_run&.update(status: "failed", error_message: e.message)
   end

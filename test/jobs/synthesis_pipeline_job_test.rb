@@ -149,6 +149,42 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     assert_not_nil result.sdss_photometry
   end
 
+  test "stores informational sdss note when coordinates are set but photometry is unavailable" do
+    run = SynthesisRun.create!(
+      name: "job-sdss-unavailable",
+      status: "pending",
+      imf_type: "kroupa",
+      age_gyr: 5.0,
+      metallicity_z: 0.02,
+      sfh_model: "constant",
+      sdss_ra: 187.2779,
+      sdss_dec: 2.0523
+    )
+
+    composite = { 350.0 => 0.5, 360.0 => 1.0, 370.0 => 0.3 }
+    fake_integrator_factory = lambda { |blackboard|
+      FakeIntegrator.new(blackboard, composite_spectrum: composite)
+    }
+
+    fake_sdss_client = Object.new
+    def fake_sdss_client.fetch_photometry(_ra, _dec, radius_arcmin: 0.5)
+      _ = radius_arcmin
+      nil
+    end
+
+    with_stubbed_new(StellarPop::Integrator::SpectralIntegrator, fake_integrator_factory) do
+      with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
+        SynthesisPipelineJob.perform_now(run.id)
+      end
+    end
+
+    run.reload
+
+    assert_equal "complete", run.status
+    assert_equal "SDSS photometry unavailable - service timeout or no object found", run.error_message
+    assert_nil run.chi_squared
+  end
+
   test "marks run as failed and stores error message when pipeline raises" do
     run = SynthesisRun.create!(
       name: "job-failure",

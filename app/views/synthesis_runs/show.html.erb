@@ -46,6 +46,12 @@
     <%= @synthesis_run.error_message %>
   </div>
 <% end %>
+<% if @synthesis_run.status.to_s == "complete" && @synthesis_run.error_message.present? %>
+  <div style="margin: 14px 0; padding: 10px 14px; border: 1px solid #475569; background: #111827; color: #cbd5e1; border-radius: 6px;">
+    <strong>Note:</strong>
+    <%= @synthesis_run.error_message %>
+  </div>
+<% end %>
 
 <% if @spectrum_result.present? %>
   <% wavelengths = JSON.parse(@spectrum_result.wavelength_data || "[]") rescue [] %>
