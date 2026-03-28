@@ -2,6 +2,8 @@
 
 ## Science/Physics
 
+- [x] Add BaSeL 3.1 spectral library parser (`BaselSpectra`) with Fortran-order indexing and flux sentinel filtering
+- [ ] Add model option to switch between Planck spectra and BaSeL library spectra in pipeline/UI
 - [ ] Implement Salpeter IMF in `ImfSampler` (currently selectable but not functional)
 - [ ] Expose burst SFH `burst_age_gyr` and `width_gyr` parameters in the UI
 - [ ] Validate isochrone temperature corrections against published tables

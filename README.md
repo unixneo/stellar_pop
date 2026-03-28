@@ -30,6 +30,10 @@ This project models stellar populations using four core components:
   main-sequence lifetime transitions and post-main-sequence behavior.
 - **Star Formation History (SFH):** Weights contributions across stellar ages
   using constant, exponential-decay, or burst-like models.
+- **BaSeL 3.1 Spectral Library (new):** Loads and queries the BaSeL grid from
+  binary tables using pure Ruby parsing (Fortran column-major indexing and
+  sentinel filtering), providing an empirical-library alternative to Planck
+  approximations.
 
 The pipeline can also compare synthetic output to observed SDSS `ugriz`
 photometry and compute a simple chi-squared fit metric.
@@ -48,6 +52,7 @@ StellarPop follows a **blackboard pattern**:
 - `StellarPop::KnowledgeSources::StellarSpectra`
 - `StellarPop::KnowledgeSources::Isochrone`
 - `StellarPop::KnowledgeSources::SfhModel`
+- `StellarPop::KnowledgeSources::BaselSpectra`
 - `StellarPop::Integrator::SpectralIntegrator`
 - `StellarPop::SdssClient` (Faraday-based SDSS SkyServer DR18 SQL client)
 - `SynthesisPipelineJob` (async orchestration + persistence)
@@ -119,6 +124,9 @@ counts = imf.count_by_type(masses)
 
 spectra = StellarPop::KnowledgeSources::StellarSpectra.new
 g_spectrum = spectra.spectrum("G", 350..900)
+
+basel = StellarPop::KnowledgeSources::BaselSpectra.new
+library_spectrum = basel.spectrum_for_mass(1.0, 300.0..1000.0)
 
 iso = StellarPop::KnowledgeSources::Isochrone.new
 flux_scale = iso.luminosity_correction(1.0, 5.0, 0.02)
