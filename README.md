@@ -1,12 +1,22 @@
 # StellarPop
 
-## Project Overview
+## What This App Does
 
-StellarPop is a Ruby on Rails stellar population synthesis application built as
-a blackboard-style pipeline. The system coordinates multiple physics-focused
-knowledge sources to synthesize composite stellar population outputs from user inputs.
-Core astrophysics logic is implemented in pure Ruby, and pipeline execution runs
-asynchronously via Sidekiq jobs.
+StellarPop is a Ruby on Rails application that generates a synthetic stellar
+population spectrum from user-defined astrophysical inputs (IMF, age, metallicity,
+and SFH model). It runs an async pipeline, persists the resulting spectrum, and
+optionally compares synthetic output against SDSS `ugriz` photometry using a
+chi-squared metric.
+
+## Why This App Exists
+
+The goal is to show that a practical stellar population synthesis workflow can be
+implemented end-to-end in Ruby on Rails, with:
+
+- domain logic in pure Ruby (no external astronomy libraries),
+- transparent pipeline orchestration via a blackboard pattern,
+- reproducible async processing via Sidekiq jobs,
+- and an inspectable web UI for runs, spectra, and fit quality.
 
 ## Scientific Background
 
@@ -88,8 +98,10 @@ Then open `http://localhost:3000`.
 
 - `/` shows all runs in a status-colored table.
 - `/synthesis_runs/new` creates a new run and enqueues processing.
+  - includes an SDSS toggle to enable/disable photometry fetch + chi-squared
 - `/synthesis_runs/:id` shows:
   - run parameters and status
+  - canvas-based spectrum viewer
   - chi-squared (if available)
   - composite spectrum table
   - SDSS `ugriz` photometry table (if fetched)
