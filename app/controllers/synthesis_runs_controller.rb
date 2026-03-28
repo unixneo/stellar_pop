@@ -29,14 +29,16 @@ class SynthesisRunsController < ApplicationController
   end
 
   def seed_test
+    target = StellarPop::SdssLocalCatalog.random_target || { ra: 187.2779, dec: 2.0523 }
+
     synthesis_run = SynthesisRun.create!(
       name: "test_run_#{SecureRandom.hex(4)}",
       imf_type: %w[kroupa salpeter].sample,
       age_gyr: [1.0, 3.0, 5.0, 8.0, 10.0, 12.0].sample,
       metallicity_z: [0.008, 0.02, 0.03].sample,
       sfh_model: %w[exponential constant burst].sample,
-      sdss_ra: 187.2779,
-      sdss_dec: 2.0523,
+      sdss_ra: target[:ra],
+      sdss_dec: target[:dec],
       status: "pending"
     )
 

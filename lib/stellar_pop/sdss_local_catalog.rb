@@ -36,6 +36,22 @@ module StellarPop
         }
       end
 
+      def random_target
+        target = catalog_rows.sample
+        return nil unless target
+
+        {
+          name: target[:name],
+          ra: target[:ra],
+          dec: target[:dec],
+          u: target[:u],
+          g: target[:g],
+          r: target[:r],
+          i: target[:i],
+          z: target[:z]
+        }
+      end
+
       private
 
       def catalog_rows
