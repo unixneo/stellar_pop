@@ -15,6 +15,10 @@ class SynthesisRunsController < ApplicationController
   def create
     @synthesis_run = SynthesisRun.new(synthesis_run_params)
     @synthesis_run.status = "pending"
+    unless ActiveModel::Type::Boolean.new.cast(params[:fetch_sdss])
+      @synthesis_run.sdss_ra = 0.0
+      @synthesis_run.sdss_dec = 0.0
+    end
 
     if @synthesis_run.save
       SynthesisPipelineJob.perform_later(@synthesis_run.id)

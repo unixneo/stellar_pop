@@ -21,22 +21,106 @@
   <% sdss_photometry = JSON.parse(@spectrum_result.sdss_photometry || "{}") rescue {} %>
 
   <h2>Composite Spectrum</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Wavelength (nm)</th>
-        <th>Flux</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% wavelengths.each_with_index do |wavelength, idx| %>
+  <% spectrum_points = wavelengths.each_with_index.map { |wavelength, idx| [wavelength.to_f, fluxes[idx].to_f] } %>
+  <canvas id="spectrum-canvas" height="320" style="display: block; width: 100%; border: 1px solid #334155; margin-bottom: 12px;"></canvas>
+
+  <script>
+    (function() {
+      const canvas = document.getElementById("spectrum-canvas");
+      const table = document.getElementById("composite-spectrum-table");
+      if (!canvas) return;
+      const points = <%= raw(spectrum_points.to_json) %>;
+      if (!points || points.length < 2) return;
+
+      const ctx = canvas.getContext("2d");
+      const pad = { left: 52, right: 16, top: 16, bottom: 36 };
+
+      function draw() {
+        const cssWidth = (table && table.clientWidth) ? table.clientWidth : canvas.clientWidth;
+        const cssHeight = 320;
+        const dpr = window.devicePixelRatio || 1;
+
+        canvas.style.width = cssWidth + "px";
+        canvas.style.height = cssHeight + "px";
+        canvas.width = Math.round(cssWidth * dpr);
+        canvas.height = Math.round(cssHeight * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const w = cssWidth;
+        const h = cssHeight;
+        const xs = points.map((p) => p[0]);
+        const ys = points.map((p) => p[1]);
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+        const xSpan = Math.max(maxX - minX, 1e-9);
+        const ySpan = Math.max(maxY - minY, 1e-9);
+
+        const xToPx = (x) => pad.left + ((x - minX) / xSpan) * (w - pad.left - pad.right);
+        const yToPx = (y) => (h - pad.bottom) - ((y - minY) / ySpan) * (h - pad.top - pad.bottom);
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "#0b1220";
+        ctx.fillRect(0, 0, w, h);
+
+        ctx.strokeStyle = "#64748b";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        ctx.lineTo(pad.left, h - pad.bottom);
+        ctx.lineTo(w - pad.right, h - pad.bottom);
+        ctx.stroke();
+
+        ctx.strokeStyle = "#22d3ee";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        points.forEach((p, idx) => {
+          const px = xToPx(p[0]);
+          const py = yToPx(p[1]);
+          if (idx === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        });
+        ctx.stroke();
+
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = "12px monospace";
+        ctx.fillText("Wavelength (nm)", w / 2 - 48, h - 10);
+        ctx.save();
+        ctx.translate(14, h / 2 + 26);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText("Flux", 0, 0);
+        ctx.restore();
+        ctx.fillText(minX.toFixed(1), pad.left - 12, h - pad.bottom + 16);
+        ctx.fillText(maxX.toFixed(1), w - pad.right - 28, h - pad.bottom + 16);
+        ctx.fillText(maxY.toFixed(3), 6, pad.top + 10);
+        ctx.fillText(minY.toFixed(3), 6, h - pad.bottom);
+      }
+
+      draw();
+      window.addEventListener("resize", draw);
+    })();
+  </script>
+
+  <details open>
+    <summary>Composite Spectrum Data Table</summary>
+    <table id="composite-spectrum-table">
+      <thead>
         <tr>
-          <td><%= wavelength %></td>
-          <td><%= fluxes[idx] %></td>
+          <th>Wavelength (nm)</th>
+          <th>Flux</th>
         </tr>
-      <% end %>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <% wavelengths.each_with_index do |wavelength, idx| %>
+          <tr>
+            <td><%= wavelength %></td>
+            <td><%= fluxes[idx] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </details>
 
   <% if sdss_photometry.present? %>
     <h2>SDSS Photometry</h2>

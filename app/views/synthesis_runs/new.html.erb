@@ -26,6 +26,17 @@
     <%= f.select :sfh_model, [["exponential", "exponential"], ["constant", "constant"], ["burst", "burst"]] %>
   </p>
 
+  <fieldset class="sdss-toggle">
+    <legend>SDSS Options</legend>
+    <p>
+      <label for="fetch_sdss">
+        <%= check_box_tag :fetch_sdss, "1", true, id: "fetch_sdss" %>
+        Enable SDSS photometry fetch and chi-squared comparison
+      </label>
+    </p>
+    <p>Uncheck to skip SDSS lookup for this run.</p>
+  </fieldset>
+
   <p>
     <%= f.label :sdss_ra %><br>
     <%= f.number_field :sdss_ra, step: 0.0001 %>

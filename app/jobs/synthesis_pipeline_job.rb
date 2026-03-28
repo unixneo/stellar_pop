@@ -3,6 +3,8 @@ class SynthesisPipelineJob < ApplicationJob
 
   AGE_BINS_GYR = [0.1, 0.5, 1.0, 2.0, 4.0, 8.0, 12.0].freeze
   DEFAULT_WAVELENGTH_RANGE_NM = (350.0..900.0)
+  SDSS_MAX_FETCH_ATTEMPTS = 3
+  SDSS_BASE_BACKOFF_SECONDS = 0.5
   SDSS_BAND_CENTERS_NM = {
     u: 354.0,
     g: 477.0,
@@ -42,7 +44,11 @@ class SynthesisPipelineJob < ApplicationJob
     chi_squared = nil
     if non_zero_coordinates?(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
       sdss_client = StellarPop::SdssClient.new
-      sdss_photometry = sdss_client.fetch_photometry(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
+      sdss_photometry = fetch_sdss_photometry_with_retry(
+        sdss_client,
+        synthesis_run.sdss_ra,
+        synthesis_run.sdss_dec
+      )
       chi_squared = compute_chi_squared(composite_spectrum, sdss_photometry) if sdss_photometry
     end
 
@@ -85,6 +91,26 @@ class SynthesisPipelineJob < ApplicationJob
 
   def non_zero_coordinates?(ra, dec)
     !ra.to_f.zero? && !dec.to_f.zero?
+  end
+
+  def fetch_sdss_photometry_with_retry(sdss_client, ra, dec)
+    attempt = 0
+
+    while attempt < SDSS_MAX_FETCH_ATTEMPTS
+      attempt += 1
+      photometry = sdss_client.fetch_photometry(ra, dec)
+      return photometry if photometry
+
+      break if attempt >= SDSS_MAX_FETCH_ATTEMPTS
+
+      sleep_backoff(SDSS_BASE_BACKOFF_SECONDS * (2**(attempt - 1)))
+    end
+
+    nil
+  end
+
+  def sleep_backoff(seconds)
+    sleep(seconds)
   end
 
   def compute_chi_squared(composite_spectrum, sdss_photometry)

@@ -93,6 +93,58 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     assert_equal({ "u" => 0.0, "g" => 0.0, "r" => 0.0, "i" => 0.0, "z" => 0.0 }, phot)
   end
 
+  test "retries sdss fetch with backoff and succeeds on later attempt" do
+    run = SynthesisRun.create!(
+      name: "job-sdss-retry",
+      status: "pending",
+      imf_type: "kroupa",
+      age_gyr: 5.0,
+      metallicity_z: 0.02,
+      sfh_model: "constant",
+      sdss_ra: 187.2779,
+      sdss_dec: 2.0523
+    )
+
+    composite = {
+      354.0 => 1.0,
+      477.0 => 1.0,
+      623.0 => 1.0,
+      763.0 => 1.0,
+      900.0 => 1.0
+    }
+    fake_integrator_factory = lambda { |blackboard|
+      FakeIntegrator.new(blackboard, composite_spectrum: composite)
+    }
+
+    fake_sdss_client = Object.new
+    fake_sdss_client.instance_variable_set(:@calls, 0)
+    def fake_sdss_client.fetch_photometry(_ra, _dec, radius_arcmin: 0.5)
+      _ = radius_arcmin
+      @calls += 1
+      return nil if @calls < 3
+
+      { u: 0.0, g: 0.0, r: 0.0, i: 0.0, z: 0.0 }
+    end
+    def fake_sdss_client.calls
+      @calls
+    end
+
+    with_stubbed_instance_method(SynthesisPipelineJob, :sleep_backoff, ->(_seconds) { nil }) do
+      with_stubbed_new(StellarPop::Integrator::SpectralIntegrator, fake_integrator_factory) do
+        with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
+          SynthesisPipelineJob.perform_now(run.id)
+        end
+      end
+    end
+
+    run.reload
+    result = SpectrumResult.find_by!(synthesis_run_id: run.id)
+
+    assert_equal 3, fake_sdss_client.calls
+    assert_equal "complete", run.status
+    assert_not_nil result.sdss_photometry
+  end
+
   test "marks run as failed and stores error message when pipeline raises" do
     run = SynthesisRun.create!(
       name: "job-failure",
@@ -148,5 +200,16 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     else
       singleton.define_method(:new) { |*args, **kwargs, &block| super(*args, **kwargs, &block) }
     end
+  end
+
+  def with_stubbed_instance_method(klass, method_name, replacement_proc, &block)
+    original_method = klass.instance_method(method_name)
+    klass.define_method(method_name) do |*args, **kwargs, &method_block|
+      replacement_proc.call(*args, **kwargs, &method_block)
+    end
+
+    block.call
+  ensure
+    klass.define_method(method_name, original_method)
   end
 end
