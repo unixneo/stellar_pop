@@ -40,6 +40,12 @@
 <% if !@synthesis_run.chi_squared.nil? %>
   <p><strong>Chi-squared:</strong> <%= format("%.6f", @synthesis_run.chi_squared) %></p>
 <% end %>
+<% if @synthesis_run.status.to_s == "failed" && @synthesis_run.error_message.present? %>
+  <div style="margin: 14px 0; padding: 10px 14px; border: 1px solid #ef4444; background: #2a0f12; color: #fecaca; border-radius: 6px;">
+    <strong>Pipeline Error:</strong>
+    <%= @synthesis_run.error_message %>
+  </div>
+<% end %>
 
 <% if @spectrum_result.present? %>
   <% wavelengths = JSON.parse(@spectrum_result.wavelength_data || "[]") rescue [] %>

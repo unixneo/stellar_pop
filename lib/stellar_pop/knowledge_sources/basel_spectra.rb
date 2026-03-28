@@ -5,6 +5,7 @@ module StellarPop
       LAMBDA_FILE = File.join(GRID_DIR, "basel.lambda").freeze
       LOGT_FILE = File.join(GRID_DIR, "basel_logt.dat").freeze
       LOGG_FILE = File.join(GRID_DIR, "basel_logg.dat").freeze
+      ZLEGEND_FILE = File.join(GRID_DIR, "zlegend.dat").freeze
       SPECTRA_FILE = File.join(GRID_DIR, "basel_wlbc_z0.0200.spectra.bin").freeze
 
       EXPECTED_WAVELENGTH_COUNT = 1963
@@ -12,6 +13,7 @@ module StellarPop
       EXPECTED_LOGG_COUNT = 19
       EXPECTED_METALLICITY_COUNT = 6
       SOLAR_METALLICITY_INDEX = 4
+      SOLAR_METALLICITY_Z = 0.02
 
       class << self
         def load_grid
@@ -20,12 +22,14 @@ module StellarPop
           wavelengths = parse_text_floats(LAMBDA_FILE)
           logt_grid = parse_text_floats(LOGT_FILE)
           logg_grid = parse_text_floats(LOGG_FILE)
+          metallicity_grid = parse_text_floats(ZLEGEND_FILE)
           validate_grid_sizes!(wavelengths, logt_grid, logg_grid)
           all_fluxes, metallicity_count = load_spectra_grid
 
           @wavelengths = wavelengths
           @logt_grid = logt_grid
           @logg_grid = logg_grid
+          @metallicity_grid = metallicity_grid
           @all_fluxes = all_fluxes
           @metallicity_count = metallicity_count
         end
@@ -75,21 +79,23 @@ module StellarPop
         @wavelengths_angstrom = self.class.instance_variable_get(:@wavelengths)
         @logt_grid = self.class.instance_variable_get(:@logt_grid)
         @logg_grid = self.class.instance_variable_get(:@logg_grid)
+        @metallicity_grid = self.class.instance_variable_get(:@metallicity_grid)
         @spectra_grid = self.class.instance_variable_get(:@all_fluxes)
         @metallicity_count = self.class.instance_variable_get(:@metallicity_count)
       end
 
-      def spectrum(teff_k, logg, wavelength_range_nm = 91.0..10_000.0)
+      def spectrum(teff_k, logg, wavelength_range_nm = 91.0..10_000.0, metallicity_z: SOLAR_METALLICITY_Z)
         raise ArgumentError, "teff_k must be > 0" unless teff_k.to_f.positive?
 
         target_logt = Math.log10(teff_k.to_f)
         teff_index = nearest_index(@logt_grid, target_logt)
         logg_index = nearest_index(@logg_grid, logg.to_f)
+        z_index = metallicity_index(metallicity_z)
 
         start_index =
           (logg_index * (EXPECTED_LOGT_COUNT * @metallicity_count * EXPECTED_WAVELENGTH_COUNT)) +
           (teff_index * (@metallicity_count * EXPECTED_WAVELENGTH_COUNT)) +
-          (metallicity_index * EXPECTED_WAVELENGTH_COUNT)
+          (z_index * EXPECTED_WAVELENGTH_COUNT)
         flux_values = @spectra_grid[start_index, EXPECTED_WAVELENGTH_COUNT]
 
         result = {}
@@ -104,22 +110,25 @@ module StellarPop
         result
       end
 
-      def spectrum_for_mass(mass, wavelength_range_nm = 91.0..10_000.0)
+      def spectrum_for_mass(mass, wavelength_range_nm = 91.0..10_000.0, metallicity_z: SOLAR_METALLICITY_Z)
         mass_value = mass.to_f
         raise ArgumentError, "mass must be > 0" unless mass_value.positive?
 
         teff_k = 5778.0 * (mass_value**0.54)
         logg = 4.44 + (Math.log10(mass_value) * 0.1)
 
-        spectrum(teff_k, logg, wavelength_range_nm)
+        spectrum(teff_k, logg, wavelength_range_nm, metallicity_z: metallicity_z)
       end
 
       private
 
-      def metallicity_index
-        return SOLAR_METALLICITY_INDEX if @metallicity_count >= EXPECTED_METALLICITY_COUNT
+      def metallicity_index(metallicity_z)
+        return 0 if @metallicity_count <= 1
+        return SOLAR_METALLICITY_INDEX if @metallicity_grid.nil? || @metallicity_grid.empty?
 
-        0
+        target = metallicity_z.to_f
+        nearest = nearest_index(@metallicity_grid, target)
+        [nearest, @metallicity_count - 1].min
       end
 
       def nearest_index(values, target)

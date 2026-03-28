@@ -5,13 +5,6 @@ class SynthesisPipelineJob < ApplicationJob
   DEFAULT_WAVELENGTH_RANGE_NM = (350.0..900.0)
   SDSS_MAX_FETCH_ATTEMPTS = 3
   SDSS_BASE_BACKOFF_SECONDS = 0.5
-  SDSS_BAND_CENTERS_NM = {
-    u: 354.0,
-    g: 477.0,
-    r: 623.0,
-    i: 763.0,
-    z: 913.0
-  }.freeze
 
   def perform(synthesis_run_id)
     synthesis_run = SynthesisRun.find(synthesis_run_id)
@@ -115,25 +108,17 @@ class SynthesisPipelineJob < ApplicationJob
 
   def compute_chi_squared(composite_spectrum, sdss_photometry)
     return nil if composite_spectrum.nil? || composite_spectrum.empty?
+    convolver = StellarPop::SdssFilterConvolver.new
+    synthetic_fluxes = convolver.synthetic_magnitudes(composite_spectrum)
 
-    SDSS_BAND_CENTERS_NM.sum do |band, center_nm|
+    synthetic_fluxes.sum do |band, synthetic_flux|
       observed_mag = sdss_photometry[band]
       next 0.0 if observed_mag.nil?
 
       observed_flux = 10.0**(-observed_mag.to_f / 2.5)
       next 0.0 unless observed_flux.positive?
 
-      synthetic_flux = nearest_synthetic_flux(composite_spectrum, center_nm)
-      next 0.0 if synthetic_flux.nil?
-
       ((synthetic_flux - observed_flux)**2) / observed_flux
     end
-  end
-
-  def nearest_synthetic_flux(composite_spectrum, target_wavelength_nm)
-    nearest_wavelength = composite_spectrum.keys.min_by { |wl| (wl.to_f - target_wavelength_nm).abs }
-    return nil if nearest_wavelength.nil?
-
-    composite_spectrum[nearest_wavelength].to_f
   end
 end

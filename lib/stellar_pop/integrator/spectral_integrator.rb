@@ -22,7 +22,7 @@ module StellarPop
 
         masses.each do |mass|
           mass_f = mass.to_f
-          base_spectrum = basel_spectra.spectrum_for_mass(mass_f, wavelength_range)
+          base_spectrum = basel_spectra.spectrum_for_mass(mass_f, wavelength_range, metallicity_z: metallicity_z)
           star_flux_sum = base_spectrum.values.sum.to_f
           next unless star_flux_sum.positive?
 
