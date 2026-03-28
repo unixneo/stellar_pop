@@ -79,6 +79,60 @@ constant SFH means ongoing star formation at a steady rate, typical of many
 late-type spirals. A burst SFH represents a short, intense star-forming episode
 at a specific epoch, often associated with merger-driven starbursts.
 
+### Isochrone
+
+An isochrone is a curve on the Hertzsprung-Russell (HR) diagram showing where
+stars of different masses lie at one fixed age and metallicity. In population
+synthesis, isochrones are used to estimate how hot and how luminous each star
+is at the observation epoch. StellarPop uses the MIST v1.2 grid (Choi et al.
+2016) for this age/metallicity-dependent stellar evolution information.
+
+### Stellar Spectral Library
+
+A stellar spectral library is a dataset of precomputed stellar spectra spanning
+temperature, surface gravity, and metallicity. BaSeL 3.1 provides semi-empirical
+stellar spectra recalibrated against observed photometry, which generally gives
+more realistic spectral shapes than a pure Planck blackbody curve (which does
+not include absorption features).
+
+### Chi-Squared
+
+Chi-squared is a fit-quality metric that quantifies how closely the synthetic
+spectrum matches observed photometry. It is computed as the sum of squared
+differences between synthetic and observed fluxes in each SDSS band, normalized
+by observed flux. Lower chi-squared means better agreement. Minimizing this
+value across parameter combinations is the inference step that maps observed
+light to physical quantities such as age and metallicity.
+
+### SDSS ugriz Filters
+
+The Sloan Digital Sky Survey uses five broadband filters centered near 354nm
+(`u`), 477nm (`g`), 623nm (`r`), 763nm (`i`), and 913nm (`z`). Each filter
+measures total flux through a specific wavelength window. Filter convolution
+means integrating the synthetic spectrum against each filter transmission curve
+so synthetic and observed photometry are compared on the same basis.
+
+### Age
+
+In StellarPop, age refers to stellar population age in gigayears (Gyr; billions
+of years). A 10 Gyr population means most stars formed about 10 billion years
+ago. This is distinct from the age of the universe (~13.8 Gyr): it describes
+when star formation occurred in the specific galaxy being modeled.
+
+### Wavelength Range
+
+Wavelength range is the spectral interval (in nanometers) used to compute the
+synthetic spectrum. Wider ranges include more features but increase computation.
+The optical window (350-900nm) covers the SDSS `ugriz` bands and many key
+diagnostic stellar-population features.
+
+### Spectral Energy Distribution (SED)
+
+A spectral energy distribution (SED) is flux as a function of wavelength. The
+composite spectrum produced by StellarPop is a model SED: predicted integrated
+light from the whole stellar population, combining contributions from all stars
+weighted by IMF, SFH, and isochrone-based evolution corrections.
+
 ## Why SPS Matters
 
 Stellar population synthesis (SPS) is used to infer unresolved stellar content
