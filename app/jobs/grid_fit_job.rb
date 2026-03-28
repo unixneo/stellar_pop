@@ -96,29 +96,38 @@ class GridFitJob < ApplicationJob
     imf_sampler = StellarPop::KnowledgeSources::ImfSampler.new(seed: seed, imf_type: imf_type.to_sym)
     imf_masses = imf_sampler.sample(1000)
 
+    age_bins = build_age_bins_for_sweep(age_gyr)
     sfh = StellarPop::KnowledgeSources::SfhModel.new
-    sfh_weights = build_sfh_weights(sfh, sfh_model, age_gyr)
-    weighted_mean_age_gyr = weighted_mean_age(AGE_BINS_GYR, sfh_weights)
+    sfh_weights = build_sfh_weights(sfh, sfh_model, age_gyr, age_bins)
+    weighted_mean_age_gyr = weighted_mean_age(age_bins, sfh_weights)
 
     blackboard.write(:imf_masses, imf_masses)
     blackboard.write(:age_gyr, weighted_mean_age_gyr)
     blackboard.write(:metallicity_z, metallicity_z.to_f)
     blackboard.write(:sfh_model, sfh_model.to_sym)
-    blackboard.write(:age_bins, AGE_BINS_GYR)
+    blackboard.write(:age_bins, age_bins)
     blackboard.write(:sfh_weights, sfh_weights)
     blackboard.write(:wavelength_range, WAVELENGTH_RANGE_NM)
     blackboard
   end
 
-  def build_sfh_weights(sfh, sfh_model, age_gyr)
+  def build_sfh_weights(sfh, sfh_model, age_gyr, age_bins)
     case sfh_model
     when "exponential"
-      sfh.weights(:exponential, AGE_BINS_GYR, tau: 3.0)
+      sfh.weights(:exponential, age_bins, tau: 3.0)
     when "burst"
-      sfh.weights(:burst, AGE_BINS_GYR, burst_age_gyr: age_gyr.to_f, width_gyr: 0.5)
+      sfh.weights(:burst, age_bins, burst_age_gyr: age_gyr.to_f, width_gyr: 0.5)
     else
-      sfh.weights(:constant, AGE_BINS_GYR, {})
+      sfh.weights(:constant, age_bins, {})
     end
+  end
+
+  def build_age_bins_for_sweep(age_gyr)
+    target_age = age_gyr.to_f
+    bins = AGE_BINS_GYR.select { |value| value <= target_age }
+    bins << target_age unless bins.include?(target_age)
+    bins = [target_age] if bins.empty?
+    bins.sort.uniq
   end
 
   def weighted_mean_age(age_bins, sfh_weights)

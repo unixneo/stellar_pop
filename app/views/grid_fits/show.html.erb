@@ -1,5 +1,6 @@
 <% processing = %w[pending running].include?(@grid_fit.status.to_s) %>
 <% elapsed_start_seconds = [Time.current.to_i - @grid_fit.created_at.to_i, 0].max %>
+<% total_runtime_seconds = (@grid_fit.updated_at.to_f - @grid_fit.created_at.to_f).round(2) if @grid_fit.status.to_s == "complete" %>
 <% if processing %>
   <meta http-equiv="refresh" content="5">
 <% end %>
@@ -69,6 +70,7 @@
 
 <% if @grid_fit.status.to_s == "complete" %>
   <h2>Best Fit</h2>
+  <p><strong>Total runtime:</strong> <%= total_runtime_seconds %> seconds</p>
   <p><strong>Best chi-squared:</strong> <%= @grid_fit.best_chi_squared ? format("%.6f", @grid_fit.best_chi_squared) : "-" %></p>
   <p><strong>Best age (Gyr):</strong> <%= @grid_fit.best_age_gyr %></p>
   <p><strong>Best metallicity (Z):</strong> <%= @grid_fit.best_metallicity_z %></p>
