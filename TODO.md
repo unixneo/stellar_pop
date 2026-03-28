@@ -2,6 +2,7 @@
 
 ## Science/Physics
 
+- [x] Verify smoothed composite spectrum shape is physically reasonable
 - [x] Add BaSeL 3.1 spectral library parser (`BaselSpectra`) with Fortran-order indexing and flux sentinel filtering
 - [ ] Add model option to switch between Planck spectra and BaSeL library spectra in pipeline/UI
 - [ ] Implement Salpeter IMF in `ImfSampler` (currently selectable but not functional)
@@ -31,9 +32,9 @@
 - [x] Add tests for `StellarPop::SdssClient` response parsing and nil/error handling
 - [x] Add tests for chi-squared calculation against known fixtures
 - [x] Add model validations for `SynthesisRun` inputs (ranges/types/presence)
-- [ ] Add unit tests for `ImfSampler`, `StellarSpectra`, `Isochrone`, `SfhModel`
-- [ ] Add integration tests for full pipeline
-- [ ] Add CI configuration
+- [x] Add unit tests for `ImfSampler`, `StellarSpectra`, `Isochrone`, `SfhModel`
+- [x] Add integration tests for full pipeline
+- [x] Add CI configuration
 
 ## UI/UX
 
@@ -41,7 +42,7 @@
 - [ ] Add zoom and pan to canvas spectrum viewer
 - [ ] Add progress indicator beyond status polling
 - [x] Add visible processing banner for pending/running runs
-- [ ] Show error details in UI when a run fails
+- [x] Show error details in UI when a run fails
 - [x] Make SDSS fetch optional/toggleable in UI
 - [ ] Improve CSS polish across index/new/show views
 - [ ] Add configuration page for pipeline parameters
