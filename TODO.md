@@ -19,6 +19,7 @@
 ## Data and Persistence
 
 - [x] Add local SDSS reference catalog CSV and nearest-object lookup
+- [x] Add parameter grid sweep fitting (GridFit) with 180 combinations ranked by chi-squared
 - [ ] Add side-by-side run comparison view
 - [ ] Add spectrum data export as CSV
 - [ ] Add run deletion from the UI

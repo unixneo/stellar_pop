@@ -172,14 +172,27 @@ class SynthesisPipelineJob < ApplicationJob
     convolver = StellarPop::SdssFilterConvolver.new
     synthetic_fluxes = convolver.synthetic_magnitudes(composite_spectrum)
 
-    synthetic_fluxes.sum do |band, synthetic_flux|
+    bands = %i[u g r i z]
+    observed_fluxes = {}
+    bands.each do |band|
       observed_mag = sdss_photometry[band]
-      next 0.0 if observed_mag.nil?
+      return nil if observed_mag.nil?
 
       observed_flux = 10.0**(-observed_mag.to_f / 2.5)
-      next 0.0 unless observed_flux.positive?
+      return nil unless observed_flux.positive?
 
-      ((synthetic_flux - observed_flux)**2) / observed_flux
+      observed_fluxes[band] = observed_flux
+    end
+
+    synthetic_mean = synthetic_fluxes.values.sum.to_f / 5.0
+    observed_mean = observed_fluxes.values.sum.to_f / 5.0
+    return nil unless synthetic_mean.positive? && observed_mean.positive?
+
+    norm_synthetic = synthetic_fluxes.transform_values { |value| value.to_f / synthetic_mean }
+    norm_observed = observed_fluxes.transform_values { |value| value.to_f / observed_mean }
+
+    bands.sum do |band|
+      ((norm_synthetic[band] - norm_observed[band])**2) / norm_observed[band]
     end
   end
 end

@@ -11,6 +11,7 @@ Rails.application.routes.draw do
 
   get "/synthesis_runs/seed_test", to: "synthesis_runs#seed_test", as: :seed_test_synthesis_runs
   resources :synthesis_runs, only: %i[index show new create]
+  resources :grid_fits, only: %i[index show new create]
   root "synthesis_runs#index"
 
   # Defines the root path route ("/")

@@ -1,0 +1,122 @@
+<h1>New Grid Fit</h1>
+
+<%= form_with model: @grid_fit do |f| %>
+  <p>
+    <%= f.label :name %><br>
+    <%= f.text_field :name, id: "grid-fit-name" %>
+  </p>
+
+  <p>
+    <label for="catalog-target-select">Select SDSS Catalog Target</label><br>
+    <select id="catalog-target-select">
+      <% @catalog_targets.each_with_index do |target, idx| %>
+        <option
+          value="<%= idx %>"
+          data-name="<%= target[:name] %>"
+          data-type="<%= target[:type] %>"
+          data-ra="<%= target[:ra] %>"
+          data-dec="<%= target[:dec] %>"
+        >
+          <%= "#{target[:name]} — #{target[:type]} (#{target[:ra]}, #{target[:dec]})" %>
+        </option>
+      <% end %>
+    </select>
+  </p>
+
+  <%= f.hidden_field :sdss_ra, id: "grid-fit-sdss-ra" %>
+  <%= f.hidden_field :sdss_dec, id: "grid-fit-sdss-dec" %>
+  <%= hidden_field_tag :sdss_object_name, nil, id: "grid-fit-object-name" %>
+
+  <p id="selected-coordinates" style="font-family: monospace;">Selected coordinates: -</p>
+
+  <h2>Parameter Grid Sweep</h2>
+  <div style="font-family: monospace; border: 1px solid #334155; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
+    <p><strong>Ages (Gyr)</strong></p>
+    <% [1.0, 3.0, 5.0, 8.0, 10.0, 12.0].each do |value| %>
+      <label>
+        <%= check_box_tag "sweep_ages[]", value, true, class: "grid-checkbox", data: { group: "ages" } %>
+        <%= value %>
+      </label>
+    <% end %>
+
+    <p><strong>Metallicities</strong></p>
+    <% [0.0006, 0.0020, 0.0063, 0.0200, 0.0632].each do |value| %>
+      <label>
+        <%= check_box_tag "sweep_metallicities[]", value, true, class: "grid-checkbox", data: { group: "metallicities" } %>
+        <%= value %>
+      </label>
+    <% end %>
+
+    <p><strong>SFH Models</strong></p>
+    <% %w[exponential constant burst].each do |value| %>
+      <label>
+        <%= check_box_tag "sweep_sfh_models[]", value, true, class: "grid-checkbox", data: { group: "sfh_models" } %>
+        <%= value %>
+      </label>
+    <% end %>
+
+    <p><strong>IMF Types</strong></p>
+    <% %w[kroupa salpeter].each do |value| %>
+      <label>
+        <%= check_box_tag "sweep_imf_types[]", value, true, class: "grid-checkbox", data: { group: "imf_types" } %>
+        <%= value %>
+      </label>
+    <% end %>
+
+    <p><strong>Total combinations:</strong> <span id="grid-total-combinations">180</span></p>
+  </div>
+
+  <p><%= f.submit "Create Grid Fit" %></p>
+<% end %>
+
+<script>
+  (function() {
+    const select = document.getElementById("catalog-target-select");
+    const nameInput = document.getElementById("grid-fit-name");
+    const raInput = document.getElementById("grid-fit-sdss-ra");
+    const decInput = document.getElementById("grid-fit-sdss-dec");
+    const objectNameInput = document.getElementById("grid-fit-object-name");
+    const coordLabel = document.getElementById("selected-coordinates");
+    const totalLabel = document.getElementById("grid-total-combinations");
+    const checkboxes = Array.from(document.querySelectorAll(".grid-checkbox"));
+
+    function updateTargetSelection() {
+      if (!select || select.selectedIndex < 0) return;
+      const option = select.options[select.selectedIndex];
+      const name = option.dataset.name || "";
+      const ra = option.dataset.ra || "";
+      const dec = option.dataset.dec || "";
+      const type = option.dataset.type || "";
+
+      if (nameInput) nameInput.value = name;
+      if (raInput) raInput.value = ra;
+      if (decInput) decInput.value = dec;
+      if (objectNameInput) objectNameInput.value = name;
+      if (coordLabel) coordLabel.textContent = "Selected coordinates: " + ra + ", " + dec + " (" + type + ")";
+    }
+
+    function checkedCount(groupName) {
+      return checkboxes.filter((checkbox) => checkbox.dataset.group === groupName && checkbox.checked).length;
+    }
+
+    function updateCombinationCount() {
+      const total = checkedCount("ages") *
+        checkedCount("metallicities") *
+        checkedCount("sfh_models") *
+        checkedCount("imf_types");
+      if (totalLabel) totalLabel.textContent = total.toString();
+    }
+
+    updateTargetSelection();
+    updateCombinationCount();
+
+    if (select) {
+      select.addEventListener("change", updateTargetSelection);
+    }
+    checkboxes.forEach((checkbox) => {
+      checkbox.addEventListener("change", updateCombinationCount);
+    });
+  })();
+</script>
+
+<p><%= link_to "Back to Grid Fits", grid_fits_path %></p>

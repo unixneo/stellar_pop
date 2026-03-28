@@ -23,7 +23,7 @@ StellarPop is a web-based stellar population synthesis pipeline implemented in R
 
 # Statement of need
 
-Existing stellar population synthesis tools such as FSPS, SLUG, and galIMF are primarily implemented in Python or Fortran. StellarPop provides a self-contained web application with no external astronomy library dependencies, making it accessible to researchers and developers who want a deployable end-to-end pipeline with a browser interface, asynchronous job processing via Sidekiq, and a SQLite database that can be version-controlled and shared via GitHub for reproducible workflows.
+Existing stellar population synthesis tools such as FSPS, SLUG, and galIMF are primarily implemented in Python or Fortran. StellarPop provides a self-contained web application with no external astronomy library dependencies, making it accessible to researchers and developers who want a deployable end-to-end pipeline with a browser interface, asynchronous job processing via Sidekiq, and a SQLite database that can be version-controlled and shared via GitHub for reproducible workflows. Automated parameter-grid fitting is a key capability: instead of manual one-off runs, users can execute a full parameter sweep and rank models by fit quality in one reproducible workflow.
 
 # Implementation
 
@@ -38,6 +38,10 @@ The pipeline is organized around knowledge sources:
 5. **BaSeL Spectra**: Parses BaSeL 3.1 binary spectral grids in pure Ruby with class-level memoization, Fortran column-major indexing, and sentinel-value filtering for robust library-based spectral retrieval. All six BaSeL metallicity planes are active with nearest-bin selection using zlegend values [0.0002, 0.0006, 0.0020, 0.0063, 0.0200, 0.0632].
 
 Asynchronous execution is handled by Sidekiq through a dedicated synthesis queue. Each synthesis run is persisted in Rails models, executed in a background job, and stored as a composite spectrum in the database. During integration, per-star spectra are interpolated onto a user-configurable wavelength grid (300-1100nm, default 350-900nm), combined with IMF/SFH weighting and MIST-derived luminosity weighting from FSPS-sourced isochrone tables, and smoothed before final normalization. BaSeL spectral lookup and MIST isochrone weighting now use consistent per-run metallicity selection derived from `metallicity_z`. For observational comparison, StellarPop first checks a local SDSS photometry catalog keyed by sky position and falls back to the SDSS SkyServer DR18 SQL API on catalog misses. Chi-squared is then computed using SDSS filter-convolved synthetic fluxes (ugriz) rather than nearest-wavelength approximations.
+
+## Grid fitting
+
+StellarPop includes a parameter-grid sweep workflow over 180 model combinations (6 ages × 5 metallicities × 3 SFH models × 2 IMF choices). For each combination, the pipeline generates a synthetic spectrum and computes chi-squared against observed SDSS photometry. Results are sorted by chi-squared, and the best-fit age, metallicity, SFH, and IMF are recorded automatically. This ranking-based sweep is the primary inference mechanism for deriving physical galaxy properties from observed photometry.
 
 ## Isochrone validation
 

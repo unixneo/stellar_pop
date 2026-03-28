@@ -57,6 +57,10 @@ module StellarPop
         }
       end
 
+      def all_targets
+        catalog_rows.map(&:dup)
+      end
+
       private
 
       def catalog_rows

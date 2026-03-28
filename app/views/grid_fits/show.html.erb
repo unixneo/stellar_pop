@@ -1,0 +1,110 @@
+<% processing = %w[pending running].include?(@grid_fit.status.to_s) %>
+<% if processing %>
+  <meta http-equiv="refresh" content="5">
+<% end %>
+
+<% if processing %>
+  <style>
+    .processing-banner {
+      padding: 10px 14px;
+      border: 1px solid #f59e0b;
+      background: #2b1f07;
+      color: #fde68a;
+      border-radius: 6px;
+      margin: 0 0 14px 0;
+      font-weight: 600;
+      animation: processing-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes processing-pulse {
+      0% { opacity: 0.75; }
+      50% { opacity: 1.0; }
+      100% { opacity: 0.75; }
+    }
+  </style>
+
+  <div class="processing-banner">
+    Running parameter grid sweep...
+    <span id="processing-elapsed" style="margin-left: 8px; font-family: monospace;">(elapsed: 0s)</span>
+  </div>
+
+  <script>
+    (function() {
+      const elapsedEl = document.getElementById("processing-elapsed");
+      if (!elapsedEl) return;
+
+      let elapsedSeconds = 0;
+      function formatElapsed(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        if (mins > 0) return mins + "m " + secs + "s";
+        return secs + "s";
+      }
+
+      setInterval(function() {
+        elapsedSeconds += 1;
+        elapsedEl.textContent = "(elapsed: " + formatElapsed(elapsedSeconds) + ")";
+      }, 1000);
+    })();
+  </script>
+<% end %>
+
+<h1><%= @grid_fit.name.presence || "Grid Fit ##{@grid_fit.id}" %></h1>
+
+<p><strong>Status:</strong> <%= @grid_fit.status %></p>
+<p><strong>Target:</strong> <%= @grid_fit.target_name.presence || "Unknown" %></p>
+<p><strong>SDSS RA:</strong> <%= @grid_fit.sdss_ra %></p>
+<p><strong>SDSS Dec:</strong> <%= @grid_fit.sdss_dec %></p>
+
+<h2>Grid Parameters</h2>
+<div style="font-family: monospace;">
+  <p><strong>ages:</strong> [1.0, 3.0, 5.0, 8.0, 10.0, 12.0] Gyr</p>
+  <p><strong>metallicities:</strong> [0.0006, 0.0020, 0.0063, 0.0200, 0.0632]</p>
+  <p><strong>sfh_models:</strong> [exponential, constant, burst]</p>
+  <p><strong>imf_types:</strong> [kroupa, salpeter]</p>
+  <p><strong>Total combinations:</strong> 180</p>
+</div>
+
+<% if @grid_fit.status.to_s == "complete" %>
+  <h2>Best Fit</h2>
+  <p><strong>Best chi-squared:</strong> <%= @grid_fit.best_chi_squared ? format("%.6f", @grid_fit.best_chi_squared) : "-" %></p>
+  <p><strong>Best age (Gyr):</strong> <%= @grid_fit.best_age_gyr %></p>
+  <p><strong>Best metallicity (Z):</strong> <%= @grid_fit.best_metallicity_z %></p>
+  <p><strong>Best SFH model:</strong> <%= @grid_fit.best_sfh_model %></p>
+  <p><strong>Best IMF type:</strong> <%= @grid_fit.best_imf_type %></p>
+<% end %>
+
+<% if @grid_fit.status.to_s == "failed" && @grid_fit.error_message.present? %>
+  <div style="margin: 14px 0; padding: 10px 14px; border: 1px solid #ef4444; background: #2a0f12; color: #fecaca; border-radius: 6px;">
+    <strong>Grid Fit Error:</strong>
+    <%= @grid_fit.error_message %>
+  </div>
+<% end %>
+
+<h2>Ranked Results (Top 20)</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Rank</th>
+      <th>Chi-squared</th>
+      <th>Age (Gyr)</th>
+      <th>Metallicity (Z)</th>
+      <th>SFH Model</th>
+      <th>IMF Type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @ranked_results.first(20).each_with_index do |row, idx| %>
+      <tr>
+        <td><%= idx + 1 %></td>
+        <td><%= row["chi_squared"] ? format("%.6f", row["chi_squared"]) : "-" %></td>
+        <td><%= row["age_gyr"] %></td>
+        <td><%= row["metallicity_z"] %></td>
+        <td><%= row["sfh_model"] %></td>
+        <td><%= row["imf_type"] %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<p><%= link_to "Back to Grid Fits", grid_fits_path %></p>

@@ -23,9 +23,10 @@ implemented end-to-end in Ruby on Rails, with:
 StellarPop provides a self-contained stellar population fitting pipeline
 that runs in a browser, requires no local scientific computing environment,
 and produces version-controlled reproducible results. A researcher with
-a list of galaxy coordinates and observed photometry can run parameter
-fits, compare models, and export results without installing Python,
-Fortran, or any astronomy library.
+galaxy coordinates and observed photometry can run a 180-combination
+parameter grid fit and identify the best-fit age, metallicity, and star
+formation history without installing Python, Fortran, or any astronomy
+library.
 
 ## Scientific Purpose
 
@@ -224,6 +225,7 @@ StellarPop follows a **blackboard pattern**:
 - `StellarPop::SdssLocalCatalog` (local SDSS photometry lookup from curated CSV)
 - `StellarPop::SdssClient` (Faraday-based SDSS SkyServer DR18 SQL client)
 - `SynthesisPipelineJob` (async orchestration + persistence)
+- `GridFitJob` (180-combination parameter sweep + ranked inference output)
 
 ### Pipeline Flow
 
@@ -293,6 +295,16 @@ Then open `http://localhost:3000`.
   - SDSS `ugriz` photometry table (if fetched)
 - `/synthesis_runs/seed_test` creates a randomized test run (unique name, randomized model parameters, random local SDSS target).
 - `/sidekiq` exposes Sidekiq Web UI.
+
+### Parameter Grid Fitting
+
+- Visit `/grid_fits/new` and enter galaxy coordinates.
+- The pipeline automatically sweeps 180 parameter combinations:
+  6 ages × 5 metallicities × 3 SFH models × 2 IMFs.
+- Results are ranked by chi-squared.
+- Best-fit age, metallicity, and SFH are identified automatically.
+- This is the primary scientific use case: infer physical galaxy properties
+  from observed photometry through systematic model comparison.
 
 ### Rails Console Access
 

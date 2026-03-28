@@ -91,8 +91,14 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     result = SpectrumResult.find_by!(synthesis_run_id: run.id)
     phot = JSON.parse(result.sdss_photometry)
 
-    expected_chi_squared = StellarPop::SdssFilterConvolver.new.synthetic_magnitudes(composite).sum do |_band, synthetic_flux|
-      ((synthetic_flux - 1.0)**2) / 1.0
+    synthetic_fluxes = StellarPop::SdssFilterConvolver.new.synthetic_magnitudes(composite)
+    synthetic_mean = synthetic_fluxes.values.sum.to_f / 5.0
+    observed_fluxes = { u: 1.0, g: 1.0, r: 1.0, i: 1.0, z: 1.0 }
+    observed_mean = observed_fluxes.values.sum.to_f / 5.0
+    norm_synthetic = synthetic_fluxes.transform_values { |value| value / synthetic_mean }
+    norm_observed = observed_fluxes.transform_values { |value| value / observed_mean }
+    expected_chi_squared = %i[u g r i z].sum do |band|
+      ((norm_synthetic[band] - norm_observed[band])**2) / norm_observed[band]
     end
 
     assert_equal "complete", run.status

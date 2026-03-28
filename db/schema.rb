@@ -10,7 +10,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_28_173000) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_28_180000) do
+  create_table "grid_fits", force: :cascade do |t|
+    t.string "name"
+    t.string "target_name"
+    t.float "sdss_ra"
+    t.float "sdss_dec"
+    t.string "status", default: "pending"
+    t.float "best_age_gyr"
+    t.float "best_metallicity_z"
+    t.string "best_sfh_model"
+    t.string "best_imf_type"
+    t.float "best_chi_squared"
+    t.text "result_json"
+    t.text "error_message"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "spectrum_results", force: :cascade do |t|
     t.integer "synthesis_run_id", null: false
     t.text "wavelength_data"
