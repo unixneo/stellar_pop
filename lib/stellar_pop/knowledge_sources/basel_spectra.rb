@@ -13,13 +13,70 @@ module StellarPop
       EXPECTED_METALLICITY_COUNT = 6
       SOLAR_METALLICITY_INDEX = 4
 
-      def initialize
-        @wavelengths_angstrom = parse_text_floats(LAMBDA_FILE)
-        @logt_grid = parse_text_floats(LOGT_FILE)
-        @logg_grid = parse_text_floats(LOGG_FILE)
+      class << self
+        def load_grid
+          return if @wavelengths && @logt_grid && @logg_grid && @all_fluxes
 
-        validate_grid_sizes!
-        @spectra_grid, @metallicity_count = load_spectra_grid
+          wavelengths = parse_text_floats(LAMBDA_FILE)
+          logt_grid = parse_text_floats(LOGT_FILE)
+          logg_grid = parse_text_floats(LOGG_FILE)
+          validate_grid_sizes!(wavelengths, logt_grid, logg_grid)
+          all_fluxes, metallicity_count = load_spectra_grid
+
+          @wavelengths = wavelengths
+          @logt_grid = logt_grid
+          @logg_grid = logg_grid
+          @all_fluxes = all_fluxes
+          @metallicity_count = metallicity_count
+        end
+
+        private
+
+        def parse_text_floats(path)
+          File.read(path).split.map(&:to_f)
+        end
+
+        def load_spectra_grid
+          raw = File.binread(SPECTRA_FILE)
+          floats = raw.unpack("g*")
+
+          one_z_count = EXPECTED_LOGG_COUNT * EXPECTED_LOGT_COUNT * EXPECTED_WAVELENGTH_COUNT
+          six_z_count = one_z_count * EXPECTED_METALLICITY_COUNT
+
+          metallicity_count =
+            if floats.length == six_z_count
+              EXPECTED_METALLICITY_COUNT
+            elsif floats.length == one_z_count
+              1
+            else
+              raise "Unexpected spectra float count: #{floats.length} (expected #{one_z_count} or #{six_z_count})"
+            end
+
+          [floats, metallicity_count]
+        end
+
+        def validate_grid_sizes!(wavelengths_angstrom, logt_grid, logg_grid)
+          unless wavelengths_angstrom.length == EXPECTED_WAVELENGTH_COUNT
+            raise "Unexpected wavelength count: #{wavelengths_angstrom.length} (expected #{EXPECTED_WAVELENGTH_COUNT})"
+          end
+
+          unless logt_grid.length == EXPECTED_LOGT_COUNT
+            raise "Unexpected logt count: #{logt_grid.length} (expected #{EXPECTED_LOGT_COUNT})"
+          end
+
+          unless logg_grid.length == EXPECTED_LOGG_COUNT
+            raise "Unexpected logg count: #{logg_grid.length} (expected #{EXPECTED_LOGG_COUNT})"
+          end
+        end
+      end
+
+      def initialize
+        self.class.load_grid unless self.class.instance_variable_defined?(:@wavelengths)
+        @wavelengths_angstrom = self.class.instance_variable_get(:@wavelengths)
+        @logt_grid = self.class.instance_variable_get(:@logt_grid)
+        @logg_grid = self.class.instance_variable_get(:@logg_grid)
+        @spectra_grid = self.class.instance_variable_get(:@all_fluxes)
+        @metallicity_count = self.class.instance_variable_get(:@metallicity_count)
       end
 
       def spectrum(teff_k, logg, wavelength_range_nm = 91.0..10_000.0)
@@ -59,29 +116,6 @@ module StellarPop
 
       private
 
-      def parse_text_floats(path)
-        File.read(path).split.map(&:to_f)
-      end
-
-      def load_spectra_grid
-        raw = File.binread(SPECTRA_FILE)
-        floats = raw.unpack("g*")
-
-        one_z_count = EXPECTED_LOGG_COUNT * EXPECTED_LOGT_COUNT * EXPECTED_WAVELENGTH_COUNT
-        six_z_count = one_z_count * EXPECTED_METALLICITY_COUNT
-
-        metallicity_count =
-          if floats.length == six_z_count
-            EXPECTED_METALLICITY_COUNT
-          elsif floats.length == one_z_count
-            1
-          else
-            raise "Unexpected spectra float count: #{floats.length} (expected #{one_z_count} or #{six_z_count})"
-          end
-
-        [floats, metallicity_count]
-      end
-
       def metallicity_index
         return SOLAR_METALLICITY_INDEX if @metallicity_count >= EXPECTED_METALLICITY_COUNT
 
@@ -101,20 +135,6 @@ module StellarPop
         end
 
         best_index
-      end
-
-      def validate_grid_sizes!
-        unless @wavelengths_angstrom.length == EXPECTED_WAVELENGTH_COUNT
-          raise "Unexpected wavelength count: #{@wavelengths_angstrom.length} (expected #{EXPECTED_WAVELENGTH_COUNT})"
-        end
-
-        unless @logt_grid.length == EXPECTED_LOGT_COUNT
-          raise "Unexpected logt count: #{@logt_grid.length} (expected #{EXPECTED_LOGT_COUNT})"
-        end
-
-        unless @logg_grid.length == EXPECTED_LOGG_COUNT
-          raise "Unexpected logg count: #{@logg_grid.length} (expected #{EXPECTED_LOGG_COUNT})"
-        end
       end
     end
   end

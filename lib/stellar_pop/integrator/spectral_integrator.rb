@@ -14,8 +14,7 @@ module StellarPop
 
         validate_inputs!(masses, sfh_weights, age_bins, metallicity_z, wavelength_range)
 
-        imf_sampler = StellarPop::KnowledgeSources::ImfSampler.new
-        stellar_spectra = StellarPop::KnowledgeSources::StellarSpectra.new
+        basel_spectra = StellarPop::KnowledgeSources::BaselSpectra.new
         isochrone = StellarPop::KnowledgeSources::Isochrone.new
 
         composite = {}
@@ -23,51 +22,40 @@ module StellarPop
 
         masses.each do |mass|
           mass_f = mass.to_f
-          spectral_type = imf_sampler.spectral_type_for_mass(mass_f)
-          next unless spectral_type
-
-          base_spectrum = stellar_spectra.spectrum(spectral_type, wavelength_range)
-
-          base_temp = StellarPop::KnowledgeSources::StellarSpectra::SPECTRAL_TYPE_TEMPERATURES[spectral_type]
-          delta_temp = isochrone.temperature_correction(mass_f, metallicity_z)
-          corrected_temp = [base_temp + delta_temp, 1.0].max
-
-          corrected_spectrum = {}
-          base_spectrum.each do |wavelength_nm, base_flux|
-            base_planck = stellar_spectra.planck(wavelength_nm, base_temp)
-            corrected_planck = stellar_spectra.planck(wavelength_nm, corrected_temp)
-            temperature_factor = corrected_planck / base_planck
-
-            corrected_spectrum[wavelength_nm] = base_flux * temperature_factor
-          end
-
-          star_flux_sum = corrected_spectrum.values.sum.to_f
+          base_spectrum = basel_spectra.spectrum_for_mass(mass_f, wavelength_range)
+          star_flux_sum = base_spectrum.values.sum.to_f
           next unless star_flux_sum.positive?
 
-          raw_weight = mass_f**1.0
+          sfh_weight = sfh_weight_for_mass(mass_f, age_bins, sfh_weights)
+          luminosity_correction = isochrone.luminosity_correction(mass_f, age_bins.last.to_f, metallicity_z)
+          raw_weight = (mass_f**1.0) * sfh_weight * luminosity_correction
           next unless raw_weight.positive?
 
           star_contributions << {
-            spectrum: corrected_spectrum,
+            spectrum: base_spectrum,
+            wavelengths: base_spectrum.keys.sort,
             flux_sum: star_flux_sum,
             raw_weight: raw_weight
           }
         end
 
         total_raw_weight = star_contributions.sum { |entry| entry[:raw_weight] }.to_f
+        common_wavelength_grid = build_uniform_wavelength_grid(wavelength_range)
 
-        if total_raw_weight.positive?
+        if total_raw_weight.positive? && !common_wavelength_grid.empty?
           star_contributions.each do |entry|
             normalized_star_weight = entry[:raw_weight] / total_raw_weight
 
-            entry[:spectrum].each do |wavelength_nm, corrected_flux|
-              normalized_flux = corrected_flux / entry[:flux_sum]
+            common_wavelength_grid.each do |wavelength_nm|
+              flux = interpolate_flux(entry[:spectrum], entry[:wavelengths], wavelength_nm)
+              normalized_flux = flux / entry[:flux_sum]
               contribution = normalized_flux * normalized_star_weight
               composite[wavelength_nm] = composite.fetch(wavelength_nm, 0.0) + contribution
             end
           end
         end
 
+        smooth_composite!(composite)
         normalize_peak!(composite)
         @blackboard.write(:composite_spectrum, composite)
         composite
@@ -89,6 +77,67 @@ module StellarPop
         raise ArgumentError, "sfh_weights and age_bins must have the same length" unless sfh_weights.length == age_bins.length
         raise ArgumentError, "metallicity_z must be > 0" unless metallicity_z.positive?
         raise ArgumentError, "wavelength_range must be an inclusive Range" unless wavelength_range.is_a?(Range) && !wavelength_range.exclude_end?
+      end
+
+      def sfh_weight_for_mass(mass, age_bins, sfh_weights)
+        t_ms = 10.0 * (mass**-2.5)
+        closest_index = age_bins.each_with_index.min_by { |age, _idx| (age.to_f - t_ms).abs }[1]
+        sfh_weights[closest_index].to_f
+      end
+
+      def build_uniform_wavelength_grid(wavelength_range)
+        min_wavelength = wavelength_range.begin.to_f
+        max_wavelength = wavelength_range.end.to_f
+        grid = []
+
+        wavelength = min_wavelength
+        while wavelength <= max_wavelength
+          grid << wavelength
+          wavelength += 5.0
+        end
+
+        grid
+      end
+
+      def interpolate_flux(spectrum, sorted_wavelengths, target_wavelength)
+        return 0.0 if sorted_wavelengths.empty?
+        return 0.0 if target_wavelength < sorted_wavelengths.first || target_wavelength > sorted_wavelengths.last
+
+        exact = spectrum[target_wavelength]
+        return exact.to_f if exact
+
+        upper_index = sorted_wavelengths.bsearch_index { |wl| wl >= target_wavelength }
+        return 0.0 if upper_index.nil? || upper_index.zero?
+
+        lower = sorted_wavelengths[upper_index - 1]
+        upper = sorted_wavelengths[upper_index]
+        return spectrum[lower].to_f if upper == lower
+
+        lower_flux = spectrum[lower].to_f
+        upper_flux = spectrum[upper].to_f
+        fraction = (target_wavelength - lower) / (upper - lower)
+        lower_flux + ((upper_flux - lower_flux) * fraction)
+      end
+
+      def smooth_composite!(spectrum)
+        return spectrum if spectrum.empty?
+
+        wavelengths = spectrum.keys.sort
+        smoothed = {}
+
+        wavelengths.each_with_index do |wavelength, index|
+          window_start = [index - 2, 0].max
+          window_end = [index + 2, wavelengths.length - 1].min
+          window = wavelengths[window_start..window_end]
+          mean_flux = window.sum { |wl| spectrum[wl].to_f } / window.length.to_f
+          smoothed[wavelength] = mean_flux
+        end
+
+        smoothed.each do |wavelength, flux|
+          spectrum[wavelength] = flux
+        end
+
+        spectrum
       end
 
       def normalize_peak!(spectrum)
