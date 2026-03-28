@@ -4,6 +4,7 @@
 
 - [x] Verify smoothed composite spectrum shape is physically reasonable
 - [x] Add BaSeL 3.1 spectral library parser (`BaselSpectra`) with Fortran-order indexing and flux sentinel filtering
+- [x] Wire BaSeL metallicity selection from `metallicity_z` (nearest zlegend bin where available)
 - [x] Implement SDSS filter convolution for chi-squared (replace nearest-wavelength approximation)
 - [ ] Add model option to switch between Planck spectra and BaSeL library spectra in pipeline/UI
 - [ ] Implement Salpeter IMF in `ImfSampler` (currently selectable but not functional)
@@ -13,6 +14,7 @@
 
 ## Data and Persistence
 
+- [x] Add local SDSS reference catalog CSV and nearest-object lookup
 - [ ] Add side-by-side run comparison view
 - [ ] Add spectrum data export as CSV
 - [ ] Add run deletion from the UI
@@ -35,7 +37,7 @@
 - [x] Add model validations for `SynthesisRun` inputs (ranges/types/presence)
 - [x] Add unit tests for `ImfSampler`, `StellarSpectra`, `Isochrone`, `SfhModel`
 - [x] Add integration tests for full pipeline
-- [x] Add CI configuration
+- [ ] Add CI configuration (workflow file push requires PAT with `workflow` scope)
 
 ## UI/UX
 

@@ -97,6 +97,8 @@ StellarPop follows a **blackboard pattern**:
 - `StellarPop::KnowledgeSources::SfhModel`
 - `StellarPop::KnowledgeSources::BaselSpectra`
 - `StellarPop::Integrator::SpectralIntegrator`
+- `StellarPop::SdssFilterConvolver` (SDSS ugriz filter-weighted synthetic fluxes)
+- `StellarPop::SdssLocalCatalog` (local SDSS photometry lookup from curated CSV)
 - `StellarPop::SdssClient` (Faraday-based SDSS SkyServer DR18 SQL client)
 - `SynthesisPipelineJob` (async orchestration + persistence)
 
@@ -107,9 +109,13 @@ StellarPop follows a **blackboard pattern**:
 3. The job sets status `running`, builds a blackboard, samples IMF masses, computes SFH weights, and runs the spectral integrator.
 4. The integrator writes `:composite_spectrum` to the blackboard.
 5. The job saves a `SpectrumResult` (wavelength/flux JSON).
-6. If SDSS coordinates are present, the job fetches `ugriz` photometry, computes chi-squared, and stores:
+6. If SDSS coordinates are present, the job resolves `ugriz` photometry using local-first lookup:
+   - first `SdssLocalCatalog` (`lib/data/sdss/photometry.csv`)
+   - fallback to live SDSS API (`SdssClient`) if local lookup misses
+   Then computes chi-squared via SDSS filter convolution and stores:
    - `SpectrumResult.sdss_photometry` (JSON)
    - `SynthesisRun.chi_squared`
+   - informational source/fetch note in `SynthesisRun.error_message` for complete runs
 7. The run is marked `complete` (or `failed` with `error_message` on exceptions).
 
 ### Integrator Notes
@@ -152,6 +158,7 @@ Then open `http://localhost:3000`.
 - `/synthesis_runs/:id` shows:
   - animated "Processing synthesis pipeline..." banner for pending/running runs
   - run parameters and status
+  - informational SDSS note (local/live/fetch-unavailable) on completed runs
   - canvas-based spectrum viewer
   - chi-squared (if available)
   - composite spectrum table
@@ -181,6 +188,11 @@ delta_t = iso.temperature_correction(1.0, 0.03)
 sfh = StellarPop::KnowledgeSources::SfhModel.new
 w = sfh.weights(:exponential, [0.1, 1.0, 5.0, 10.0], tau: 3.0)
 
+conv = StellarPop::SdssFilterConvolver.new
+synthetic = conv.synthetic_magnitudes(library_spectrum)
+
+local_phot = StellarPop::SdssLocalCatalog.lookup(187.2779, 2.0523)
+
 client = StellarPop::SdssClient.new
 phot = client.fetch_photometry(187.2779, 2.0523)
 ```
@@ -199,6 +211,7 @@ phot = client.fetch_photometry(187.2779, 2.0523)
 - BaSeL 3.1 stellar spectral energy distribution library (Westera, Lejeune,
   Buser, Cuisinier & Bruzual 2002, A&A 381, 524) — solar metallicity
   spectra sourced from the FSPS repository (Conroy et al.)
+- Local SDSS photometry catalog (`lib/data/sdss/photometry.csv`) for well-known reference objects
 - SDSS SkyServer DR18 — observed photometry via public SQL API
 
 ## Citation

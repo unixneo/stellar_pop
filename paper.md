@@ -19,7 +19,7 @@ bibliography: paper.bib
 
 # Summary
 
-StellarPop is a web-based stellar population synthesis pipeline implemented in Ruby on Rails using a blackboard architecture. It is the first known implementation of stellar population synthesis in this language and framework. The system coordinates pure-Ruby knowledge sources via a shared blackboard to produce composite spectra from user-defined parameters: an initial mass function (IMF) sampler, stellar spectra generator, isochrone correction module, star formation history (SFH) model, and a BaSeL 3.1 spectral library parser. In addition to synthetic modeling, StellarPop fetches real photometry from the SDSS SkyServer DR18 API and computes chi-squared goodness of fit against synthetic spectra.
+StellarPop is a web-based stellar population synthesis pipeline implemented in Ruby on Rails using a blackboard architecture. It is the first known implementation of stellar population synthesis in this language and framework. The system coordinates pure-Ruby knowledge sources via a shared blackboard to produce composite spectra from user-defined parameters: an initial mass function (IMF) sampler, stellar spectra generator, isochrone correction module, star formation history (SFH) model, and a BaSeL 3.1 spectral library parser. In addition to synthetic modeling, StellarPop resolves SDSS photometry via a local reference catalog with live API fallback and computes chi-squared goodness of fit against synthetic spectra.
 
 # Statement of need
 
@@ -37,7 +37,7 @@ The pipeline is organized around knowledge sources:
 4. **SFH Model**: Provides exponential, constant, and burst star formation history weight functions.
 5. **BaSeL Spectra**: Parses BaSeL 3.1 binary spectral grids in pure Ruby with class-level memoization, Fortran column-major indexing, and sentinel-value filtering for robust library-based spectral retrieval.
 
-Asynchronous execution is handled by Sidekiq through a dedicated synthesis queue. Each synthesis run is persisted in Rails models, executed in a background job, and stored as a composite spectrum in the database. During integration, per-star spectra are interpolated onto a fixed wavelength grid, combined with IMF/SFH/isochrone weighting, and smoothed before final normalization. When sky coordinates are provided, the pipeline calls the SDSS SkyServer DR18 SQL API, parses ugriz photometry, and computes a chi-squared comparator between observed and synthetic values at representative band centers.
+Asynchronous execution is handled by Sidekiq through a dedicated synthesis queue. Each synthesis run is persisted in Rails models, executed in a background job, and stored as a composite spectrum in the database. During integration, per-star spectra are interpolated onto a fixed wavelength grid, combined with IMF/SFH/isochrone weighting, and smoothed before final normalization. For observational comparison, StellarPop first checks a local SDSS photometry catalog keyed by sky position and falls back to the SDSS SkyServer DR18 SQL API on catalog misses. Chi-squared is then computed using SDSS filter-convolved synthetic fluxes (ugriz) rather than nearest-wavelength approximations.
 
 # Acknowledgements
 
