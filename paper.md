@@ -32,12 +32,12 @@ StellarPop uses a blackboard pattern in which all intermediate and final values 
 The pipeline is organized around knowledge sources:
 
 1. **IMF Sampler**: Implements a piecewise Kroupa IMF and inverse-transform mass sampling.
-2. **Stellar Spectra**: Generates spectral distributions using a Planck-law-based blackbody approximation and representative OBAFGKM effective temperatures.
+2. **Stellar Spectra**: Uses the BaSeL 3.1 stellar spectral library and maps stellar mass to approximate atmospheric parameters for nearest-grid retrieval.
 3. **Isochrone Corrections**: Applies luminosity and temperature adjustments based on stellar mass, age, and metallicity.
 4. **SFH Model**: Provides exponential, constant, and burst star formation history weight functions.
-5. **BaSeL Spectra**: Parses BaSeL 3.1 binary spectral grids in pure Ruby with Fortran column-major indexing and sentinel-value filtering for robust library-based spectral retrieval.
+5. **BaSeL Spectra**: Parses BaSeL 3.1 binary spectral grids in pure Ruby with class-level memoization, Fortran column-major indexing, and sentinel-value filtering for robust library-based spectral retrieval.
 
-Asynchronous execution is handled by Sidekiq through a dedicated synthesis queue. Each synthesis run is persisted in Rails models, executed in a background job, and stored as a composite spectrum in the database. When sky coordinates are provided, the pipeline calls the SDSS SkyServer DR18 SQL API, parses ugriz photometry, and computes a chi-squared comparator between observed and synthetic values at representative band centers.
+Asynchronous execution is handled by Sidekiq through a dedicated synthesis queue. Each synthesis run is persisted in Rails models, executed in a background job, and stored as a composite spectrum in the database. During integration, per-star spectra are interpolated onto a fixed wavelength grid, combined with IMF/SFH/isochrone weighting, and smoothed before final normalization. When sky coordinates are provided, the pipeline calls the SDSS SkyServer DR18 SQL API, parses ugriz photometry, and computes a chi-squared comparator between observed and synthetic values at representative band centers.
 
 # Acknowledgements
 

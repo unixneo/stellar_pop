@@ -40,6 +40,7 @@
 - [x] Add canvas-based spectrum viewer on `SynthesisRun#show`
 - [ ] Add zoom and pan to canvas spectrum viewer
 - [ ] Add progress indicator beyond status polling
+- [x] Add visible processing banner for pending/running runs
 - [ ] Show error details in UI when a run fails
 - [x] Make SDSS fetch optional/toggleable in UI
 - [ ] Improve CSS polish across index/new/show views

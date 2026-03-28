@@ -20,7 +20,7 @@ implemented end-to-end in Ruby on Rails, with:
 
 ## Scientific Background
 
-This project models stellar populations using four core components:
+This project models stellar populations using core components:
 
 - **Initial Mass Function (IMF):** Samples stellar masses from a distribution
   (Kroupa-like piecewise power law) to represent how stars are born across mass.
@@ -32,10 +32,9 @@ This project models stellar populations using four core components:
   main-sequence lifetime transitions and post-main-sequence behavior.
 - **Star Formation History (SFH):** Weights contributions across stellar ages
   using constant, exponential-decay, or burst-like models.
-- **BaSeL 3.1 Spectral Library (new):** Loads and queries the BaSeL grid from
+- **BaSeL 3.1 Spectral Library:** Loads and queries the BaSeL grid from
   binary tables using pure Ruby parsing (Fortran column-major indexing and
-  sentinel filtering), providing an empirical-library alternative to Planck
-  approximations.
+  sentinel filtering), providing the primary stellar SED source.
 
 The pipeline can also compare synthetic output to observed SDSS `ugriz`
 photometry and compute a simple chi-squared fit metric.
@@ -76,10 +75,12 @@ StellarPop follows a **blackboard pattern**:
 `StellarPop::Integrator::SpectralIntegrator` currently:
 
 - Reads IMF masses, age bins, SFH weights, metallicity, and wavelength range from blackboard.
-- Builds per-star spectra with temperature correction.
+- Builds per-star spectra from `BaselSpectra`.
 - Normalizes each star spectrum by unit integral over the wavelength grid.
 - Uses two-pass mass-based weights (`mass ** 1.0`) normalized to sum to `1.0`.
-- Accumulates into a composite spectrum and normalizes final peak flux to `1.0`.
+- Interpolates all stellar spectra onto a fixed 5.0nm grid over `wavelength_range`.
+- Applies 11-point boxcar smoothing to the composite before final scaling.
+- Normalizes final peak flux to `1.0`.
 
 ## Getting Started
 
@@ -107,12 +108,13 @@ Then open `http://localhost:3000`.
 - `/synthesis_runs/new` creates a new run and enqueues processing.
   - includes an SDSS toggle to enable/disable photometry fetch + chi-squared
 - `/synthesis_runs/:id` shows:
+  - animated "Processing synthesis pipeline..." banner for pending/running runs
   - run parameters and status
   - canvas-based spectrum viewer
   - chi-squared (if available)
   - composite spectrum table
   - SDSS `ugriz` photometry table (if fetched)
-- `/synthesis_runs/seed_test` creates a prefilled test run using 3C 273 coordinates.
+- `/synthesis_runs/seed_test` creates a randomized test run (unique name, randomized model parameters) using fixed 3C 273 coordinates.
 - `/sidekiq` exposes Sidekiq Web UI.
 
 ### Rails Console Access
