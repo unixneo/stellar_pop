@@ -20,7 +20,7 @@ class SynthesisPipelineJob < ApplicationJob
 
     sfh_model = StellarPop::KnowledgeSources::SfhModel.new
     sfh_model_symbol = normalize_sfh_model(synthesis_run.sfh_model)
-    sfh_weights = build_sfh_weights(sfh_model, sfh_model_symbol, synthesis_run.age_gyr.to_f)
+    sfh_weights = build_sfh_weights(sfh_model, sfh_model_symbol, synthesis_run)
 
     blackboard.write(:imf_masses, imf_masses)
     blackboard.write(:age_gyr, synthesis_run.age_gyr.to_f)
@@ -99,13 +99,16 @@ class SynthesisPipelineJob < ApplicationJob
     :constant
   end
 
-  def build_sfh_weights(sfh_model, sfh_model_symbol, run_age_gyr)
+  def build_sfh_weights(sfh_model, sfh_model_symbol, synthesis_run)
     case sfh_model_symbol
     when :exponential
       sfh_model.weights(:exponential, AGE_BINS_GYR, tau: 3.0)
     when :burst
-      burst_age = run_age_gyr.positive? ? run_age_gyr : 2.0
-      sfh_model.weights(:burst, AGE_BINS_GYR, burst_age_gyr: burst_age, width_gyr: 1.0)
+      burst_age = synthesis_run.burst_age_gyr.to_f
+      burst_width = synthesis_run.burst_width_gyr.to_f
+      burst_age = 2.0 unless burst_age.positive?
+      burst_width = 0.5 unless burst_width.positive?
+      sfh_model.weights(:burst, AGE_BINS_GYR, burst_age_gyr: burst_age, width_gyr: burst_width)
     else
       sfh_model.weights(:constant, AGE_BINS_GYR, {})
     end

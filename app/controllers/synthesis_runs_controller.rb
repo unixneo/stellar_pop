@@ -30,13 +30,18 @@ class SynthesisRunsController < ApplicationController
 
   def seed_test
     target = StellarPop::SdssLocalCatalog.random_target || { ra: 187.2779, dec: 2.0523 }
+    sfh_model = %w[exponential constant burst].sample
+    burst_age_gyr = sfh_model == "burst" ? [1.0, 2.0, 4.0, 8.0].sample : 2.0
+    burst_width_gyr = sfh_model == "burst" ? [0.3, 0.5, 1.0].sample : 0.5
 
     synthesis_run = SynthesisRun.create!(
       name: "test_run_#{SecureRandom.hex(4)}",
       imf_type: %w[kroupa salpeter].sample,
       age_gyr: [1.0, 3.0, 5.0, 8.0, 10.0, 12.0].sample,
       metallicity_z: [0.008, 0.02, 0.03].sample,
-      sfh_model: %w[exponential constant burst].sample,
+      sfh_model: sfh_model,
+      burst_age_gyr: burst_age_gyr,
+      burst_width_gyr: burst_width_gyr,
       sdss_ra: target[:ra],
       sdss_dec: target[:dec],
       status: "pending"
@@ -55,6 +60,8 @@ class SynthesisRunsController < ApplicationController
       :age_gyr,
       :metallicity_z,
       :sfh_model,
+      :burst_age_gyr,
+      :burst_width_gyr,
       :sdss_ra,
       :sdss_dec
     )

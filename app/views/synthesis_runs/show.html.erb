@@ -35,6 +35,10 @@
 <p><strong>Age (Gyr):</strong> <%= @synthesis_run.age_gyr %></p>
 <p><strong>Metallicity (Z):</strong> <%= @synthesis_run.metallicity_z %></p>
 <p><strong>SFH model:</strong> <%= @synthesis_run.sfh_model %></p>
+<% if @synthesis_run.sfh_model.to_s == "burst" %>
+  <p><strong>Burst age (Gyr):</strong> <%= @synthesis_run.burst_age_gyr %></p>
+  <p><strong>Burst width (Gyr):</strong> <%= @synthesis_run.burst_width_gyr %></p>
+<% end %>
 <p><strong>SDSS RA:</strong> <%= @synthesis_run.sdss_ra %></p>
 <p><strong>SDSS Dec:</strong> <%= @synthesis_run.sdss_dec %></p>
 <% if @synthesis_run.sdss_object_name.present? %>
