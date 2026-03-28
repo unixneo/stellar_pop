@@ -19,6 +19,7 @@ module StellarPop
         "zp0.25" => 0.25,
         "zp0.50" => 0.50
       }.freeze
+      FEH_GRID_VALUES = FEH_BY_LABEL.values.sort.freeze
 
       class << self
         attr_reader :feh_values, :grid_by_feh
@@ -28,11 +29,10 @@ module StellarPop
         end
 
         def nearest_feh_for_metallicity(metallicity_z)
-          load_grid
           feh = metallicity_to_feh(metallicity_z.to_f)
-          return nil if @feh_values.nil? || @feh_values.empty?
+          return nil if FEH_GRID_VALUES.empty?
 
-          @feh_values.min_by { |value| (value - feh).abs }
+          FEH_GRID_VALUES.min_by { |value| (value - feh).abs }
         end
 
         def load_grid

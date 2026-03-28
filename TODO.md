@@ -14,7 +14,7 @@
 - [x] Replace simple Isochrone KS with MistIsochrone in pipeline as default
 - [x] Integrate MIST corrections for non-solar metallicities
 - [x] Add wavelength range control to the UI and new run form
-- [ ] Download and integrate remaining BaSeL metallicity bins (z0.0002, z0.0006, z0.0020, z0.0063, z0.0632)
+- [x] Download and integrate remaining BaSeL metallicity bins (z0.0002, z0.0006, z0.0020, z0.0063, z0.0632)
 
 ## Data and Persistence
 
@@ -48,7 +48,7 @@
 - [x] Add canvas-based spectrum viewer on `SynthesisRun#show`
 - [x] Show pipeline configuration panel with active scientific model selections and citations
 - [ ] Add zoom and pan to canvas spectrum viewer
-- [ ] Add progress indicator beyond status polling
+- [x] Add progress indicator beyond status polling
 - [x] Add visible processing banner for pending/running runs
 - [x] Show error details in UI when a run fails
 - [x] Make SDSS fetch optional/toggleable in UI

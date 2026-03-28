@@ -7,11 +7,20 @@ module StellarPop
       LOGG_FILE = File.join(GRID_DIR, "basel_logg.dat").freeze
       ZLEGEND_FILE = File.join(GRID_DIR, "zlegend.dat").freeze
       SPECTRA_FILE = File.join(GRID_DIR, "basel_wlbc_z0.0200.spectra.bin").freeze
+      SPECTRA_FILE_BY_Z = {
+        0.0002 => File.join(GRID_DIR, "basel_wlbc_z0.0002.spectra.bin").freeze,
+        0.0006 => File.join(GRID_DIR, "basel_wlbc_z0.0006.spectra.bin").freeze,
+        0.0020 => File.join(GRID_DIR, "basel_wlbc_z0.0020.spectra.bin").freeze,
+        0.0063 => File.join(GRID_DIR, "basel_wlbc_z0.0063.spectra.bin").freeze,
+        0.0200 => File.join(GRID_DIR, "basel_wlbc_z0.0200.spectra.bin").freeze,
+        0.0632 => File.join(GRID_DIR, "basel_wlbc_z0.0632.spectra.bin").freeze
+      }.freeze
 
       EXPECTED_WAVELENGTH_COUNT = 1963
       EXPECTED_LOGT_COUNT = 68
       EXPECTED_LOGG_COUNT = 19
       EXPECTED_METALLICITY_COUNT = 6
+      ZLEGEND_VALUES = [0.0002, 0.0006, 0.0020, 0.0063, 0.0200, 0.0632].freeze
       SOLAR_METALLICITY_INDEX = 4
       SOLAR_METALLICITY_Z = 0.02
 
@@ -24,7 +33,8 @@ module StellarPop
           logg_grid = parse_text_floats(LOGG_FILE)
           metallicity_grid = parse_text_floats(ZLEGEND_FILE)
           validate_grid_sizes!(wavelengths, logt_grid, logg_grid)
-          all_fluxes, metallicity_count = load_spectra_grid
+          validate_metallicity_grid!(metallicity_grid)
+          all_fluxes, metallicity_count, fluxes_by_z = load_spectra_grid(metallicity_grid)
 
           @wavelengths = wavelengths
           @logt_grid = logt_grid
@@ -32,6 +42,7 @@ module StellarPop
           @metallicity_grid = metallicity_grid
           @all_fluxes = all_fluxes
           @metallicity_count = metallicity_count
+          @fluxes_by_z = fluxes_by_z
         end
 
         private
@@ -40,23 +51,34 @@ module StellarPop
           File.read(path).split.map(&:to_f)
         end
 
-        def load_spectra_grid
+        def load_spectra_grid(metallicity_grid)
           raw = File.binread(SPECTRA_FILE)
           floats = raw.unpack("g*")
 
           one_z_count = EXPECTED_LOGG_COUNT * EXPECTED_LOGT_COUNT * EXPECTED_WAVELENGTH_COUNT
-          six_z_count = one_z_count * EXPECTED_METALLICITY_COUNT
+          expected_count = EXPECTED_LOGG_COUNT * EXPECTED_LOGT_COUNT * EXPECTED_METALLICITY_COUNT * EXPECTED_WAVELENGTH_COUNT
+          if floats.length == expected_count
+            return [floats, EXPECTED_METALLICITY_COUNT, nil]
+          end
 
-          metallicity_count =
-            if floats.length == six_z_count
-              EXPECTED_METALLICITY_COUNT
-            elsif floats.length == one_z_count
-              1
-            else
-              raise "Unexpected spectra float count: #{floats.length} (expected #{one_z_count} or #{six_z_count})"
+          unless floats.length == one_z_count
+            raise "Unexpected spectra float count: #{floats.length} (expected #{one_z_count} or #{expected_count})"
+          end
+
+          fluxes_by_z = {}
+          metallicity_grid.each do |z_value|
+            path = SPECTRA_FILE_BY_Z[z_value]
+            raise "Missing BaSeL spectra file for z=#{z_value}" unless path && File.exist?(path)
+
+            z_floats = File.binread(path).unpack("g*")
+            unless z_floats.length == one_z_count
+              raise "Unexpected spectra float count for z=#{z_value}: #{z_floats.length} (expected #{one_z_count})"
             end
 
-          [floats, metallicity_count]
+            fluxes_by_z[z_value] = z_floats
+          end
+
+          [floats, 1, fluxes_by_z]
         end
 
         def validate_grid_sizes!(wavelengths_angstrom, logt_grid, logg_grid)
@@ -72,6 +94,19 @@ module StellarPop
             raise "Unexpected logg count: #{logg_grid.length} (expected #{EXPECTED_LOGG_COUNT})"
           end
         end
+
+        def validate_metallicity_grid!(metallicity_grid)
+          unless metallicity_grid.length == EXPECTED_METALLICITY_COUNT
+            raise "Unexpected metallicity count: #{metallicity_grid.length} (expected #{EXPECTED_METALLICITY_COUNT})"
+          end
+
+          metallicity_grid.each_with_index do |value, index|
+            expected = ZLEGEND_VALUES[index]
+            next if (value - expected).abs < 1e-6
+
+            raise "Unexpected zlegend value at index #{index}: #{value} (expected #{expected})"
+          end
+        end
       end
 
       def initialize
@@ -82,6 +117,7 @@ module StellarPop
         @metallicity_grid = self.class.instance_variable_get(:@metallicity_grid)
         @spectra_grid = self.class.instance_variable_get(:@all_fluxes)
         @metallicity_count = self.class.instance_variable_get(:@metallicity_count)
+        @fluxes_by_z = self.class.instance_variable_get(:@fluxes_by_z)
       end
 
       def spectrum(teff_k, logg, wavelength_range_nm = 91.0..10_000.0, metallicity_z: SOLAR_METALLICITY_Z)
@@ -92,11 +128,7 @@ module StellarPop
         logg_index = nearest_index(@logg_grid, logg.to_f)
         z_index = metallicity_index(metallicity_z)
 
-        start_index =
-          (logg_index * (EXPECTED_LOGT_COUNT * @metallicity_count * EXPECTED_WAVELENGTH_COUNT)) +
-          (teff_index * (@metallicity_count * EXPECTED_WAVELENGTH_COUNT)) +
-          (z_index * EXPECTED_WAVELENGTH_COUNT)
-        flux_values = @spectra_grid[start_index, EXPECTED_WAVELENGTH_COUNT]
+        flux_values = extract_flux_values(teff_index, logg_index, z_index)
 
         result = {}
         @wavelengths_angstrom.each_with_index do |angstrom, i|
@@ -122,13 +154,26 @@ module StellarPop
 
       private
 
+      def extract_flux_values(teff_index, logg_index, z_index)
+        if @metallicity_count == EXPECTED_METALLICITY_COUNT
+          start_index =
+            (logg_index * (EXPECTED_LOGT_COUNT * EXPECTED_METALLICITY_COUNT * EXPECTED_WAVELENGTH_COUNT)) +
+            (teff_index * (EXPECTED_METALLICITY_COUNT * EXPECTED_WAVELENGTH_COUNT)) +
+            (z_index * EXPECTED_WAVELENGTH_COUNT)
+          return @spectra_grid[start_index, EXPECTED_WAVELENGTH_COUNT]
+        end
+
+        z_value = @metallicity_grid[z_index]
+        plane = (@fluxes_by_z && @fluxes_by_z[z_value]) || @spectra_grid
+        start_index = (logg_index * (EXPECTED_LOGT_COUNT * EXPECTED_WAVELENGTH_COUNT)) + (teff_index * EXPECTED_WAVELENGTH_COUNT)
+        plane[start_index, EXPECTED_WAVELENGTH_COUNT]
+      end
+
       def metallicity_index(metallicity_z)
-        return 0 if @metallicity_count <= 1
         return SOLAR_METALLICITY_INDEX if @metallicity_grid.nil? || @metallicity_grid.empty?
 
         target = metallicity_z.to_f
-        nearest = nearest_index(@metallicity_grid, target)
-        [nearest, @metallicity_count - 1].min
+        nearest_index(@metallicity_grid, target)
       end
 
       def nearest_index(values, target)

@@ -3,18 +3,10 @@ require "test_helper"
 class BaselSpectraTest < ActiveSupport::TestCase
   test "maps metallicity to nearest BaSeL zlegend bin" do
     basel = StellarPop::KnowledgeSources::BaselSpectra.new
-    metallicity_count = basel.instance_variable_get(:@metallicity_count).to_i
-
-    if metallicity_count > 1
-      assert_equal 0, basel.send(:metallicity_index, 0.0002)
-      assert_equal 1, basel.send(:metallicity_index, 0.0007)
-      assert_equal 4, basel.send(:metallicity_index, 0.02)
-      assert_equal 5, basel.send(:metallicity_index, 0.08)
-    else
-      assert_equal 0, basel.send(:metallicity_index, 0.0002)
-      assert_equal 0, basel.send(:metallicity_index, 0.02)
-      assert_equal 0, basel.send(:metallicity_index, 0.08)
-    end
+    assert_equal 0, basel.send(:metallicity_index, 0.0002)
+    assert_equal 1, basel.send(:metallicity_index, 0.0007)
+    assert_equal 4, basel.send(:metallicity_index, 0.02)
+    assert_equal 5, basel.send(:metallicity_index, 0.08)
   end
 
   test "spectrum_for_mass accepts metallicity keyword and returns filtered nm spectrum" do

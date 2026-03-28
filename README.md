@@ -126,9 +126,9 @@ StellarPop follows a **blackboard pattern**:
 `StellarPop::Integrator::SpectralIntegrator` currently:
 
 - Reads IMF masses, age bins, SFH weights, metallicity, and wavelength range from blackboard.
-- Builds per-star spectra from either `BaselSpectra` or `StellarSpectra` (Planck), based on run `spectra_model`.
+- Builds per-star spectra from either `BaselSpectra` or `StellarSpectra` (Planck), based on run `spectra_model`; when BaSeL is selected, `metallicity_z` is passed through for nearest-bin BaSeL metallicity selection.
 - Normalizes each star spectrum by unit integral over the wavelength grid.
-- Uses two-pass luminosity weights from `MistIsochrone` (Choi et al. 2016) via `luminosity_solar`, with fallback to `mass ** 1.0` for out-of-grid stars, then normalizes weights to sum to `1.0`.
+- Uses two-pass luminosity weights from `MistIsochrone` (Choi et al. 2016) via `luminosity_solar`, with fallback to `mass ** 1.0` for out-of-grid stars, then normalizes weights to sum to `1.0`; `metallicity_z` is also passed through to MIST nearest-[Fe/H] selection.
 - Interpolates all stellar spectra onto a fixed 5.0nm grid over `wavelength_range`.
 - Applies 11-point boxcar smoothing to the composite before final scaling.
 - Normalizes final peak flux to `1.0`.
@@ -162,7 +162,7 @@ Then open `http://localhost:3000`.
   - includes wavelength range fields (`wavelength_min`, `wavelength_max`)
   - includes burst SFH controls (`burst_age_gyr`, `burst_width_gyr`) that appear when `sfh_model=burst`
 - `/synthesis_runs/:id` shows:
-  - animated "Processing synthesis pipeline..." banner for pending/running runs
+  - animated pending/running banner with pre-load messaging and a live elapsed timer
   - run parameters and status
   - wavelength range (`min-max nm`)
   - pipeline configuration (active spectra library, IMF, MIST isochrone weighting, SFH model, and chi-squared method)
@@ -217,8 +217,10 @@ phot = client.fetch_photometry(187.2779, 2.0523)
 ## Data Sources
 
 - BaSeL 3.1 stellar spectral energy distribution library (Westera, Lejeune,
-  Buser, Cuisinier & Bruzual 2002, A&A 381, 524) — solar metallicity
-  spectra sourced from the FSPS repository (Conroy et al.)
+  Buser, Cuisinier & Bruzual 2002, A&A 381, 524) — all six metallicity
+  bins active via zlegend nearest-bin selection:
+  z=0.0002, 0.0006, 0.0020, 0.0063, 0.0200, 0.0632; spectra sourced
+  from the FSPS repository (Conroy et al.)
 - MIST isochrone grid v1.2 (Choi et al. 2016, ApJ 823, 102) — solar
   metallicity isochrone at [Fe/H]=0.00 sourced from the FSPS repository
 - Local SDSS photometry catalog (`lib/data/sdss/photometry.csv`) for well-known reference objects
