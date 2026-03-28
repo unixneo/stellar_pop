@@ -15,11 +15,13 @@
 - [x] Integrate MIST corrections for non-solar metallicities
 - [x] Add wavelength range control to the UI and new run form
 - [x] Download and integrate remaining BaSeL metallicity bins (z0.0002, z0.0006, z0.0020, z0.0063, z0.0632)
+- [ ] Extend grid sweep to include `burst_age_gyr` variation
 
 ## Data and Persistence
 
 - [x] Add local SDSS reference catalog CSV and nearest-object lookup
-- [x] Add parameter grid sweep fitting (GridFit) with 180 combinations ranked by chi-squared
+- [x] Add parameter grid sweep fitting (GridFit) with ranked chi-squared results
+- [ ] Add more galaxy targets to local SDSS catalog
 - [ ] Add side-by-side run comparison view
 - [ ] Add spectrum data export as CSV
 - [ ] Add run deletion from the UI
@@ -52,4 +54,6 @@
 - [x] Make SDSS fetch optional/toggleable in UI
 - [ ] Improve CSS polish across index/new/show views
 - [ ] Add configuration page for pipeline parameters
+- [ ] Add confidence intervals or chi-squared contour plots for grid fit results
+- [ ] Investigate age-metallicity degeneracy breaking with additional photometric bands
 - [ ] Document deployment and runbook updates

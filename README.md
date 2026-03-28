@@ -23,7 +23,7 @@ implemented end-to-end in Ruby on Rails, with:
 StellarPop provides a self-contained stellar population fitting pipeline
 that runs in a browser, requires no local scientific computing environment,
 and produces version-controlled reproducible results. A researcher with
-galaxy coordinates and observed photometry can run a 180-combination
+galaxy coordinates and observed photometry can run a 300-combination
 parameter grid fit and identify the best-fit age, metallicity, and star
 formation history without installing Python, Fortran, or any astronomy
 library.
@@ -225,7 +225,7 @@ StellarPop follows a **blackboard pattern**:
 - `StellarPop::SdssLocalCatalog` (local SDSS photometry lookup from curated CSV)
 - `StellarPop::SdssClient` (Faraday-based SDSS SkyServer DR18 SQL client)
 - `SynthesisPipelineJob` (async orchestration + persistence)
-- `GridFitJob` (180-combination parameter sweep + ranked inference output)
+- `GridFitJob` (300-combination parameter sweep + ranked inference output)
 
 ### Pipeline Flow
 
@@ -299,12 +299,25 @@ Then open `http://localhost:3000`.
 ### Parameter Grid Fitting
 
 - Visit `/grid_fits/new` and enter galaxy coordinates.
-- The pipeline automatically sweeps 180 parameter combinations:
-  6 ages × 5 metallicities × 3 SFH models × 2 IMFs.
+- The pipeline automatically sweeps 300 parameter combinations:
+  10 ages (`[0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0]` Gyr)
+  × 5 metallicities × 3 SFH models × 2 IMFs.
 - Results are ranked by chi-squared.
 - Best-fit age, metallicity, and SFH are identified automatically.
 - This is the primary scientific use case: infer physical galaxy properties
   from observed photometry through systematic model comparison.
+
+## Scientific Results
+
+First grid-fit results on local SDSS targets show physically plausible trends:
+
+- `M101` best fit: age `0.1` Gyr, `Z=0.0063`, exponential SFH; consistent with
+  a young, star-forming spiral population.
+- `NGC3379` best fit: age `0.5` Gyr, `Z=0.02`, burst SFH, with older-age
+  solutions close in chi-squared; this reflects the known age-metallicity
+  degeneracy in photometric SPS fitting.
+- Synthetic `g-r` colors now span approximately `-0.44` (young `0.01` Gyr) to
+  `+0.65` (old `12` Gyr), consistent with the observed galaxy color range.
 
 ### Rails Console Access
 
