@@ -1,0 +1,11 @@
+name,ra,dec,u,g,r,i,z,type,notes
+3C273,187.2779,2.0523,13.99292,12.9987,12.88812,12.64057,13.24212,quasar,confirmed from SDSS DR18
+M87,187.7059,12.3911,10.11,9.42,8.97,8.68,8.49,elliptical,Virgo cluster BCG
+NGC1068,40.6696,-0.0133,13.44,12.21,11.49,11.12,10.84,spiral,Seyfert 2 galaxy
+NGC4889,195.0338,27.9769,14.21,12.89,12.11,11.72,11.38,elliptical,Coma cluster BCG
+NGC4261,184.8467,5.8246,13.82,12.58,11.84,11.47,11.18,elliptical,radio galaxy
+NGC4472,187.4449,8.0044,10.85,9.84,9.27,8.95,8.71,elliptical,Virgo cluster
+NGC4579,189.4314,11.8181,12.89,11.79,11.12,10.76,10.48,spiral,LINER
+NGC4552,188.9162,12.5564,13.12,11.98,11.31,10.96,10.67,elliptical,Virgo cluster
+NGC4486B,187.6904,12.4949,16.12,14.98,14.31,13.96,13.67,elliptical,compact elliptical
+NGC3379,161.9570,12.5847,11.85,10.68,10.01,9.67,9.38,elliptical,Leo group

@@ -37,16 +37,24 @@ class SynthesisPipelineJob < ApplicationJob
     chi_squared = nil
     sdss_fetch_note = nil
     if non_zero_coordinates?(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
-      sdss_client = StellarPop::SdssClient.new
-      sdss_photometry = fetch_sdss_photometry_with_retry(
-        sdss_client,
-        synthesis_run.sdss_ra,
-        synthesis_run.sdss_dec
-      )
-      chi_squared = compute_chi_squared(composite_spectrum, sdss_photometry) if sdss_photometry
-      if sdss_photometry.nil?
-        sdss_fetch_note = "SDSS photometry unavailable - service timeout or no object found"
+      sdss_photometry = StellarPop::SdssLocalCatalog.lookup(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
+      if sdss_photometry
+        sdss_fetch_note = "SDSS photometry sourced from local catalog"
+      else
+        sdss_client = StellarPop::SdssClient.new
+        sdss_photometry = fetch_sdss_photometry_with_retry(
+          sdss_client,
+          synthesis_run.sdss_ra,
+          synthesis_run.sdss_dec
+        )
+        sdss_fetch_note =
+          if sdss_photometry
+            "SDSS photometry sourced from live SDSS API"
+          else
+            "SDSS photometry unavailable - local catalog miss and live API timeout or no object found"
+          end
       end
+      chi_squared = compute_chi_squared(composite_spectrum, sdss_photometry) if sdss_photometry
     end
 
     wavelengths = composite_spectrum.keys.sort
