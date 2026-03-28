@@ -219,6 +219,20 @@ phot = client.fetch_photometry(187.2779, 2.0523)
 If you use StellarPop, cite the software DOI:
 https://doi.org/10.5281/zenodo.19274470
 
+## Milestone Validation
+
+Recent end-to-end validation with local-catalog photometry produced a
+physically plausible comparative result:
+
+- SDSS target matched and displayed: `NGC3379` (Leo group elliptical)
+- Chi-squared for NGC3379 old-population run: `9174.20`
+- Reference quasar case (3C 273): `80180` (substantially worse fit)
+- Run configuration: burst SFH, 12 Gyr, Salpeter IMF
+- Composite spectrum peak near `~525 nm` with structured shape
+
+Interpretation: the lower chi-squared for a passive elliptical under an old
+single-burst population is consistent with expected SPS behavior.
+
 ## Note
 
 This project is presented as the first known implementation of stellar

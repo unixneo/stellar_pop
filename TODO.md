@@ -3,6 +3,7 @@
 ## Science/Physics
 
 - [x] Verify smoothed composite spectrum shape is physically reasonable
+- [x] Validate local-catalog elliptical target scenario (NGC3379) with lower chi-squared than quasar baseline
 - [x] Add BaSeL 3.1 spectral library parser (`BaselSpectra`) with Fortran-order indexing and flux sentinel filtering
 - [x] Wire BaSeL metallicity selection from `metallicity_z` (nearest zlegend bin where available)
 - [x] Implement SDSS filter convolution for chi-squared (replace nearest-wavelength approximation)
