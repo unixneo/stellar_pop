@@ -13,6 +13,14 @@ class SdssLocalCatalogTest < ActiveSupport::TestCase
     assert_nil StellarPop::SdssLocalCatalog.lookup(0.0, 0.0, radius_arcmin: 1.0)
   end
 
+  test "lookup_target returns matched object metadata including name" do
+    target = StellarPop::SdssLocalCatalog.lookup_target(187.2779, 2.0523, radius_arcmin: 1.0)
+
+    assert_not_nil target
+    assert_equal "3C273", target[:name]
+    assert_in_delta 13.99292, target[:u], 1e-6
+  end
+
   test "random_target returns expected keys" do
     target = StellarPop::SdssLocalCatalog.random_target
 

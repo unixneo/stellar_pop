@@ -36,9 +36,18 @@ class SynthesisPipelineJob < ApplicationJob
     sdss_photometry = nil
     chi_squared = nil
     sdss_fetch_note = nil
+    sdss_object_name = nil
     if non_zero_coordinates?(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
-      sdss_photometry = StellarPop::SdssLocalCatalog.lookup(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
-      if sdss_photometry
+      local_target = StellarPop::SdssLocalCatalog.lookup_target(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
+      if local_target
+        sdss_photometry = {
+          u: local_target[:u],
+          g: local_target[:g],
+          r: local_target[:r],
+          i: local_target[:i],
+          z: local_target[:z]
+        }
+        sdss_object_name = local_target[:name]
         sdss_fetch_note = "SDSS photometry sourced from local catalog"
       else
         sdss_client = StellarPop::SdssClient.new
@@ -67,7 +76,12 @@ class SynthesisPipelineJob < ApplicationJob
       sdss_photometry: sdss_photometry&.to_json
     )
 
-    synthesis_run.update!(status: "complete", error_message: sdss_fetch_note, chi_squared: chi_squared)
+    synthesis_run.update!(
+      status: "complete",
+      error_message: sdss_fetch_note,
+      chi_squared: chi_squared,
+      sdss_object_name: sdss_object_name
+    )
   rescue StandardError => e
     synthesis_run&.update(status: "failed", error_message: e.message)
   end

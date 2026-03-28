@@ -42,6 +42,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     assert_equal "complete", run.status
     assert_nil run.error_message
     assert_nil run.chi_squared
+    assert_nil run.sdss_object_name
 
     assert_equal [350.0, 360.0, 370.0], JSON.parse(result.wavelength_data)
     assert_equal [0.2, 0.8, 0.1], JSON.parse(result.flux_data)
@@ -79,7 +80,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     end
 
     with_stubbed_new(StellarPop::Integrator::SpectralIntegrator, fake_integrator_factory) do
-      with_stubbed_class_method(StellarPop::SdssLocalCatalog, :lookup, ->(_ra, _dec, radius_arcmin: 1.0) { _ = radius_arcmin; nil }) do
+      with_stubbed_class_method(StellarPop::SdssLocalCatalog, :lookup_target, ->(_ra, _dec, radius_arcmin: 1.0) { _ = radius_arcmin; nil }) do
         with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
           SynthesisPipelineJob.perform_now(run.id)
         end
@@ -98,6 +99,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     assert_in_delta expected_chi_squared, run.chi_squared, 1e-9
     assert_equal({ "u" => 0.0, "g" => 0.0, "r" => 0.0, "i" => 0.0, "z" => 0.0 }, phot)
     assert_equal "SDSS photometry sourced from live SDSS API", run.error_message
+    assert_nil run.sdss_object_name
   end
 
   test "retries sdss fetch with backoff and succeeds on later attempt" do
@@ -138,7 +140,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
 
     with_stubbed_instance_method(SynthesisPipelineJob, :sleep_backoff, ->(_seconds) { nil }) do
       with_stubbed_new(StellarPop::Integrator::SpectralIntegrator, fake_integrator_factory) do
-        with_stubbed_class_method(StellarPop::SdssLocalCatalog, :lookup, ->(_ra, _dec, radius_arcmin: 1.0) { _ = radius_arcmin; nil }) do
+        with_stubbed_class_method(StellarPop::SdssLocalCatalog, :lookup_target, ->(_ra, _dec, radius_arcmin: 1.0) { _ = radius_arcmin; nil }) do
           with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
             SynthesisPipelineJob.perform_now(run.id)
           end
@@ -153,6 +155,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     assert_equal "complete", run.status
     assert_not_nil result.sdss_photometry
     assert_equal "SDSS photometry sourced from live SDSS API", run.error_message
+    assert_nil run.sdss_object_name
   end
 
   test "stores informational sdss note when coordinates are set but photometry is unavailable" do
@@ -179,7 +182,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     end
 
     with_stubbed_new(StellarPop::Integrator::SpectralIntegrator, fake_integrator_factory) do
-      with_stubbed_class_method(StellarPop::SdssLocalCatalog, :lookup, ->(_ra, _dec, radius_arcmin: 1.0) { _ = radius_arcmin; nil }) do
+      with_stubbed_class_method(StellarPop::SdssLocalCatalog, :lookup_target, ->(_ra, _dec, radius_arcmin: 1.0) { _ = radius_arcmin; nil }) do
         with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
           SynthesisPipelineJob.perform_now(run.id)
         end
@@ -191,6 +194,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     assert_equal "complete", run.status
     assert_equal "SDSS photometry unavailable - local catalog miss and live API timeout or no object found", run.error_message
     assert_nil run.chi_squared
+    assert_nil run.sdss_object_name
   end
 
   test "uses local catalog photometry and skips live sdss api call when local hit exists" do
@@ -215,10 +219,10 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
       raise "live api should not be called when local catalog hits"
     end
 
-    local_phot = { u: 14.0, g: 13.0, r: 12.9, i: 12.6, z: 13.2 }
+    local_target = { name: "NGC4564B", u: 14.0, g: 13.0, r: 12.9, i: 12.6, z: 13.2 }
 
     with_stubbed_new(StellarPop::Integrator::SpectralIntegrator, fake_integrator_factory) do
-      with_stubbed_class_method(StellarPop::SdssLocalCatalog, :lookup, ->(_ra, _dec, radius_arcmin: 1.0) { _ = radius_arcmin; local_phot }) do
+      with_stubbed_class_method(StellarPop::SdssLocalCatalog, :lookup_target, ->(_ra, _dec, radius_arcmin: 1.0) { _ = radius_arcmin; local_target }) do
         with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
           SynthesisPipelineJob.perform_now(run.id)
         end
@@ -232,6 +236,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     assert_equal "complete", run.status
     assert_equal "SDSS photometry sourced from local catalog", run.error_message
     assert_equal({ "u" => 14.0, "g" => 13.0, "r" => 12.9, "i" => 12.6, "z" => 13.2 }, phot)
+    assert_equal "NGC4564B", run.sdss_object_name
   end
 
   test "marks run as failed and stores error message when pipeline raises" do

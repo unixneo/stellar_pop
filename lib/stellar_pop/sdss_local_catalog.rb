@@ -8,6 +8,19 @@ module StellarPop
 
     class << self
       def lookup(ra, dec, radius_arcmin: 1.0)
+        target = lookup_target(ra, dec, radius_arcmin: radius_arcmin)
+        return nil unless target
+
+        {
+          u: target[:u],
+          g: target[:g],
+          r: target[:r],
+          i: target[:i],
+          z: target[:z]
+        }
+      end
+
+      def lookup_target(ra, dec, radius_arcmin: 1.0)
         target_ra = ra.to_f
         target_dec = dec.to_f
         max_radius = radius_arcmin.to_f
@@ -25,15 +38,7 @@ module StellarPop
           nearest_separation = separation
         end
 
-        return nil unless nearest
-
-        {
-          u: nearest[:u],
-          g: nearest[:g],
-          r: nearest[:r],
-          i: nearest[:i],
-          z: nearest[:z]
-        }
+        nearest
       end
 
       def random_target

@@ -37,6 +37,9 @@
 <p><strong>SFH model:</strong> <%= @synthesis_run.sfh_model %></p>
 <p><strong>SDSS RA:</strong> <%= @synthesis_run.sdss_ra %></p>
 <p><strong>SDSS Dec:</strong> <%= @synthesis_run.sdss_dec %></p>
+<% if @synthesis_run.sdss_object_name.present? %>
+  <p><strong>SDSS target:</strong> <%= @synthesis_run.sdss_object_name %></p>
+<% end %>
 <% if !@synthesis_run.chi_squared.nil? %>
   <p><strong>Chi-squared:</strong> <%= format("%.6f", @synthesis_run.chi_squared) %></p>
 <% end %>
