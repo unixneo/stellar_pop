@@ -8,8 +8,8 @@
 - [x] Wire BaSeL metallicity selection from `metallicity_z` (nearest zlegend bin where available)
 - [x] Implement SDSS filter convolution for chi-squared (replace nearest-wavelength approximation)
 - [ ] Add model option to switch between Planck spectra and BaSeL library spectra in pipeline/UI
-- [ ] Implement Salpeter IMF in `ImfSampler` (currently selectable but not functional)
-- [ ] Expose burst SFH `burst_age_gyr` and `width_gyr` parameters in the UI
+- [x] Implement Salpeter IMF in `ImfSampler` and pass `imf_type` through pipeline jobs
+- [x] Expose burst SFH `burst_age_gyr` and `burst_width_gyr` parameters in UI and pipeline
 - [ ] Validate isochrone temperature corrections against published tables
 - [ ] Add wavelength range control to the UI and new run form
 

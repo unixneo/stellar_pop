@@ -65,7 +65,8 @@ isochrone upgrades.
 This project models stellar populations using core components:
 
 - **Initial Mass Function (IMF):** Samples stellar masses from a distribution
-  (Kroupa-like piecewise power law) to represent how stars are born across mass.
+  (`kroupa` piecewise or `salpeter` single power law) to represent how stars
+  are born across mass.
 - **Stellar Spectra:** Generates spectral energy distributions using the BaSeL 3.1
   semi-empirical stellar spectral library (Westera et al. 2002, A&A 381, 524),
   covering 1963 wavelength points from 91 Angstroms to 160 micrometers across
@@ -73,7 +74,8 @@ This project models stellar populations using core components:
 - **Isochrones:** Applies age and metallicity evolution corrections, including
   main-sequence lifetime transitions and post-main-sequence behavior.
 - **Star Formation History (SFH):** Weights contributions across stellar ages
-  using constant, exponential-decay, or burst-like models.
+  using constant, exponential-decay, or burst-like models, with burst age/width
+  exposed in the UI and passed through to pipeline weighting.
 - **BaSeL 3.1 Spectral Library:** Loads and queries the BaSeL grid from
   binary tables using pure Ruby parsing (Fortran column-major indexing and
   sentinel filtering), providing the primary stellar SED source.
@@ -155,6 +157,7 @@ Then open `http://localhost:3000`.
 - `/` shows all runs in a status-colored table.
 - `/synthesis_runs/new` creates a new run and enqueues processing.
   - includes an SDSS toggle to enable/disable photometry fetch + chi-squared
+  - includes burst SFH controls (`burst_age_gyr`, `burst_width_gyr`) that appear when `sfh_model=burst`
 - `/synthesis_runs/:id` shows:
   - animated "Processing synthesis pipeline..." banner for pending/running runs
   - run parameters and status
@@ -229,6 +232,7 @@ physically plausible comparative result:
 - Reference quasar case (3C 273): `80180` (substantially worse fit)
 - Run configuration: burst SFH, 12 Gyr, Salpeter IMF
 - Composite spectrum peak near `~525 nm` with structured shape
+- Salpeter IMF sampling and burst SFH parameter pass-through are active in pipeline runs
 
 Interpretation: the lower chi-squared for a passive elliptical under an old
 single-burst population is consistent with expected SPS behavior.

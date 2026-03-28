@@ -31,10 +31,10 @@ StellarPop uses a blackboard pattern in which all intermediate and final values 
 
 The pipeline is organized around knowledge sources:
 
-1. **IMF Sampler**: Implements a piecewise Kroupa IMF and inverse-transform mass sampling.
+1. **IMF Sampler**: Implements both piecewise Kroupa and single-power-law Salpeter IMFs with inverse-transform mass sampling.
 2. **Stellar Spectra**: Uses the BaSeL 3.1 stellar spectral library and maps stellar mass to approximate atmospheric parameters for nearest-grid retrieval.
 3. **Isochrone Corrections**: Applies luminosity and temperature adjustments based on stellar mass, age, and metallicity.
-4. **SFH Model**: Provides exponential, constant, and burst star formation history weight functions.
+4. **SFH Model**: Provides exponential, constant, and burst star formation history weight functions, with burst age/width parameters exposed through the web UI and persisted per run.
 5. **BaSeL Spectra**: Parses BaSeL 3.1 binary spectral grids in pure Ruby with class-level memoization, Fortran column-major indexing, and sentinel-value filtering for robust library-based spectral retrieval.
 
 Asynchronous execution is handled by Sidekiq through a dedicated synthesis queue. Each synthesis run is persisted in Rails models, executed in a background job, and stored as a composite spectrum in the database. During integration, per-star spectra are interpolated onto a fixed wavelength grid, combined with IMF/SFH/isochrone weighting, and smoothed before final normalization. For observational comparison, StellarPop first checks a local SDSS photometry catalog keyed by sky position and falls back to the SDSS SkyServer DR18 SQL API on catalog misses. Chi-squared is then computed using SDSS filter-convolved synthetic fluxes (ugriz) rather than nearest-wavelength approximations.
@@ -53,4 +53,4 @@ Ahumada, R., Allende Prieto, C., Almeida, A., et al. (2020). The 16th Data Relea
 
 Bass, T. (2026). Blackboard SA. *ACM DTRAP* (under review). Preprint: https://doi.org/10.5281/zenodo.18824512
 
-Bass, T. (2026). StellarPop (Version 0.1.0) [Software]. Zenodo. https://doi.org/10.5281/zenodo.19274470
+Bass, T. (2026). StellarPop (Version 0.2.0) [Software]. Zenodo. https://doi.org/10.5281/zenodo.19277971
