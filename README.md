@@ -2,28 +2,6 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19277971.svg)](https://doi.org/10.5281/zenodo.19277971)
 
-## Why This Matters
-
-Every atom in your body heavier than hydrogen was made in a star. The carbon
-in DNA, the calcium in bones, and the iron in blood were forged in stellar
-cores and spread through space by exploding stars. So when we study when and
-where galaxies formed stars, we are also studying where the raw ingredients
-for life came from.
-
-Metal-rich stellar populations are more likely to form rocky planets because
-they contain more solid building material. By mapping metallicity through time
-in different galaxies, we can trace where and when the universe had conditions
-that favored rocky planet formation.
-
-The early universe began mostly as hydrogen and helium. Over 13.8 billion years,
-successive generations of stars created heavier elements and enriched cosmic gas.
-Stellar population synthesis is one of the main tools for reading that history
-from the light we receive from distant galaxies.
-
-StellarPop is a small, practical contribution to that effort: a fitting tool
-that is deployable, reproducible, and accessible without requiring specialized
-Python or Fortran environments, so more researchers can participate.
-
 ## What This App Does
 
 StellarPop is a Ruby on Rails application that generates a synthetic stellar
@@ -41,6 +19,10 @@ implemented end-to-end in Ruby on Rails, with:
 - transparent pipeline orchestration via a blackboard pattern,
 - reproducible async processing via Sidekiq jobs,
 - and an inspectable web UI for runs, spectra, and fit quality.
+
+StellarPop is a small, practical contribution to that effort: a fitting tool
+that is deployable, reproducible, and accessible without requiring specialized
+Python or Fortran environments, so more researchers can participate.
 
 ## Scientific Purpose
 
