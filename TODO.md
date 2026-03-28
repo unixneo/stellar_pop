@@ -12,8 +12,9 @@
 - [x] Expose burst SFH `burst_age_gyr` and `burst_width_gyr` parameters in UI and pipeline
 - [x] Validate isochrone temperature corrections against published tables
 - [x] Replace simple Isochrone KS with MistIsochrone in pipeline as default
-- [ ] Integrate MIST corrections for non-solar metallicities
-- [ ] Add wavelength range control to the UI and new run form
+- [x] Integrate MIST corrections for non-solar metallicities
+- [x] Add wavelength range control to the UI and new run form
+- [ ] Download and integrate remaining BaSeL metallicity bins (z0.0002, z0.0006, z0.0020, z0.0063, z0.0632)
 
 ## Data and Persistence
 

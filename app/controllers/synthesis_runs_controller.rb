@@ -34,6 +34,8 @@ class SynthesisRunsController < ApplicationController
     spectra_model = %w[basel planck].sample
     burst_age_gyr = sfh_model == "burst" ? [1.0, 2.0, 4.0, 8.0].sample : 2.0
     burst_width_gyr = sfh_model == "burst" ? [0.3, 0.5, 1.0].sample : 0.5
+    wavelength_min = [300, 350, 400].sample
+    wavelength_max = [800, 900, 1000].sample
 
     synthesis_run = SynthesisRun.create!(
       name: "test_run_#{SecureRandom.hex(4)}",
@@ -44,6 +46,8 @@ class SynthesisRunsController < ApplicationController
       sfh_model: sfh_model,
       burst_age_gyr: burst_age_gyr,
       burst_width_gyr: burst_width_gyr,
+      wavelength_min: wavelength_min,
+      wavelength_max: wavelength_max,
       sdss_ra: target[:ra],
       sdss_dec: target[:dec],
       status: "pending"
@@ -65,6 +69,8 @@ class SynthesisRunsController < ApplicationController
       :sfh_model,
       :burst_age_gyr,
       :burst_width_gyr,
+      :wavelength_min,
+      :wavelength_max,
       :sdss_ra,
       :sdss_dec
     )

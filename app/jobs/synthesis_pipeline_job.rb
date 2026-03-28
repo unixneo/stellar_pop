@@ -2,7 +2,8 @@ class SynthesisPipelineJob < ApplicationJob
   queue_as :synthesis
 
   AGE_BINS_GYR = [0.1, 0.5, 1.0, 2.0, 4.0, 8.0, 12.0].freeze
-  DEFAULT_WAVELENGTH_RANGE_NM = (350.0..900.0)
+  DEFAULT_WAVELENGTH_MIN_NM = 350.0
+  DEFAULT_WAVELENGTH_MAX_NM = 900.0
   SDSS_MAX_FETCH_ATTEMPTS = 3
   SDSS_BASE_BACKOFF_SECONDS = 0.5
 
@@ -22,6 +23,7 @@ class SynthesisPipelineJob < ApplicationJob
     sfh_model_symbol = normalize_sfh_model(synthesis_run.sfh_model)
     sfh_weights = build_sfh_weights(sfh_model, sfh_model_symbol, synthesis_run)
     weighted_mean_age_gyr = weighted_mean_age(AGE_BINS_GYR, sfh_weights)
+    wavelength_range = build_wavelength_range(synthesis_run)
 
     blackboard.write(:imf_masses, imf_masses)
     blackboard.write(:age_gyr, weighted_mean_age_gyr)
@@ -31,7 +33,7 @@ class SynthesisPipelineJob < ApplicationJob
     blackboard.write(:sdss_dec, synthesis_run.sdss_dec)
     blackboard.write(:age_bins, AGE_BINS_GYR)
     blackboard.write(:sfh_weights, sfh_weights)
-    blackboard.write(:wavelength_range, DEFAULT_WAVELENGTH_RANGE_NM)
+    blackboard.write(:wavelength_range, wavelength_range)
 
     spectra_source = build_spectra_source(synthesis_run.spectra_model)
     integrator = StellarPop::Integrator::SpectralIntegrator.new(blackboard, spectra_source: spectra_source)
@@ -129,6 +131,16 @@ class SynthesisPipelineJob < ApplicationJob
     return age_bins.first.to_f unless denominator.positive?
 
     numerator / denominator
+  end
+
+  def build_wavelength_range(synthesis_run)
+    min_nm = synthesis_run.wavelength_min.to_f
+    max_nm = synthesis_run.wavelength_max.to_f
+    min_nm = DEFAULT_WAVELENGTH_MIN_NM unless min_nm.positive?
+    max_nm = DEFAULT_WAVELENGTH_MAX_NM unless max_nm.positive?
+    min_nm, max_nm = [min_nm, max_nm].minmax
+
+    min_nm..max_nm
   end
 
   def non_zero_coordinates?(ra, dec)

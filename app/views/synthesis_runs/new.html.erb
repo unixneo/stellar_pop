@@ -27,6 +27,16 @@
   </p>
 
   <p>
+    <%= f.label :wavelength_min, "Wavelength min (nm)" %><br>
+    <%= f.number_field :wavelength_min, step: 10, min: 300, max: 500 %>
+  </p>
+
+  <p>
+    <%= f.label :wavelength_max, "Wavelength max (nm)" %><br>
+    <%= f.number_field :wavelength_max, step: 10, min: 600, max: 1100 %>
+  </p>
+
+  <p>
     <%= f.label :sfh_model %><br>
     <%= f.select :sfh_model, [["exponential", "exponential"], ["constant", "constant"], ["burst", "burst"]], {}, { id: "sfh-model-select" } %>
   </p>

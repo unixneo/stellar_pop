@@ -35,6 +35,7 @@
 <p><strong>Spectra model:</strong> <%= @synthesis_run.spectra_model %></p>
 <p><strong>Age (Gyr):</strong> <%= @synthesis_run.age_gyr %></p>
 <p><strong>Metallicity (Z):</strong> <%= @synthesis_run.metallicity_z %></p>
+<p><strong>Wavelength range:</strong> <%= @synthesis_run.wavelength_min %>-<%= @synthesis_run.wavelength_max %> nm</p>
 <p><strong>SFH model:</strong> <%= @synthesis_run.sfh_model %></p>
 <% if @synthesis_run.sfh_model.to_s == "burst" %>
   <p><strong>Burst age (Gyr):</strong> <%= @synthesis_run.burst_age_gyr %></p>

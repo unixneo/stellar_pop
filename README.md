@@ -109,7 +109,7 @@ StellarPop follows a **blackboard pattern**:
 
 1. A `SynthesisRun` is created in the web UI with status `pending`.
 2. `SynthesisPipelineJob` is enqueued (`perform_later`) on the `synthesis` queue.
-3. The job sets status `running`, builds a blackboard, samples IMF masses, computes SFH weights, and runs the spectral integrator.
+3. The job sets status `running`, builds a blackboard, samples IMF masses, computes SFH weights, applies a user-configurable wavelength range (`wavelength_min..wavelength_max`, 300-1100nm, default 350-900nm), and runs the spectral integrator.
 4. The integrator writes `:composite_spectrum` to the blackboard.
 5. The job saves a `SpectrumResult` (wavelength/flux JSON).
 6. If SDSS coordinates are present, the job resolves `ugriz` photometry using local-first lookup:
@@ -159,10 +159,12 @@ Then open `http://localhost:3000`.
 - `/synthesis_runs/new` creates a new run and enqueues processing.
   - includes an SDSS toggle to enable/disable photometry fetch + chi-squared
   - includes a spectra model selector (`basel` or `planck`)
+  - includes wavelength range fields (`wavelength_min`, `wavelength_max`)
   - includes burst SFH controls (`burst_age_gyr`, `burst_width_gyr`) that appear when `sfh_model=burst`
 - `/synthesis_runs/:id` shows:
   - animated "Processing synthesis pipeline..." banner for pending/running runs
   - run parameters and status
+  - wavelength range (`min-max nm`)
   - pipeline configuration (active spectra library, IMF, MIST isochrone weighting, SFH model, and chi-squared method)
   - informational SDSS note (local/live/fetch-unavailable) on completed runs
   - canvas-based spectrum viewer
