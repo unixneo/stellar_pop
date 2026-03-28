@@ -48,6 +48,34 @@
 <% if !@synthesis_run.chi_squared.nil? %>
   <p><strong>Chi-squared:</strong> <%= format("%.6f", @synthesis_run.chi_squared) %></p>
 <% end %>
+<% spectra_library_label =
+     if @synthesis_run.spectra_model.to_s == "planck"
+       "Planck blackbody"
+     else
+       "BaSeL 3.1 (Westera et al. 2002)"
+     end %>
+<% imf_label =
+     if @synthesis_run.imf_type.to_s == "salpeter"
+       "Salpeter (1955)"
+     else
+       "Kroupa (2001) piecewise power law"
+     end %>
+<% sfh_label =
+     case @synthesis_run.sfh_model.to_s
+     when "exponential" then "Exponential decay"
+     when "burst" then "Burst"
+     else "Constant"
+     end %>
+
+<h2>Pipeline Configuration</h2>
+<div style="font-family: monospace;">
+  <p><strong>Spectra library:</strong> <%= spectra_library_label %></p>
+  <p><strong>IMF:</strong> <%= imf_label %></p>
+  <p><strong>Isochrone weighting:</strong> MIST v1.2 (Choi et al. 2016)</p>
+  <p><strong>SFH model:</strong> <%= sfh_label %></p>
+  <p><strong>Chi-squared method:</strong> SDSS ugriz filter convolution (Fukugita et al. 1996)</p>
+</div>
+
 <% if @synthesis_run.status.to_s == "failed" && @synthesis_run.error_message.present? %>
   <div style="margin: 14px 0; padding: 10px 14px; border: 1px solid #ef4444; background: #2a0f12; color: #fecaca; border-radius: 6px;">
     <strong>Pipeline Error:</strong>
