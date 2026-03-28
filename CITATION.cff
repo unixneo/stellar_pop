@@ -5,6 +5,9 @@ license: MIT
 version: 0.1.0
 date-released: 2026-03-28
 url: https://github.com/unixneo/stellar_pop
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.19274470
 authors:
   - family-names: Bass
     given-names: Tim

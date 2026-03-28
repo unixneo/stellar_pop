@@ -1,5 +1,7 @@
 # StellarPop
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19274470.svg)](https://doi.org/10.5281/zenodo.19274470)
+
 ## What This App Does
 
 StellarPop is a Ruby on Rails application that generates a synthetic stellar
@@ -198,6 +200,11 @@ phot = client.fetch_photometry(187.2779, 2.0523)
   Buser, Cuisinier & Bruzual 2002, A&A 381, 524) — solar metallicity
   spectra sourced from the FSPS repository (Conroy et al.)
 - SDSS SkyServer DR18 — observed photometry via public SQL API
+
+## Citation
+
+If you use StellarPop, cite the software DOI:
+https://doi.org/10.5281/zenodo.19274470
 
 ## Note
 
