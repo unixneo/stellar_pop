@@ -368,7 +368,7 @@ phot = client.fetch_photometry(187.2779, 2.0523)
   from the FSPS repository (Conroy et al.)
 - MIST isochrone grid v1.2 (Choi et al. 2016, ApJ 823, 102) — solar
   metallicity isochrone at [Fe/H]=0.00 sourced from the FSPS repository
-- Local SDSS photometry catalog (`lib/data/sdss/photometry.csv`) for well-known reference objects
+- Local SDSS photometry catalog (`lib/data/sdss/photometry.csv`) for well-known reference objects (SDSS DR7 for all current entries)
 - SDSS SkyServer DR18 — observed photometry via public SQL API
 
 ## Citation

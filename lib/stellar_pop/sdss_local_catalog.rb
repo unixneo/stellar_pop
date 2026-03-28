@@ -80,7 +80,8 @@ module StellarPop
             z: row["z"].to_f,
             type: row["type"],
             notes: row["notes"],
-            agn: parse_boolean(row["agn"])
+            agn: parse_boolean(row["agn"]),
+            sdss_dr: row["sdss_dr"].presence || "DR7"
           }
         end
       end
