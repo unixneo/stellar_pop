@@ -13,7 +13,7 @@ chi-squared metric.
 The goal is to show that a practical stellar population synthesis workflow can be
 implemented end-to-end in Ruby on Rails, with:
 
-- domain logic in pure Ruby (no external astronomy libraries),
+- domain logic in pure Ruby,
 - transparent pipeline orchestration via a blackboard pattern,
 - reproducible async processing via Sidekiq jobs,
 - and an inspectable web UI for runs, spectra, and fit quality.
@@ -24,8 +24,10 @@ This project models stellar populations using four core components:
 
 - **Initial Mass Function (IMF):** Samples stellar masses from a distribution
   (Kroupa-like piecewise power law) to represent how stars are born across mass.
-- **Stellar Spectra:** Generates representative spectral energy distributions
-  by spectral class using Planck-law radiance.
+- **Stellar Spectra:** Generates spectral energy distributions using the BaSeL 3.1
+  semi-empirical stellar spectral library (Westera et al. 2002, A&A 381, 524),
+  covering 1963 wavelength points from 91 Angstroms to 160 micrometers across
+  OBAFGKM spectral types.
 - **Isochrones:** Applies age and metallicity evolution corrections, including
   main-sequence lifetime transitions and post-main-sequence behavior.
 - **Star Formation History (SFH):** Weights contributions across stellar ages
@@ -146,14 +148,14 @@ phot = client.fetch_photometry(187.2779, 2.0523)
 - Sidekiq
 - Faraday
 - Pure Ruby astrophysics pipeline (no external code libraries)
-- BaSeL 3.1 stellar spectral library (Westera et al. 2002) -- binary data files
+- BaSeL 3.1 stellar spectral library (Westera et al. 2002) — binary data files
 
 ## Data Sources
 
 - BaSeL 3.1 stellar spectral energy distribution library (Westera, Lejeune,
-  Buser, Cuisinier & Bruzual 2002, A&A 381, 524) -- solar metallicity
+  Buser, Cuisinier & Bruzual 2002, A&A 381, 524) — solar metallicity
   spectra sourced from the FSPS repository (Conroy et al.)
-- SDSS SkyServer DR18 -- observed photometry via public SQL API
+- SDSS SkyServer DR18 — observed photometry via public SQL API
 
 ## Note
 
