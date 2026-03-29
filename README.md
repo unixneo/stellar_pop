@@ -1,6 +1,6 @@
 # StellarPop
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19277971.svg)](https://doi.org/10.5281/zenodo.19277971)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19277970.svg)](https://doi.org/10.5281/zenodo.19277970)
 
 ## What This App Does
 
