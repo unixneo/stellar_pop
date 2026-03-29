@@ -7,6 +7,7 @@ class SdssLocalCatalogTest < ActiveSupport::TestCase
     assert_not_nil phot
     assert_in_delta 13.99292, phot[:u], 1e-6
     assert_in_delta 12.9987, phot[:g], 1e-6
+    assert_in_delta 0.158339, phot[:redshift_z], 1e-6
   end
 
   test "lookup returns nil when no object is in radius" do

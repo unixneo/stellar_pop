@@ -16,7 +16,8 @@ module StellarPop
           g: target[:g],
           r: target[:r],
           i: target[:i],
-          z: target[:z]
+          z: target[:z],
+          redshift_z: target[:redshift_z]
         }
       end
 

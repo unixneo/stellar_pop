@@ -146,7 +146,8 @@ class GridFitJob < ApplicationJob
       g: target[:g],
       r: target[:r],
       i: target[:i],
-      z: target[:z]
+      z: target[:z],
+      redshift_z: target[:redshift_z]
     }
   end
 
@@ -179,12 +180,22 @@ class GridFitJob < ApplicationJob
     synthetic_fluxes = convolver.synthetic_magnitudes(composite_spectrum)
 
     bands = %i[u g r i z]
-    observed_fluxes = {}
+    observed_magnitudes = {}
     bands.each do |band|
-      observed_mag = sdss_photometry[band]
+      observed_mag = sdss_photometry[band] || sdss_photometry[band.to_s]
       return Float::INFINITY if observed_mag.nil?
 
-      observed_flux = 10.0**(-observed_mag.to_f / 2.5)
+      observed_magnitudes[band] = observed_mag.to_f
+    end
+
+    corrected_magnitudes = StellarPop::KCorrection.correct(
+      observed_magnitudes,
+      sdss_photometry[:redshift_z] || sdss_photometry["redshift_z"]
+    )
+
+    observed_fluxes = {}
+    bands.each do |band|
+      observed_flux = 10.0**(-corrected_magnitudes[band].to_f / 2.5)
       return Float::INFINITY unless observed_flux.positive?
 
       observed_fluxes[band] = observed_flux
