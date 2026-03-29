@@ -1,0 +1,44 @@
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title">Calibration Runs</h1>
+      <p class="card-subtitle">Science calibration checks against benchmark galaxies.</p>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <div class="action-links">
+      <%= link_to "New Calibration Run", new_calibration_run_path %>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Summary</th>
+            <th>Created At</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @calibration_runs.each do |run| %>
+            <% parsed = JSON.parse(run.result_json || "{}") rescue {} %>
+            <% summary = parsed["summary"] || {} %>
+            <tr>
+              <td><%= link_to(run.name, calibration_run_path(run)) %></td>
+              <td><%= run.status %></td>
+              <td>
+                <% if summary.present? %>
+                  pass=<%= summary["pass"] %>, warn=<%= summary["warn"] %>, fail=<%= summary["fail"] %>
+                <% else %>
+                  -
+                <% end %>
+              </td>
+              <td><%= run.created_at %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

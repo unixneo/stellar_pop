@@ -1,0 +1,146 @@
+<% processing = %w[pending running].include?(@calibration_run.status.to_s) %>
+<% elapsed_start_seconds = [Time.current.to_i - @calibration_run.created_at.to_i, 0].max %>
+<% if processing %>
+  <meta http-equiv="refresh" content="5">
+  <div class="processing-banner" style="padding: 10px 14px; border: 1px solid #f59e0b; background: #2b1f07; color: #fde68a; border-radius: 6px; margin: 0 0 14px 0; font-weight: 600;">
+    Running calibration benchmarks for NGC3379 and M101 (full grid sweep + chi-squared ranking)...
+    <span id="processing-elapsed" data-elapsed-seconds="<%= elapsed_start_seconds %>" style="margin-left: 8px; font-family: monospace;">(elapsed: 0s)</span>
+  </div>
+
+  <script>
+    (function() {
+      const elapsedEl = document.getElementById("processing-elapsed");
+      if (!elapsedEl) return;
+
+      let elapsedSeconds = parseInt(elapsedEl.dataset.elapsedSeconds || "0", 10);
+      function formatElapsed(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        if (mins > 0) return mins + "m " + secs + "s";
+        return secs + "s";
+      }
+
+      elapsedEl.textContent = "(elapsed: " + formatElapsed(elapsedSeconds) + ")";
+      setInterval(function() {
+        elapsedSeconds += 1;
+        elapsedEl.textContent = "(elapsed: " + formatElapsed(elapsedSeconds) + ")";
+      }, 1000);
+    })();
+  </script>
+<% end %>
+
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title"><%= @calibration_run.name %></h1>
+      <p class="card-subtitle">Calibration status and benchmark results.</p>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <p><strong>Status:</strong> <%= @calibration_run.status %></p>
+    <% if @calibration_run.runtime_seconds.present? %>
+      <p><strong>Runtime:</strong> <%= @calibration_run.runtime_seconds %> seconds</p>
+    <% end %>
+    <% if @calibration_run.error_message.present? %>
+      <p><strong>Error:</strong> <%= @calibration_run.error_message %></p>
+    <% end %>
+  </div>
+</div>
+
+<%
+  total = @calibration_run.progress_total.to_i
+  completed = [@calibration_run.progress_completed.to_i, total].min
+  progress_percent = total.positive? ? ((completed.to_f / total) * 100.0) : 0.0
+  elapsed_seconds = [Time.current.to_i - @calibration_run.created_at.to_i, 0].max
+  eta_seconds =
+    if processing && completed.positive? && total > completed
+      ((elapsed_seconds.to_f / completed) * (total - completed)).round
+    end
+%>
+<% if processing || total.positive? %>
+  <div class="cyberspace-panel">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">Calibration Progress</h2>
+        <p class="card-subtitle">Live progress for benchmark sweep execution.</p>
+      </div>
+    </div>
+    <div class="cyberspace-panel-body" style="font-family: monospace;">
+      <p><strong>Current step:</strong> <%= @calibration_run.current_step.presence || "-" %></p>
+      <p><strong>Completed:</strong> <%= completed %> / <%= total %> (<%= format("%.1f", progress_percent) %>%)</p>
+      <% if eta_seconds %>
+        <p><strong>Estimated remaining:</strong> <%= eta_seconds %> seconds</p>
+      <% elsif processing %>
+        <p><strong>Estimated remaining:</strong> computing...</p>
+      <% end %>
+      <div style="height: 10px; border: 1px solid #334155; border-radius: 999px; overflow: hidden; background: rgba(2, 6, 23, 0.85);">
+        <div style="height: 100%; width: <%= progress_percent %>%; background: linear-gradient(90deg, #0ea5e9, #22d3ee);"></div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<% if @result.present? %>
+  <% summary = @result["summary"] || {} %>
+  <div class="cyberspace-panel">
+    <div class="card-header">
+      <div><h2 class="card-title">Summary</h2></div>
+    </div>
+    <div class="cyberspace-panel-body" style="font-family: monospace;">
+      <p>total=<%= summary["total"] %>, pass=<%= summary["pass"] %>, warn=<%= summary["warn"] %>, fail=<%= summary["fail"] %></p>
+    </div>
+  </div>
+
+  <% Array(@result["benchmarks"]).each do |benchmark| %>
+    <div class="cyberspace-panel">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title"><%= benchmark["name"] %> (<%= benchmark["type"] %>)</h2>
+          <p class="card-subtitle">verdict: <strong><%= benchmark["verdict"] %></strong></p>
+        </div>
+      </div>
+      <div class="cyberspace-panel-body">
+        <% best = benchmark["best_fit"] || {} %>
+        <p><strong>Best fit:</strong> age=<%= best["age_gyr"] %>, Z=<%= best["metallicity_z"] %>, sfh=<%= best["sfh_model"] %>, burst_age=<%= best["burst_age_gyr"] || "-" %>, imf=<%= best["imf_type"] %>, chi2=<%= best["chi_squared"] ? format("%.6f", best["chi_squared"]) : "-" %></p>
+        <% checks = benchmark["checks"] || {} %>
+        <p style="font-family: monospace;">checks: age_ok=<%= checks["age_ok"] %>, metallicity_ok=<%= checks["metallicity_ok"] %>, sfh_ok=<%= checks["sfh_ok"] %></p>
+
+        <details>
+          <summary>Top 10 ranked fits</summary>
+          <div class="table-wrap" style="margin-top: 8px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Chi2</th>
+                  <th>Age</th>
+                  <th>Z</th>
+                  <th>SFH</th>
+                  <th>Burst Age</th>
+                  <th>IMF</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% Array(benchmark["top_results"]).first(10).each_with_index do |row, idx| %>
+                  <tr>
+                    <td><%= idx + 1 %></td>
+                    <td><%= row["chi_squared"] ? format("%.6f", row["chi_squared"]) : "-" %></td>
+                    <td><%= row["age_gyr"] %></td>
+                    <td><%= row["metallicity_z"] %></td>
+                    <td><%= row["sfh_model"] %></td>
+                    <td><%= row["burst_age_gyr"] || "-" %></td>
+                    <td><%= row["imf_type"] %></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<div class="action-links">
+  <%= link_to "Back to Calibration Runs", calibration_runs_path %>
+</div>

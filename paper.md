@@ -47,6 +47,10 @@ Recent usability and provenance updates focused on reproducible interpretation: 
 
 StellarPop includes a parameter-grid sweep workflow over 1050 model combinations. The age grid is `[0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0]` Gyr, with 5 metallicities and 3 IMF choices across SFH models. For burst SFH runs, the burst center is additionally swept through `burst_age_gyr = [0.1, 0.5, 1.0, 2.0]` Gyr, increasing total combinations and improving sensitivity to bursty star formation at different epochs. For each combination, the pipeline generates a synthetic spectrum and computes chi-squared against observed SDSS photometry. Results are sorted by chi-squared, and the best-fit age, metallicity, SFH, and IMF are recorded automatically. This ranking-based sweep is the primary inference mechanism for deriving physical galaxy properties from observed photometry.
 
+## Calibration workflow
+
+StellarPop now includes a benchmark calibration workflow (`CalibrationRun`) that executes the full grid-fitting pipeline against curated reference galaxies with expected physical ranges. Each calibration run records benchmark-specific best fits, top-ranked alternatives, and pass/warn/fail checks for age, metallicity, and SFH class agreement. A dedicated progress panel reports completed combinations, active benchmark step, and estimated remaining runtime while the calibration job is running.
+
 ## Results
 
 First grid-fit results show plausible astrophysical behavior and known photometric fitting limits. For M101, the best fit was age `0.1` Gyr, metallicity `Z=0.0063`, and exponential SFH, consistent with a young star-forming spiral. For NGC3379, the best fit was age `0.5` Gyr, `Z=0.02`, burst SFH, with older-age solutions close in chi-squared, demonstrating the expected age-metallicity degeneracy in broadband photometric SPS fitting. After the pipeline fixes, synthetic `g-r` colors span approximately `-0.44` (young `0.01` Gyr) to `+0.65` (old `12` Gyr), covering the observed galaxy color range and restoring physically correct age dependence.

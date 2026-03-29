@@ -1,0 +1,43 @@
+benchmarks:
+  - key: ngc3379
+    name: NGC3379
+    type: elliptical
+    ra: 161.9570
+    dec: 12.5847
+    photometry:
+      u: 11.85
+      g: 10.68
+      r: 10.01
+      i: 9.67
+      z: 9.38
+      redshift_z: 0.003704
+    expected:
+      age_gyr_min: 8.0
+      age_gyr_max: 12.0
+      metallicity_z_min: 0.01
+      metallicity_z_max: 0.03
+      sfh_models: [exponential, burst]
+    references:
+      - "Terlevich & Forbes 2002, MNRAS 330, 547"
+      - "Gregg et al. 2004, AJ 127, 1441"
+
+  - key: m101
+    name: M101
+    type: spiral
+    ra: 210.8023
+    dec: 54.3490
+    photometry:
+      u: 9.21
+      g: 8.35
+      r: 7.86
+      i: 7.61
+      z: 7.44
+      redshift_z: 0.000804
+    expected:
+      age_gyr_min: 0.01
+      age_gyr_max: 1.0
+      metallicity_z_min: 0.0006
+      metallicity_z_max: 0.02
+      sfh_models: [exponential, constant, delayed_exponential]
+    references:
+      - "M101 late-type star-forming spiral benchmark"

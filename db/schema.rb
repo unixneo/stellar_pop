@@ -10,7 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_28_183000) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_29_113000) do
+  create_table "calibration_runs", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "status", default: "pending", null: false
+    t.text "result_json"
+    t.text "error_message"
+    t.integer "runtime_seconds"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "progress_completed", default: 0, null: false
+    t.integer "progress_total", default: 0, null: false
+    t.string "current_step"
+  end
+
   create_table "grid_fits", force: :cascade do |t|
     t.string "name"
     t.string "target_name"

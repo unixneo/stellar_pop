@@ -34,6 +34,7 @@
 - [x] Add local SDSS reference catalog CSV and nearest-object lookup
 - [x] Add local catalog metadata fields (`agn`, `sdss_dr`) and galaxy-only target selection
 - [x] Add parameter grid sweep fitting (GridFit) with ranked chi-squared results
+- [x] Add benchmark calibration workflow (`CalibrationRun`) with pass/warn/fail summary and ranked benchmark fits
 - [ ] Add more galaxy targets to local SDSS catalog
 - [ ] Add side-by-side run comparison view
 - [ ] Add spectrum data export as CSV
@@ -60,6 +61,7 @@
 
 - [x] Add canvas-based spectrum viewer on `SynthesisRun#show`
 - [x] Show pipeline configuration panel with active scientific model selections and citations
+- [x] Add navbar Sidekiq online/offline status indicator (green/red badge)
 - [ ] Add zoom and pan to canvas spectrum viewer
 - [x] Add progress indicator beyond status polling
 - [x] Add visible processing banner for pending/running runs

@@ -225,7 +225,8 @@ StellarPop follows a **blackboard pattern**:
 - `StellarPop::SdssLocalCatalog` (local SDSS photometry lookup from curated CSV)
 - `StellarPop::SdssClient` (Faraday-based SDSS SkyServer DR18 SQL client)
 - `SynthesisPipelineJob` (async orchestration + persistence)
-- `GridFitJob` (300-combination parameter sweep + ranked inference output)
+- `GridFitJob` (1050-combination parameter sweep + ranked inference output)
+- `CalibrationRunJob` (benchmark calibration checks against published science targets)
 
 ### Pipeline Flow
 
@@ -298,20 +299,30 @@ Then open `http://localhost:3000`.
   - SDSS `ugriz` photometry table (if fetched)
 - `/synthesis_runs/seed_test` creates a randomized test run (unique name, randomized model parameters, random local SDSS target).
 - `/sidekiq` exposes Sidekiq Web UI.
-- Navbar includes a dynamic git-derived version badge (e.g., `v0.3.0-4-g<sha>`).
+- Navbar includes a dynamic git-derived version badge (e.g., `v0.3.0-4-g<sha>`) and a Sidekiq status dot (green=online, red=offline).
 
 ### Parameter Grid Fitting
 
 - Visit `/grid_fits/new` and enter galaxy coordinates.
-- The pipeline automatically sweeps 300 parameter combinations:
+- The pipeline automatically sweeps 1050 parameter combinations:
   10 ages (`[0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0]` Gyr)
-  × 5 metallicities × 3 SFH models × 2 IMFs.
+  × 5 metallicities × 3 IMFs × (3 non-burst SFH models + 4 burst-age variants).
 - For `sfh_model=burst`, the burst center is configurable via `burst_age_gyr`
-  and swept on a dedicated grid: `[0.1, 0.5, 1.0, 2.0]` Gyr.
+  and swept on `[0.1, 0.5, 1.0, 2.0]` Gyr.
 - Results are ranked by chi-squared.
 - Best-fit age, metallicity, and SFH are identified automatically.
 - This is the primary scientific use case: infer physical galaxy properties
   from observed photometry through systematic model comparison.
+
+### Calibration Benchmarks
+
+- Visit `/calibration_runs/new` to run benchmark calibration checks.
+- Current benchmark set includes `NGC3379` and `M101`, each with fixed reference photometry and expected physical ranges.
+- Calibration executes the full grid sweep for each benchmark and stores:
+  - pass/warn/fail verdicts for age/metallicity/SFH-class checks
+  - best-fit parameters and top ranked solutions
+  - summary counts across all benchmarks
+- `/calibration_runs/:id` includes a dedicated progress panel (separate from the top status banner) with completed/total combinations, current benchmark step, and ETA.
 
 ## Scientific Results
 

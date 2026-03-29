@@ -1,4 +1,5 @@
 require "open3"
+require "sidekiq/api"
 
 module ApplicationHelper
   def app_version_label
@@ -9,5 +10,11 @@ module ApplicationHelper
     rescue StandardError
       "unknown"
     end
+  end
+
+  def sidekiq_online?
+    @sidekiq_online ||= Sidekiq::ProcessSet.new.any?
+  rescue StandardError
+    false
   end
 end
