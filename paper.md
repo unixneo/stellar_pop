@@ -53,6 +53,14 @@ First grid-fit results show plausible astrophysical behavior and known photometr
 
 To reduce interpretation burden for non-specialists, Grid Fit outputs now include a deterministic plain-language summary generated from the best-fit parameters (age class, enrichment level, SFH interpretation, and qualitative fit-strength bucket from chi-squared), without requiring any LLM dependency.
 
+## Validation Against Published Results
+
+For NGC3379, published spectroscopic measurements from Terlevich & Forbes (2002) report age `9.3` Gyr and `[Fe/H]=+0.16`, and HST NICMOS resolved-population measurements from Gregg et al. (2004) find ages `>8` Gyr with mean metallicity around solar in outer regions. StellarPop returns best-fit age `0.5` Gyr and `Z=0.02` (solar metallicity). The metallicity is consistent with published results, while the best-fit age is significantly too young. However, ranked outputs include old-age (`8-12` Gyr) solutions with chi-squared values around `0.21-0.25`, indicating the correct old-population regime is present but not uniquely selected.
+
+This behavior is consistent with the known age-metallicity degeneracy in broadband photometric SPS fitting. As described by Worthey (1994), the "3/2 rule" implies that increasing age by a factor of three is approximately degenerate with increasing metallicity by a factor of two in broadband colors. Breaking this degeneracy generally requires additional constraints such as UV coverage (`u`-band or shorter) or spectroscopic line indices (e.g., Balmer absorption), which are not fully available in ugriz-only photometric fitting. This is a fundamental limitation of the problem class rather than a StellarPop-specific artifact.
+
+For M101, a well-known actively star-forming late-type spiral, StellarPop returns best-fit age `0.1` Gyr, `Z=0.0063`, and exponential SFH. This is physically consistent with a young, sub-solar metallicity population dominated by recently formed stars and aligns with M101's established star-forming classification.
+
 ## Isochrone validation
 
 Validation against MIST isochrone tables (Choi et al. 2016) indicates that the simple corrections in `StellarPop::KnowledgeSources::Isochrone` agree with MIST to within 2% for solar-mass stars at ages 1-5 Gyr, but diverge significantly for evolved stars and sub-solar masses. `StellarPop::KnowledgeSources::MistIsochrone` is now active in the synthesis pipeline for luminosity weighting across runs. All 12 MIST metallicity grids are loaded at process start, and the nearest [Fe/H] bin is selected automatically from `metallicity_z` using `feh = log10(metallicity_z / 0.0142)`. The selected [Fe/H] bin is included in run-level provenance displayed in the web UI pipeline configuration section.
@@ -74,3 +82,9 @@ Choi, J., Dotter, A., Conroy, C., Cantiello, M., Paxton, B., & Johnson, B. D. (2
 Bass, T. (2026). Blackboard SA. *ACM DTRAP* (under review). Preprint: https://doi.org/10.5281/zenodo.18824512
 
 Bass, T. (2026). StellarPop (Version 0.2.0) [Software]. Zenodo. https://doi.org/10.5281/zenodo.19277971
+
+Terlevich, A. I., & Forbes, D. A. (2002). A catalogue and analysis of ages and metallicities for Galactic globular clusters and nearby galaxies. *Monthly Notices of the Royal Astronomical Society, 330*(2), 547-558.
+
+Gregg, M. D., Ferguson, H. C., Minniti, D., Tanvir, N., & Catchpole, R. (2004). The Stellar Population of the Elliptical Galaxy NGC 3379. *The Astronomical Journal, 127*(3), 1441-1454.
+
+Worthey, G. (1994). Comprehensive stellar population models and the disentanglement of age and metallicity effects. *The Astrophysical Journal Supplement Series, 95*, 107-149.
