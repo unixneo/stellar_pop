@@ -1,14 +1,14 @@
 # TODO
 
-Legend: 🟩 done, 🟨 pending, 🟥 critical pending
+Legend: 🟩 done, 🟨 pending, 🟥 critical pending, 🟦 SDSS blocked
 
 ## Science/Physics
 
-- 🟥 Verify local catalog photometry magnitude type (model vs Petrosian) and update `mag_type` column when SDSS SkyServer is available
-- 🟥 Update `SdssClient` SQL query to fetch `modelMag_u/g/r/i/z` instead of default Petrosian magnitudes when SDSS returns
-- 🟥 Verify and document which photometry type (model vs Petrosian) is used for each catalog entry; switch to model magnitudes for all entries when SDSS returns
-- 🟥 Investigate NGC3379 age estimate — best fit 0.5 Gyr is too young for a known passive elliptical, likely related to photometry magnitude type
-- 🟥 Validate grid fit results against published SPS fits for M101 and NGC3379 from the literature
+- 🟦 Verify local catalog photometry magnitude type (model vs Petrosian) and update `mag_type` column when SDSS SkyServer is available
+- 🟦 Update `SdssClient` SQL query to fetch `modelMag_u/g/r/i/z` instead of default Petrosian magnitudes when SDSS returns
+- 🟦 Verify and document which photometry type (model vs Petrosian) is used for each catalog entry; switch to model magnitudes for all entries when SDSS returns
+- 🟦 Investigate NGC3379 age estimate — best fit 0.5 Gyr is too young for a known passive elliptical, likely related to photometry magnitude type
+- 🟦 Validate grid fit results against published SPS fits for M101 and NGC3379 from the literature
 - 🟨 Run `sdss:verify_photometry` rake task and update `sdss_dr` provenance for all catalog entries
 - 🟨 Add more galaxy targets to local SDSS catalog covering wider range of types and environments
 - 🟩 Verify smoothed composite spectrum shape is physically reasonable
