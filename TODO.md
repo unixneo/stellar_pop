@@ -16,7 +16,15 @@
 - [x] Integrate MIST corrections for non-solar metallicities
 - [x] Add wavelength range control to the UI and new run form
 - [x] Download and integrate remaining BaSeL metallicity bins (z0.0002, z0.0006, z0.0020, z0.0063, z0.0632)
+- [ ] Verify local catalog photometry magnitude type (model vs Petrosian) and update `mag_type` column when SDSS SkyServer is available
+- [ ] Update `SdssClient` SQL query to fetch `modelMag_u/g/r/i/z` instead of default Petrosian magnitudes when SDSS returns
+- [ ] Run `sdss:verify_photometry` rake task and update `sdss_dr` provenance for all catalog entries
+- [ ] Add Chabrier (2003) IMF as a third option alongside Kroupa and Salpeter
+- [ ] Add delayed exponential SFH model (`tau * t * exp(-t/tau)`)
+- [ ] Investigate NGC3379 age estimate — best fit 0.5 Gyr is too young for a known passive elliptical, likely related to photometry magnitude type
 - [ ] Extend grid sweep to include `burst_age_gyr` variation
+- [ ] Add more galaxy targets to local SDSS catalog covering wider range of types and environments
+- [ ] Validate grid fit results against published SPS fits for M101 and NGC3379 from the literature
 
 ## Data and Persistence
 
