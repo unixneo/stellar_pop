@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_29_194100) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_29_204112) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -74,6 +74,20 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_29_194100) do
     t.index ["galaxy_id"], name: "index_grid_fits_on_galaxy_id"
   end
 
+  create_table "observations", force: :cascade do |t|
+    t.integer "galaxy_id", null: false
+    t.string "source_paper"
+    t.float "age_gyr"
+    t.float "metallicity_z"
+    t.float "stellar_mass"
+    t.float "sfr"
+    t.string "method_used"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["galaxy_id"], name: "index_observations_on_galaxy_id"
+  end
+
   create_table "pipeline_configs", force: :cascade do |t|
     t.text "settings_json", default: "{}", null: false
     t.datetime "created_at", null: false
@@ -114,6 +128,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_29_194100) do
   end
 
   add_foreign_key "grid_fits", "galaxies"
+  add_foreign_key "observations", "galaxies"
   add_foreign_key "spectrum_results", "synthesis_runs"
   add_foreign_key "synthesis_runs", "galaxies"
 end

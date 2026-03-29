@@ -1,3 +1,4 @@
+# Seed source only: runtime benchmark expectations are loaded from the DB-backed Observation model.
 benchmarks:
   - key: ngc3379
     name: NGC3379

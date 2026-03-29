@@ -42,9 +42,11 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 - 🟨 Back-fill `galaxy_id` on existing `synthesis_runs` and `grid_fits`
 - 🟨 Add `observations` table for academic benchmark data
 - 🟨 Build galaxy import tool to load new galaxies from CSV or GSWLC
+- 🟨 Retire `SdssLocalCatalog` after all tests/docs are migrated to `Galaxy` model lookups
 - 🟩 Add local SDSS reference catalog CSV and nearest-object lookup
 - 🟩 Add local catalog metadata fields (`agn`, `sdss_dr`) and galaxy-only target selection
 - 🟩 Migrate galaxy photometry to SQLite `galaxies` table and add `galaxy_id` foreign keys on `synthesis_runs`/`grid_fits`
+- 🟩 Switch synthesis/grid runtime lookup path from `SdssLocalCatalog` to `Galaxy` table (`find_by(name)` / `find_by_ra_dec`)
 - 🟩 Add parameter grid sweep fitting (GridFit) with ranked chi-squared results
 - 🟩 Add benchmark calibration workflow (`CalibrationRun`) with pass/warn/fail summary and ranked benchmark fits
 

@@ -93,7 +93,7 @@ class CalibrationRunJob < ApplicationJob
   private
 
   def selected_benchmarks(options)
-    all = StellarPop::Calibration::BenchmarkCatalog.all
+    all = StellarPop::Calibration::BenchmarkCatalog.new.benchmarks
     requested = Array(options[:benchmark_keys] || options["benchmark_keys"]).map(&:to_s).uniq
     return all if requested.empty?
 

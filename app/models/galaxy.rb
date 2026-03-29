@@ -1,6 +1,7 @@
 class Galaxy < ApplicationRecord
   has_many :synthesis_runs, dependent: :nullify
   has_many :grid_fits, dependent: :nullify
+  has_many :observations, dependent: :destroy
 
   validates :name, presence: true
   validates :ra, presence: true
