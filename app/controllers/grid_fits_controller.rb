@@ -1,9 +1,4 @@
 class GridFitsController < ApplicationController
-  AGES_GYR = [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0].freeze
-  METALLICITIES_Z = [0.0006, 0.0020, 0.0063, 0.0200, 0.0632].freeze
-  SFH_MODELS = %w[exponential delayed_exponential constant burst].freeze
-  IMF_TYPES = %w[kroupa salpeter chabrier].freeze
-
   def index
     @grid_fits = GridFit.order(created_at: :desc)
   end
@@ -16,6 +11,12 @@ class GridFitsController < ApplicationController
   def new
     @grid_fit = GridFit.new
     @catalog_targets = StellarPop::SdssLocalCatalog.galaxy_targets.sort_by { |target| target[:name].to_s }
+    @config = PipelineConfig.current
+    @grid_ages = @config.float_array("grid_ages_gyr")
+    @grid_metallicities = @config.float_array("grid_metallicities_z")
+    @grid_sfh_models = @config.string_array("grid_sfh_models")
+    @grid_imf_types = @config.string_array("grid_imf_types")
+    @grid_burst_ages = @config.float_array("grid_burst_ages_gyr")
   end
 
   def create
@@ -28,6 +29,12 @@ class GridFitsController < ApplicationController
       redirect_to @grid_fit, notice: "Grid fit created."
     else
       @catalog_targets = StellarPop::SdssLocalCatalog.galaxy_targets.sort_by { |target| target[:name].to_s }
+      @config = PipelineConfig.current
+      @grid_ages = @config.float_array("grid_ages_gyr")
+      @grid_metallicities = @config.float_array("grid_metallicities_z")
+      @grid_sfh_models = @config.string_array("grid_sfh_models")
+      @grid_imf_types = @config.string_array("grid_imf_types")
+      @grid_burst_ages = @config.float_array("grid_burst_ages_gyr")
       render :new, status: :unprocessable_entity
     end
   end
@@ -45,11 +52,17 @@ class GridFitsController < ApplicationController
   end
 
   def sweep_params
+    config = PipelineConfig.current
+    allowed_ages = config.float_array("grid_ages_gyr")
+    allowed_metallicities = config.float_array("grid_metallicities_z")
+    allowed_sfh_models = config.string_array("grid_sfh_models")
+    allowed_imf_types = config.string_array("grid_imf_types")
+
     {
-      ages_gyr: sanitize_float_array(params[:sweep_ages], AGES_GYR),
-      metallicities_z: sanitize_float_array(params[:sweep_metallicities], METALLICITIES_Z),
-      sfh_models: sanitize_string_array(params[:sweep_sfh_models], SFH_MODELS),
-      imf_types: sanitize_string_array(params[:sweep_imf_types], IMF_TYPES)
+      ages_gyr: sanitize_float_array(params[:sweep_ages], allowed_ages),
+      metallicities_z: sanitize_float_array(params[:sweep_metallicities], allowed_metallicities),
+      sfh_models: sanitize_string_array(params[:sweep_sfh_models], allowed_sfh_models),
+      imf_types: sanitize_string_array(params[:sweep_imf_types], allowed_imf_types)
     }
   end
 

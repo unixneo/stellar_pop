@@ -64,7 +64,7 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 
 - 🟨 Add zoom and pan to canvas spectrum viewer
 - 🟨 Improve CSS polish across index/new/show views
-- 🟨 Add configuration page for pipeline parameters
+- 🟩 Add configuration page for pipeline parameters
 - 🟨 Add confidence intervals or chi-squared contour plots for grid fit results
 - 🟨 Investigate age-metallicity degeneracy breaking with additional photometric bands
 - 🟨 Document deployment and runbook updates

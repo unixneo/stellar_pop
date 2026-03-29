@@ -15,6 +15,9 @@ Rails.application.routes.draw do
   resources :synthesis_runs, only: %i[index show new create]
   resources :grid_fits, only: %i[index show new create]
   resources :calibration_runs, only: %i[index show new create]
+  resource :pipeline_config, only: %i[show edit update] do
+    patch :reset
+  end
   root "synthesis_runs#index"
 
   # Defines the root path route ("/")

@@ -1,30 +1,25 @@
 class GridFitJob < ApplicationJob
   queue_as :synthesis
 
-  AGES_GYR = [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0].freeze
-  METALLICITIES_Z = [0.0006, 0.0020, 0.0063, 0.0200, 0.0632].freeze
-  SFH_MODELS = %w[exponential delayed_exponential constant burst].freeze
-  IMF_TYPES = %w[kroupa salpeter chabrier].freeze
-  BURST_AGES_GYR = [0.1, 0.5, 1.0, 2.0].freeze
-  AGE_BINS_GYR = [0.1, 0.5, 1.0, 2.0, 4.0, 8.0, 12.0].freeze
-  WAVELENGTH_RANGE_NM = (350.0..2000.0).freeze
-  SDSS_MAX_FETCH_ATTEMPTS = 3
-  SDSS_BASE_BACKOFF_SECONDS = 0.5
-
   def perform(grid_fit_id, sweep_options = {})
+    config = PipelineConfig.current
+    ages_gyr = config.float_array("grid_ages_gyr")
+    metallicities_z = config.float_array("grid_metallicities_z")
+    sfh_models = config.string_array("grid_sfh_models")
+    imf_types = config.string_array("grid_imf_types")
     started_at = Time.current
     grid_fit = GridFit.find(grid_fit_id)
     grid_fit.update!(status: "running", error_message: nil)
-    selected_ages = sanitize_float_array(sweep_options["ages_gyr"] || sweep_options[:ages_gyr], AGES_GYR)
-    selected_metallicities = sanitize_float_array(sweep_options["metallicities_z"] || sweep_options[:metallicities_z], METALLICITIES_Z)
-    selected_sfh_models = sanitize_string_array(sweep_options["sfh_models"] || sweep_options[:sfh_models], SFH_MODELS)
-    selected_imf_types = sanitize_string_array(sweep_options["imf_types"] || sweep_options[:imf_types], IMF_TYPES)
+    selected_ages = sanitize_float_array(sweep_options["ages_gyr"] || sweep_options[:ages_gyr], ages_gyr)
+    selected_metallicities = sanitize_float_array(sweep_options["metallicities_z"] || sweep_options[:metallicities_z], metallicities_z)
+    selected_sfh_models = sanitize_string_array(sweep_options["sfh_models"] || sweep_options[:sfh_models], sfh_models)
+    selected_imf_types = sanitize_string_array(sweep_options["imf_types"] || sweep_options[:imf_types], imf_types)
 
     sdss_target = StellarPop::SdssLocalCatalog.lookup_target(grid_fit.sdss_ra, grid_fit.sdss_dec)
     sdss_photometry, live_failure_reason = if sdss_target
       [build_photometry_hash(sdss_target), nil]
     else
-      fetch_sdss_photometry_with_retry(StellarPop::SdssClient.new, grid_fit.sdss_ra, grid_fit.sdss_dec)
+      fetch_sdss_photometry_with_retry(StellarPop::SdssClient.new, grid_fit.sdss_ra, grid_fit.sdss_dec, config)
     end
 
     unless sdss_photometry
@@ -44,7 +39,7 @@ class GridFitJob < ApplicationJob
     selected_ages.each do |age_gyr|
       selected_metallicities.each do |metallicity_z|
         selected_sfh_models.each do |sfh_model|
-          burst_ages_for_model(sfh_model).each do |burst_age_gyr|
+          burst_ages_for_model(sfh_model, config).each do |burst_age_gyr|
             selected_imf_types.each do |imf_type|
               blackboard = build_blackboard(
                 age_gyr: age_gyr,
@@ -52,7 +47,8 @@ class GridFitJob < ApplicationJob
                 sfh_model: sfh_model,
                 imf_type: imf_type,
                 burst_age_gyr: burst_age_gyr,
-                seed: grid_fit.id.to_i * 10_000 + combination_index
+                seed: grid_fit.id.to_i * 10_000 + combination_index,
+                config: config
               )
 
               integrator = StellarPop::Integrator::SpectralIntegrator.new(
@@ -98,15 +94,15 @@ class GridFitJob < ApplicationJob
 
   private
 
-  def build_blackboard(age_gyr:, metallicity_z:, sfh_model:, imf_type:, burst_age_gyr:, seed:)
+  def build_blackboard(age_gyr:, metallicity_z:, sfh_model:, imf_type:, burst_age_gyr:, seed:, config:)
     blackboard = StellarPop::Blackboard.new
 
     imf_sampler = StellarPop::KnowledgeSources::ImfSampler.new(seed: seed, imf_type: imf_type.to_sym)
-    imf_masses = imf_sampler.sample(1000)
+    imf_masses = imf_sampler.sample(config.int_value("grid_imf_sample_size"))
 
-    age_bins = build_age_bins_for_sweep(age_gyr)
+    age_bins = build_age_bins_for_sweep(age_gyr, config.float_array("grid_age_bins_gyr"))
     sfh = StellarPop::KnowledgeSources::SfhModel.new
-    sfh_weights = build_sfh_weights(sfh, sfh_model, age_gyr, burst_age_gyr, age_bins)
+    sfh_weights = build_sfh_weights(sfh, sfh_model, age_gyr, burst_age_gyr, age_bins, config)
 
     blackboard.write(:imf_masses, imf_masses)
     blackboard.write(:age_gyr, age_gyr.to_f)
@@ -114,45 +110,37 @@ class GridFitJob < ApplicationJob
     blackboard.write(:sfh_model, sfh_model.to_sym)
     blackboard.write(:age_bins, age_bins)
     blackboard.write(:sfh_weights, sfh_weights)
-    blackboard.write(:wavelength_range, WAVELENGTH_RANGE_NM)
+    blackboard.write(:wavelength_range, build_wavelength_range(config))
     blackboard
   end
 
-  def build_sfh_weights(sfh, sfh_model, age_gyr, burst_age_gyr, age_bins)
+  def build_sfh_weights(sfh, sfh_model, _age_gyr, burst_age_gyr, age_bins, config)
     case sfh_model
     when "exponential"
-      sfh.weights(:exponential, age_bins, tau: 3.0)
+      sfh.weights(:exponential, age_bins, tau: config.float_value("grid_exponential_tau"))
     when "delayed_exponential"
-      sfh.weights(:delayed_exponential, age_bins, tau: 3.0)
+      sfh.weights(:delayed_exponential, age_bins, tau: config.float_value("grid_delayed_exponential_tau"))
     when "burst"
       center = burst_age_gyr.to_f
       center = age_bins.first.to_f unless center.positive?
-      sfh.weights(:burst, age_bins, burst_age_gyr: center, width_gyr: 0.5)
+      sfh.weights(:burst, age_bins, burst_age_gyr: center, width_gyr: config.float_value("grid_burst_width_gyr"))
     else
       sfh.weights(:constant, age_bins, {})
     end
   end
 
-  def burst_ages_for_model(sfh_model)
-    return BURST_AGES_GYR if sfh_model.to_s == "burst"
+  def burst_ages_for_model(sfh_model, config)
+    return config.float_array("grid_burst_ages_gyr") if sfh_model.to_s == "burst"
 
     [nil]
   end
 
-  def build_age_bins_for_sweep(age_gyr)
+  def build_age_bins_for_sweep(age_gyr, configured_bins)
     target_age = age_gyr.to_f
-    bins = AGE_BINS_GYR.select { |value| value <= target_age }
+    bins = configured_bins.select { |value| value <= target_age }
     bins << target_age unless bins.include?(target_age)
     bins = [target_age] if bins.empty?
     bins.sort.uniq
-  end
-
-  def weighted_mean_age(age_bins, sfh_weights)
-    numerator = age_bins.zip(sfh_weights).sum { |age, weight| age.to_f * weight.to_f }
-    denominator = sfh_weights.sum(&:to_f)
-    return age_bins.first.to_f unless denominator.positive?
-
-    numerator / denominator
   end
 
   def build_photometry_hash(target)
@@ -166,19 +154,21 @@ class GridFitJob < ApplicationJob
     }
   end
 
-  def fetch_sdss_photometry_with_retry(sdss_client, ra, dec)
+  def fetch_sdss_photometry_with_retry(sdss_client, ra, dec, config)
+    max_fetch_attempts = [config.int_value("grid_sdss_max_fetch_attempts"), 1].max
+    base_backoff_seconds = [config.float_value("grid_sdss_base_backoff_seconds"), 0.0].max
     attempt = 0
     last_reason = nil
 
-    while attempt < SDSS_MAX_FETCH_ATTEMPTS
+    while attempt < max_fetch_attempts
       attempt += 1
       photometry = sdss_client.fetch_photometry(ra, dec)
       return [photometry, nil] if photometry
       last_reason = sdss_client.respond_to?(:last_failure_reason) ? sdss_client.last_failure_reason : nil
 
-      break if attempt >= SDSS_MAX_FETCH_ATTEMPTS
+      break if attempt >= max_fetch_attempts
 
-      sleep_backoff(SDSS_BASE_BACKOFF_SECONDS * (2**(attempt - 1)))
+      sleep_backoff(base_backoff_seconds * (2**(attempt - 1)))
     end
 
     [nil, last_reason]
@@ -263,5 +253,12 @@ class GridFitJob < ApplicationJob
     else
       "SDSS photometry unavailable: local catalog miss; live SDSS API request failed."
     end
+  end
+
+  def build_wavelength_range(config)
+    min_nm = config.float_value("grid_wavelength_min_nm")
+    max_nm = config.float_value("grid_wavelength_max_nm")
+    min_nm, max_nm = [min_nm, max_nm].minmax
+    min_nm..max_nm
   end
 end

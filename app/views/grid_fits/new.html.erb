@@ -38,7 +38,7 @@
   <h2>Parameter Grid Sweep</h2>
   <div style="font-family: monospace; border: 1px solid #334155; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
     <p><strong>Ages (Gyr)</strong></p>
-    <% [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0].each do |value| %>
+    <% @grid_ages.each do |value| %>
       <label>
         <%= check_box_tag "sweep_ages[]", value, true, class: "grid-checkbox", data: { group: "ages" } %>
         <%= value %>
@@ -46,7 +46,7 @@
     <% end %>
 
     <p><strong>Metallicities</strong></p>
-    <% [0.0006, 0.0020, 0.0063, 0.0200, 0.0632].each do |value| %>
+    <% @grid_metallicities.each do |value| %>
       <label>
         <%= check_box_tag "sweep_metallicities[]", value, true, class: "grid-checkbox", data: { group: "metallicities" } %>
         <%= value %>
@@ -54,7 +54,7 @@
     <% end %>
 
     <p><strong>SFH Models</strong></p>
-    <% %w[exponential delayed_exponential constant burst].each do |value| %>
+    <% @grid_sfh_models.each do |value| %>
       <label>
         <%= check_box_tag "sweep_sfh_models[]", value, true, class: "grid-checkbox", data: { group: "sfh_models" } %>
         <%= value %>
@@ -62,15 +62,15 @@
     <% end %>
 
     <p><strong>IMF Types</strong></p>
-    <% %w[kroupa salpeter chabrier].each do |value| %>
+    <% @grid_imf_types.each do |value| %>
       <label>
         <%= check_box_tag "sweep_imf_types[]", value, true, class: "grid-checkbox", data: { group: "imf_types" } %>
         <%= value %>
       </label>
     <% end %>
 
-    <p><strong>Burst age grid (applies only when SFH=burst):</strong> [0.1, 0.5, 1.0, 2.0] Gyr</p>
-    <p><strong>Total combinations:</strong> <span id="grid-total-combinations">1050</span></p>
+    <p><strong>Burst age grid (applies only when SFH=burst):</strong> [<%= @grid_burst_ages.join(", ") %>] Gyr</p>
+    <p><strong>Total combinations:</strong> <span id="grid-total-combinations">0</span></p>
   </div>
 
       <p><%= f.submit "Create Grid Fit" %></p>
@@ -88,6 +88,7 @@
     const coordLabel = document.getElementById("selected-coordinates");
     const totalLabel = document.getElementById("grid-total-combinations");
     const checkboxes = Array.from(document.querySelectorAll(".grid-checkbox"));
+    const burstAgeCount = <%= @grid_burst_ages.size %>;
 
     function updateTargetSelection() {
       if (!select || select.selectedIndex < 0) return;
@@ -117,7 +118,7 @@
         .map((checkbox) => checkbox.value);
       const hasBurst = selectedSfh.includes("burst");
       const nonBurstCount = selectedSfh.filter((value) => value !== "burst").length;
-      const sfhEffectiveCount = nonBurstCount + (hasBurst ? 4 : 0);
+      const sfhEffectiveCount = nonBurstCount + (hasBurst ? burstAgeCount : 0);
       const total = ageCount * metallicityCount * imfCount * sfhEffectiveCount;
       if (totalLabel) totalLabel.textContent = total.toString();
     }

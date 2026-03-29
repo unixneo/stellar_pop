@@ -1,0 +1,59 @@
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title">Pipeline Configuration</h1>
+      <p class="card-subtitle">Edit runtime constants used by synthesis, grid fitting, and benchmark jobs.</p>
+    </div>
+  </div>
+  <%= form_with model: @pipeline_config, url: pipeline_config_path, method: :patch do |f| %>
+      <div class="form-card">
+        <h2>Synthesis Pipeline</h2>
+        <p><%= f.label :synthesis_age_bins_gyr, "Age bins (Gyr, comma-separated)" %><br><%= f.text_field :synthesis_age_bins_gyr, value: Array(@settings["synthesis_age_bins_gyr"]).join(", ") %></p>
+        <p><%= f.label :synthesis_imf_sample_size, "IMF sample size" %><br><%= f.number_field :synthesis_imf_sample_size, value: @settings["synthesis_imf_sample_size"], min: 10, step: 10 %></p>
+        <p><%= f.label :synthesis_exponential_tau, "Exponential SFH tau (Gyr)" %><br><%= f.number_field :synthesis_exponential_tau, value: @settings["synthesis_exponential_tau"], step: 0.1 %></p>
+        <p><%= f.label :synthesis_delayed_exponential_tau, "Delayed-exponential SFH tau (Gyr)" %><br><%= f.number_field :synthesis_delayed_exponential_tau, value: @settings["synthesis_delayed_exponential_tau"], step: 0.1 %></p>
+        <p><%= f.label :synthesis_burst_default_age_gyr, "Burst default age (Gyr)" %><br><%= f.number_field :synthesis_burst_default_age_gyr, value: @settings["synthesis_burst_default_age_gyr"], step: 0.1 %></p>
+        <p><%= f.label :synthesis_burst_default_width_gyr, "Burst default width (Gyr)" %><br><%= f.number_field :synthesis_burst_default_width_gyr, value: @settings["synthesis_burst_default_width_gyr"], step: 0.1 %></p>
+        <p><%= f.label :synthesis_default_wavelength_min_nm, "Default wavelength min (nm)" %><br><%= f.number_field :synthesis_default_wavelength_min_nm, value: @settings["synthesis_default_wavelength_min_nm"], step: 1 %></p>
+        <p><%= f.label :synthesis_default_wavelength_max_nm, "Default wavelength max (nm)" %><br><%= f.number_field :synthesis_default_wavelength_max_nm, value: @settings["synthesis_default_wavelength_max_nm"], step: 1 %></p>
+        <p><%= f.label :synthesis_sdss_max_fetch_attempts, "SDSS max fetch attempts" %><br><%= f.number_field :synthesis_sdss_max_fetch_attempts, value: @settings["synthesis_sdss_max_fetch_attempts"], min: 1, step: 1 %></p>
+        <p><%= f.label :synthesis_sdss_base_backoff_seconds, "SDSS backoff base seconds" %><br><%= f.number_field :synthesis_sdss_base_backoff_seconds, value: @settings["synthesis_sdss_base_backoff_seconds"], step: 0.1 %></p>
+      </div>
+
+      <div class="form-card">
+        <h2>Grid Fit</h2>
+        <p><%= f.label :grid_ages_gyr, "Ages (Gyr, comma-separated)" %><br><%= f.text_field :grid_ages_gyr, value: Array(@settings["grid_ages_gyr"]).join(", ") %></p>
+        <p><%= f.label :grid_metallicities_z, "Metallicities Z (comma-separated)" %><br><%= f.text_field :grid_metallicities_z, value: Array(@settings["grid_metallicities_z"]).join(", ") %></p>
+        <p><%= f.label :grid_sfh_models, "SFH models (comma-separated)" %><br><%= f.text_field :grid_sfh_models, value: Array(@settings["grid_sfh_models"]).join(", ") %></p>
+        <p><%= f.label :grid_imf_types, "IMF types (comma-separated)" %><br><%= f.text_field :grid_imf_types, value: Array(@settings["grid_imf_types"]).join(", ") %></p>
+        <p><%= f.label :grid_burst_ages_gyr, "Burst ages (Gyr, comma-separated)" %><br><%= f.text_field :grid_burst_ages_gyr, value: Array(@settings["grid_burst_ages_gyr"]).join(", ") %></p>
+        <p><%= f.label :grid_age_bins_gyr, "Internal age bins for SFH weighting (Gyr)" %><br><%= f.text_field :grid_age_bins_gyr, value: Array(@settings["grid_age_bins_gyr"]).join(", ") %></p>
+        <p><%= f.label :grid_imf_sample_size, "IMF sample size" %><br><%= f.number_field :grid_imf_sample_size, value: @settings["grid_imf_sample_size"], min: 10, step: 10 %></p>
+        <p><%= f.label :grid_wavelength_min_nm, "Wavelength min (nm)" %><br><%= f.number_field :grid_wavelength_min_nm, value: @settings["grid_wavelength_min_nm"], step: 1 %></p>
+        <p><%= f.label :grid_wavelength_max_nm, "Wavelength max (nm)" %><br><%= f.number_field :grid_wavelength_max_nm, value: @settings["grid_wavelength_max_nm"], step: 1 %></p>
+        <p><%= f.label :grid_exponential_tau, "Exponential SFH tau (Gyr)" %><br><%= f.number_field :grid_exponential_tau, value: @settings["grid_exponential_tau"], step: 0.1 %></p>
+        <p><%= f.label :grid_delayed_exponential_tau, "Delayed-exponential SFH tau (Gyr)" %><br><%= f.number_field :grid_delayed_exponential_tau, value: @settings["grid_delayed_exponential_tau"], step: 0.1 %></p>
+        <p><%= f.label :grid_burst_width_gyr, "Burst width (Gyr)" %><br><%= f.number_field :grid_burst_width_gyr, value: @settings["grid_burst_width_gyr"], step: 0.1 %></p>
+        <p><%= f.label :grid_sdss_max_fetch_attempts, "SDSS max fetch attempts" %><br><%= f.number_field :grid_sdss_max_fetch_attempts, value: @settings["grid_sdss_max_fetch_attempts"], min: 1, step: 1 %></p>
+        <p><%= f.label :grid_sdss_base_backoff_seconds, "SDSS backoff base seconds" %><br><%= f.number_field :grid_sdss_base_backoff_seconds, value: @settings["grid_sdss_base_backoff_seconds"], step: 0.1 %></p>
+      </div>
+
+      <div class="form-card">
+        <h2>Benchmark Run</h2>
+        <p><%= f.label :calibration_progress_write_every, "Progress write frequency (steps)" %><br><%= f.number_field :calibration_progress_write_every, value: @settings["calibration_progress_write_every"], min: 1, step: 1 %></p>
+        <p><%= f.label :calibration_fast_ages_gyr, "Fast mode ages (Gyr, comma-separated)" %><br><%= f.text_field :calibration_fast_ages_gyr, value: Array(@settings["calibration_fast_ages_gyr"]).join(", ") %></p>
+        <p><%= f.label :calibration_fast_metallicities_z, "Fast mode metallicities (comma-separated)" %><br><%= f.text_field :calibration_fast_metallicities_z, value: Array(@settings["calibration_fast_metallicities_z"]).join(", ") %></p>
+        <p><%= f.label :calibration_fast_sfh_models, "Fast mode SFH models (comma-separated)" %><br><%= f.text_field :calibration_fast_sfh_models, value: Array(@settings["calibration_fast_sfh_models"]).join(", ") %></p>
+        <p><%= f.label :calibration_fast_imf_types, "Fast mode IMF types (comma-separated)" %><br><%= f.text_field :calibration_fast_imf_types, value: Array(@settings["calibration_fast_imf_types"]).join(", ") %></p>
+        <p><%= f.label :calibration_fast_burst_ages_gyr, "Fast mode burst ages (comma-separated)" %><br><%= f.text_field :calibration_fast_burst_ages_gyr, value: Array(@settings["calibration_fast_burst_ages_gyr"]).join(", ") %></p>
+      </div>
+
+      <div class="config-save-row">
+        <%= f.submit "Save Configuration" %>
+      </div>
+  <% end %>
+
+<div class="config-reset-row">
+  <%= button_to "Reset To Defaults", reset_pipeline_config_path, method: :patch, class: "button-reset-defaults", form: { class: "inline-reset-form" }, data: { turbo_confirm: "Reset all pipeline settings to defaults?" } %>
+</div>
+</div>

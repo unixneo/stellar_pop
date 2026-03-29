@@ -1,13 +1,10 @@
 class SynthesisPipelineJob < ApplicationJob
   queue_as :synthesis
 
-  AGE_BINS_GYR = [0.1, 0.5, 1.0, 2.0, 4.0, 8.0, 12.0].freeze
-  DEFAULT_WAVELENGTH_MIN_NM = 350.0
-  DEFAULT_WAVELENGTH_MAX_NM = 900.0
-  SDSS_MAX_FETCH_ATTEMPTS = 3
-  SDSS_BASE_BACKOFF_SECONDS = 0.5
-
   def perform(synthesis_run_id)
+    config = PipelineConfig.current
+    age_bins_gyr = config.float_array("synthesis_age_bins_gyr")
+    imf_sample_size = config.int_value("synthesis_imf_sample_size")
     synthesis_run = SynthesisRun.find(synthesis_run_id)
     synthesis_run.update!(status: "running", error_message: nil)
 
@@ -17,14 +14,14 @@ class SynthesisPipelineJob < ApplicationJob
       seed: synthesis_run.id.to_i,
       imf_type: synthesis_run.imf_type.to_sym
     )
-    imf_masses = imf_sampler.sample(1000)
+    imf_masses = imf_sampler.sample(imf_sample_size)
 
     sfh_model = StellarPop::KnowledgeSources::SfhModel.new
     sfh_model_symbol = normalize_sfh_model(synthesis_run.sfh_model)
-    sfh_weights = build_sfh_weights(sfh_model, sfh_model_symbol, synthesis_run)
+    sfh_weights = build_sfh_weights(sfh_model, sfh_model_symbol, synthesis_run, age_bins_gyr, config)
     run_age_gyr = synthesis_run.age_gyr.to_f
-    run_age_gyr = AGE_BINS_GYR.first.to_f unless run_age_gyr.positive?
-    wavelength_range = build_wavelength_range(synthesis_run)
+    run_age_gyr = age_bins_gyr.first.to_f unless run_age_gyr.positive?
+    wavelength_range = build_wavelength_range(synthesis_run, config)
 
     blackboard.write(:imf_masses, imf_masses)
     blackboard.write(:age_gyr, run_age_gyr)
@@ -32,7 +29,7 @@ class SynthesisPipelineJob < ApplicationJob
     blackboard.write(:sfh_model, sfh_model_symbol)
     blackboard.write(:sdss_ra, synthesis_run.sdss_ra)
     blackboard.write(:sdss_dec, synthesis_run.sdss_dec)
-    blackboard.write(:age_bins, AGE_BINS_GYR)
+    blackboard.write(:age_bins, age_bins_gyr)
     blackboard.write(:sfh_weights, sfh_weights)
     blackboard.write(:wavelength_range, wavelength_range)
 
@@ -64,7 +61,8 @@ class SynthesisPipelineJob < ApplicationJob
         sdss_photometry, live_failure_reason = fetch_sdss_photometry_with_retry(
           sdss_client,
           synthesis_run.sdss_ra,
-          synthesis_run.sdss_dec
+          synthesis_run.sdss_dec,
+          config
         )
         sdss_fetch_note =
           if sdss_photometry
@@ -114,20 +112,20 @@ class SynthesisPipelineJob < ApplicationJob
     :constant
   end
 
-  def build_sfh_weights(sfh_model, sfh_model_symbol, synthesis_run)
+  def build_sfh_weights(sfh_model, sfh_model_symbol, synthesis_run, age_bins_gyr, config)
     case sfh_model_symbol
     when :exponential
-      sfh_model.weights(:exponential, AGE_BINS_GYR, tau: 3.0)
+      sfh_model.weights(:exponential, age_bins_gyr, tau: config.float_value("synthesis_exponential_tau"))
     when :delayed_exponential
-      sfh_model.weights(:delayed_exponential, AGE_BINS_GYR, tau: 3.0)
+      sfh_model.weights(:delayed_exponential, age_bins_gyr, tau: config.float_value("synthesis_delayed_exponential_tau"))
     when :burst
       burst_age = synthesis_run.burst_age_gyr.to_f
       burst_width = synthesis_run.burst_width_gyr.to_f
-      burst_age = 2.0 unless burst_age.positive?
-      burst_width = 0.5 unless burst_width.positive?
-      sfh_model.weights(:burst, AGE_BINS_GYR, burst_age_gyr: burst_age, width_gyr: burst_width)
+      burst_age = config.float_value("synthesis_burst_default_age_gyr") unless burst_age.positive?
+      burst_width = config.float_value("synthesis_burst_default_width_gyr") unless burst_width.positive?
+      sfh_model.weights(:burst, age_bins_gyr, burst_age_gyr: burst_age, width_gyr: burst_width)
     else
-      sfh_model.weights(:constant, AGE_BINS_GYR, {})
+      sfh_model.weights(:constant, age_bins_gyr, {})
     end
   end
 
@@ -138,19 +136,11 @@ class SynthesisPipelineJob < ApplicationJob
     StellarPop::KnowledgeSources::BaselSpectra.new
   end
 
-  def weighted_mean_age(age_bins, sfh_weights)
-    numerator = age_bins.zip(sfh_weights).sum { |age, weight| age.to_f * weight.to_f }
-    denominator = sfh_weights.sum(&:to_f)
-    return age_bins.first.to_f unless denominator.positive?
-
-    numerator / denominator
-  end
-
-  def build_wavelength_range(synthesis_run)
+  def build_wavelength_range(synthesis_run, config)
     min_nm = synthesis_run.wavelength_min.to_f
     max_nm = synthesis_run.wavelength_max.to_f
-    min_nm = DEFAULT_WAVELENGTH_MIN_NM unless min_nm.positive?
-    max_nm = DEFAULT_WAVELENGTH_MAX_NM unless max_nm.positive?
+    min_nm = config.float_value("synthesis_default_wavelength_min_nm") unless min_nm.positive?
+    max_nm = config.float_value("synthesis_default_wavelength_max_nm") unless max_nm.positive?
     min_nm, max_nm = [min_nm, max_nm].minmax
 
     min_nm..max_nm
@@ -160,19 +150,21 @@ class SynthesisPipelineJob < ApplicationJob
     !ra.to_f.zero? && !dec.to_f.zero?
   end
 
-  def fetch_sdss_photometry_with_retry(sdss_client, ra, dec)
+  def fetch_sdss_photometry_with_retry(sdss_client, ra, dec, config)
+    max_fetch_attempts = [config.int_value("synthesis_sdss_max_fetch_attempts"), 1].max
+    base_backoff_seconds = [config.float_value("synthesis_sdss_base_backoff_seconds"), 0.0].max
     attempt = 0
     last_reason = nil
 
-    while attempt < SDSS_MAX_FETCH_ATTEMPTS
+    while attempt < max_fetch_attempts
       attempt += 1
       photometry = sdss_client.fetch_photometry(ra, dec)
       return [photometry, nil] if photometry
       last_reason = sdss_client.respond_to?(:last_failure_reason) ? sdss_client.last_failure_reason : nil
 
-      break if attempt >= SDSS_MAX_FETCH_ATTEMPTS
+      break if attempt >= max_fetch_attempts
 
-      sleep_backoff(SDSS_BASE_BACKOFF_SECONDS * (2**(attempt - 1)))
+      sleep_backoff(base_backoff_seconds * (2**(attempt - 1)))
     end
 
     [nil, last_reason]

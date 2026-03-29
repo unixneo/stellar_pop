@@ -2,9 +2,60 @@
 <% elapsed_start_seconds = [Time.current.to_i - @calibration_run.created_at.to_i, 0].max %>
 <% result_mode = @result.is_a?(Hash) ? @result["mode"].to_s : "" %>
 <%
+  inferred_mode = nil
+  if result_mode.blank? && processing
+    config = PipelineConfig.current
+    total_steps = @calibration_run.progress_total.to_i
+    benchmark_count =
+      begin
+        step_text = @calibration_run.current_step.to_s
+        if (match = step_text.match(/Benchmark\s+\d+\/(\d+):/))
+          match[1].to_i
+        elsif @result.is_a?(Hash) && @result["benchmarks"].is_a?(Array)
+          @result["benchmarks"].size
+        else
+          0
+        end
+      rescue StandardError
+        0
+      end
+
+    if total_steps.positive? && benchmark_count.positive?
+      per_benchmark = total_steps / benchmark_count
+
+      full_ages = config.float_array("grid_ages_gyr")
+      full_metallicities = config.float_array("grid_metallicities_z")
+      full_imf_types = config.string_array("grid_imf_types")
+      full_sfh_models = config.string_array("grid_sfh_models")
+      full_burst_ages = config.float_array("grid_burst_ages_gyr")
+      full_non_burst = full_sfh_models.reject { |name| name == "burst" }.size
+      full_effective_sfh = full_non_burst + full_burst_ages.size
+      full_combinations = full_ages.size * full_metallicities.size * full_imf_types.size * full_effective_sfh
+
+      fast_ages = config.float_array("calibration_fast_ages_gyr")
+      fast_metallicities = config.float_array("calibration_fast_metallicities_z")
+      fast_imf_types = config.string_array("calibration_fast_imf_types")
+      fast_sfh_models = config.string_array("calibration_fast_sfh_models")
+      fast_burst_ages = config.float_array("calibration_fast_burst_ages_gyr")
+      fast_non_burst = fast_sfh_models.reject { |name| name == "burst" }.size
+      fast_effective_sfh = fast_non_burst + fast_burst_ages.size
+      fast_combinations = fast_ages.size * fast_metallicities.size * fast_imf_types.size * fast_effective_sfh
+
+      inferred_mode =
+        if per_benchmark == fast_combinations
+          "fast"
+        elsif per_benchmark == full_combinations
+          "full"
+        end
+    end
+  end
+%>
+<%
   run_mode_label =
     if result_mode.present?
       result_mode
+    elsif inferred_mode.present?
+      "#{inferred_mode} (in progress)"
     elsif processing
       "in progress"
     else
@@ -24,9 +75,10 @@
 %>
 <% if processing %>
   <% singular_benchmark = @calibration_run.current_step.to_s.match?(/Benchmark\s+\d+\/1:/) %>
+  <% banner_mode = result_mode.presence || inferred_mode.presence || "configured" %>
   <meta http-equiv="refresh" content="5">
   <div class="processing-banner" style="padding: 10px 14px; border: 1px solid #f59e0b; background: #2b1f07; color: #fde68a; border-radius: 6px; margin: 0 0 14px 0; font-weight: 600;">
-    Running benchmark checks for selected reference <%= singular_benchmark ? "galaxy" : "galaxies" %> (full grid sweep + chi-squared ranking)...
+    Running benchmark checks for selected reference <%= singular_benchmark ? "galaxy" : "galaxies" %> (<%= banner_mode %> grid sweep + chi-squared ranking)...
     <span id="processing-elapsed" data-elapsed-seconds="<%= elapsed_start_seconds %>" style="margin-left: 8px; font-family: monospace;">(elapsed: 0s)</span>
   </div>
 

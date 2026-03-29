@@ -1,13 +1,9 @@
 class CalibrationRunJob < ApplicationJob
   queue_as :synthesis
-  PROGRESS_WRITE_EVERY = 10
-  FAST_AGES_GYR = [0.1, 0.5, 2.0, 8.0, 12.0].freeze
-  FAST_METALLICITIES_Z = [0.0020, 0.0200].freeze
-  FAST_SFH_MODELS = %w[exponential delayed_exponential constant burst].freeze
-  FAST_IMF_TYPES = %w[kroupa salpeter].freeze
-  FAST_BURST_AGES_GYR = [0.5, 2.0].freeze
 
   def perform(calibration_run_id, options = {})
+    config = PipelineConfig.current
+    progress_write_every = [config.int_value("calibration_progress_write_every"), 1].max
     started_at = Time.current
     calibration_run = CalibrationRun.find(calibration_run_id)
     calibration_run.update!(
@@ -22,7 +18,7 @@ class CalibrationRunJob < ApplicationJob
     raise "No calibration benchmarks configured" if benchmarks.empty?
 
     grid_job = GridFitJob.new
-    profile = grid_profile(options)
+    profile = grid_profile(options, config)
     total_steps = benchmarks.size * combinations_per_benchmark(profile)
     completed_steps = 0
     calibration_run.update!(progress_total: total_steps, current_step: "Starting benchmark sweep")
@@ -32,9 +28,9 @@ class CalibrationRunJob < ApplicationJob
       step_label = "Benchmark #{bench_idx + 1}/#{benchmarks.size}: #{benchmark[:name]}"
       calibration_run.update_columns(current_step: step_label)
 
-      ranked = run_grid_for_photometry(grid_job, photometry, bench_idx, profile) do
+      ranked = run_grid_for_photometry(grid_job, photometry, bench_idx, profile, config) do
         completed_steps += 1
-        if (completed_steps % PROGRESS_WRITE_EVERY).zero? || completed_steps == total_steps
+        if (completed_steps % progress_write_every).zero? || completed_steps == total_steps
           calibration_run.update_columns(
             progress_completed: completed_steps,
             current_step: step_label,
@@ -105,7 +101,7 @@ class CalibrationRunJob < ApplicationJob
     filtered.empty? ? all : filtered
   end
 
-  def run_grid_for_photometry(grid_job, photometry, bench_idx, profile)
+  def run_grid_for_photometry(grid_job, photometry, bench_idx, profile, config)
     results = []
     combination_index = 0
 
@@ -122,7 +118,8 @@ class CalibrationRunJob < ApplicationJob
                 sfh_model: sfh_model,
                 imf_type: imf_type,
                 burst_age_gyr: burst_age_gyr,
-                seed: seed
+                seed: seed,
+                config: config
               )
 
               StellarPop::Integrator::SpectralIntegrator.new(
@@ -169,28 +166,28 @@ class CalibrationRunJob < ApplicationJob
     [nil]
   end
 
-  def grid_profile(options)
+  def grid_profile(options, config)
     fast_mode = ActiveModel::Type::Boolean.new.cast(options[:fast_mode] || options["fast_mode"])
-    return full_profile unless fast_mode
+    return full_profile(config) unless fast_mode
 
     {
       mode: "fast",
-      ages: FAST_AGES_GYR,
-      metallicities: FAST_METALLICITIES_Z,
-      sfh_models: FAST_SFH_MODELS,
-      imf_types: FAST_IMF_TYPES,
-      burst_ages: FAST_BURST_AGES_GYR
+      ages: config.float_array("calibration_fast_ages_gyr"),
+      metallicities: config.float_array("calibration_fast_metallicities_z"),
+      sfh_models: config.string_array("calibration_fast_sfh_models"),
+      imf_types: config.string_array("calibration_fast_imf_types"),
+      burst_ages: config.float_array("calibration_fast_burst_ages_gyr")
     }
   end
 
-  def full_profile
+  def full_profile(config)
     {
       mode: "full",
-      ages: GridFitJob::AGES_GYR,
-      metallicities: GridFitJob::METALLICITIES_Z,
-      sfh_models: GridFitJob::SFH_MODELS,
-      imf_types: GridFitJob::IMF_TYPES,
-      burst_ages: GridFitJob::BURST_AGES_GYR
+      ages: config.float_array("grid_ages_gyr"),
+      metallicities: config.float_array("grid_metallicities_z"),
+      sfh_models: config.string_array("grid_sfh_models"),
+      imf_types: config.string_array("grid_imf_types"),
+      burst_ages: config.float_array("grid_burst_ages_gyr")
     }
   end
 

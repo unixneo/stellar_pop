@@ -298,6 +298,7 @@ Then open `http://localhost:3000`.
   - composite spectrum table
   - SDSS `ugriz` photometry table (if fetched)
 - `/synthesis_runs/seed_test` creates a randomized test run (unique name, randomized model parameters, random local SDSS target).
+- `/pipeline_config/edit` provides a centralized configuration page for runtime pipeline constants (sample sizes, age grids, SFH taus, wavelength defaults, retry/backoff, and benchmark fast-mode profiles).
 - `/sidekiq` exposes Sidekiq Web UI.
 - Navbar includes a dynamic git-derived version badge (e.g., `v0.3.0-4-g<sha>`) and a Sidekiq status dot (green=online, red=offline).
 
