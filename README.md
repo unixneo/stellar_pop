@@ -306,6 +306,8 @@ Then open `http://localhost:3000`.
 - The pipeline automatically sweeps 300 parameter combinations:
   10 ages (`[0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0]` Gyr)
   × 5 metallicities × 3 SFH models × 2 IMFs.
+- For `sfh_model=burst`, the burst center is configurable via `burst_age_gyr`
+  and swept on a dedicated grid: `[0.1, 0.5, 1.0, 2.0]` Gyr.
 - Results are ranked by chi-squared.
 - Best-fit age, metallicity, and SFH are identified automatically.
 - This is the primary scientific use case: infer physical galaxy properties

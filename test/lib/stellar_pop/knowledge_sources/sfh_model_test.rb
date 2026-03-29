@@ -49,4 +49,16 @@ class SfhModelTest < ActiveSupport::TestCase
     assert_operator peak_index, :>, 0
     assert_operator peak_index, :<, ages.length - 1
   end
+
+  test "burst weights peak at configured burst_age_gyr not youngest bin" do
+    sfh = StellarPop::KnowledgeSources::SfhModel.new
+    ages = [0.1, 0.5, 1.0, 2.0, 4.0]
+    weights = sfh.weights(:burst, ages, burst_age_gyr: 2.0, width_gyr: 0.5)
+
+    assert_in_delta 1.0, weights.sum, 1e-12
+    peak_index = weights.each_with_index.max_by { |weight, _idx| weight }.last
+
+    assert_equal ages.index(2.0), peak_index
+    refute_equal ages.index(0.1), peak_index
+  end
 end

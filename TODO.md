@@ -25,7 +25,7 @@
 - [x] Add redshift (`z`) column to local SDSS catalog for each object
 - [ ] Verify and document which photometry type (model vs Petrosian) is used for each catalog entry; switch to model magnitudes for all entries when SDSS returns
 - [ ] Investigate NGC3379 age estimate — best fit 0.5 Gyr is too young for a known passive elliptical, likely related to photometry magnitude type
-- [ ] Extend grid sweep to include `burst_age_gyr` variation
+- [x] Extend grid sweep to include `burst_age_gyr` variation
 - [ ] Add more galaxy targets to local SDSS catalog covering wider range of types and environments
 - [ ] Validate grid fit results against published SPS fits for M101 and NGC3379 from the literature
 

@@ -45,7 +45,7 @@ Recent usability and provenance updates focused on reproducible interpretation: 
 
 ## Grid fitting
 
-StellarPop includes a parameter-grid sweep workflow over 300 model combinations (10 ages × 5 metallicities × 3 SFH models × 2 IMF choices). The age grid is `[0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0]` Gyr. For each combination, the pipeline generates a synthetic spectrum and computes chi-squared against observed SDSS photometry. Results are sorted by chi-squared, and the best-fit age, metallicity, SFH, and IMF are recorded automatically. This ranking-based sweep is the primary inference mechanism for deriving physical galaxy properties from observed photometry.
+StellarPop includes a parameter-grid sweep workflow over 1050 model combinations. The age grid is `[0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0]` Gyr, with 5 metallicities and 3 IMF choices across SFH models. For burst SFH runs, the burst center is additionally swept through `burst_age_gyr = [0.1, 0.5, 1.0, 2.0]` Gyr, increasing total combinations and improving sensitivity to bursty star formation at different epochs. For each combination, the pipeline generates a synthetic spectrum and computes chi-squared against observed SDSS photometry. Results are sorted by chi-squared, and the best-fit age, metallicity, SFH, and IMF are recorded automatically. This ranking-based sweep is the primary inference mechanism for deriving physical galaxy properties from observed photometry.
 
 ## Results
 

@@ -5,6 +5,7 @@ class GridFitJob < ApplicationJob
   METALLICITIES_Z = [0.0006, 0.0020, 0.0063, 0.0200, 0.0632].freeze
   SFH_MODELS = %w[exponential delayed_exponential constant burst].freeze
   IMF_TYPES = %w[kroupa salpeter chabrier].freeze
+  BURST_AGES_GYR = [0.1, 0.5, 1.0, 2.0].freeze
   AGE_BINS_GYR = [0.1, 0.5, 1.0, 2.0, 4.0, 8.0, 12.0].freeze
   WAVELENGTH_RANGE_NM = (350.0..2000.0).freeze
   SDSS_MAX_FETCH_ATTEMPTS = 3
@@ -43,32 +44,36 @@ class GridFitJob < ApplicationJob
     selected_ages.each do |age_gyr|
       selected_metallicities.each do |metallicity_z|
         selected_sfh_models.each do |sfh_model|
-          selected_imf_types.each do |imf_type|
-            blackboard = build_blackboard(
-              age_gyr: age_gyr,
-              metallicity_z: metallicity_z,
-              sfh_model: sfh_model,
-              imf_type: imf_type,
-              seed: grid_fit.id.to_i * 10_000 + combination_index
-            )
+          burst_ages_for_model(sfh_model).each do |burst_age_gyr|
+            selected_imf_types.each do |imf_type|
+              blackboard = build_blackboard(
+                age_gyr: age_gyr,
+                metallicity_z: metallicity_z,
+                sfh_model: sfh_model,
+                imf_type: imf_type,
+                burst_age_gyr: burst_age_gyr,
+                seed: grid_fit.id.to_i * 10_000 + combination_index
+              )
 
-            integrator = StellarPop::Integrator::SpectralIntegrator.new(
-              blackboard,
-              spectra_source: StellarPop::KnowledgeSources::BaselSpectra.new
-            )
-            integrator.run
-            composite_spectrum = blackboard.read(:composite_spectrum) || {}
+              integrator = StellarPop::Integrator::SpectralIntegrator.new(
+                blackboard,
+                spectra_source: StellarPop::KnowledgeSources::BaselSpectra.new
+              )
+              integrator.run
+              composite_spectrum = blackboard.read(:composite_spectrum) || {}
 
-            chi_squared = compute_chi_squared(composite_spectrum, sdss_photometry)
-            results << {
-              age_gyr: age_gyr,
-              metallicity_z: metallicity_z,
-              sfh_model: sfh_model,
-              imf_type: imf_type,
-              chi_squared: chi_squared
-            }
+              chi_squared = compute_chi_squared(composite_spectrum, sdss_photometry)
+              results << {
+                age_gyr: age_gyr,
+                metallicity_z: metallicity_z,
+                sfh_model: sfh_model,
+                burst_age_gyr: burst_age_gyr,
+                imf_type: imf_type,
+                chi_squared: chi_squared
+              }
 
-            combination_index += 1
+              combination_index += 1
+            end
           end
         end
       end
@@ -93,7 +98,7 @@ class GridFitJob < ApplicationJob
 
   private
 
-  def build_blackboard(age_gyr:, metallicity_z:, sfh_model:, imf_type:, seed:)
+  def build_blackboard(age_gyr:, metallicity_z:, sfh_model:, imf_type:, burst_age_gyr:, seed:)
     blackboard = StellarPop::Blackboard.new
 
     imf_sampler = StellarPop::KnowledgeSources::ImfSampler.new(seed: seed, imf_type: imf_type.to_sym)
@@ -101,7 +106,7 @@ class GridFitJob < ApplicationJob
 
     age_bins = build_age_bins_for_sweep(age_gyr)
     sfh = StellarPop::KnowledgeSources::SfhModel.new
-    sfh_weights = build_sfh_weights(sfh, sfh_model, age_gyr, age_bins)
+    sfh_weights = build_sfh_weights(sfh, sfh_model, age_gyr, burst_age_gyr, age_bins)
 
     blackboard.write(:imf_masses, imf_masses)
     blackboard.write(:age_gyr, age_gyr.to_f)
@@ -113,17 +118,25 @@ class GridFitJob < ApplicationJob
     blackboard
   end
 
-  def build_sfh_weights(sfh, sfh_model, age_gyr, age_bins)
+  def build_sfh_weights(sfh, sfh_model, age_gyr, burst_age_gyr, age_bins)
     case sfh_model
     when "exponential"
       sfh.weights(:exponential, age_bins, tau: 3.0)
     when "delayed_exponential"
       sfh.weights(:delayed_exponential, age_bins, tau: 3.0)
     when "burst"
-      sfh.weights(:burst, age_bins, burst_age_gyr: age_gyr.to_f, width_gyr: 0.5)
+      center = burst_age_gyr.to_f
+      center = age_bins.first.to_f unless center.positive?
+      sfh.weights(:burst, age_bins, burst_age_gyr: center, width_gyr: 0.5)
     else
       sfh.weights(:constant, age_bins, {})
     end
+  end
+
+  def burst_ages_for_model(sfh_model)
+    return BURST_AGES_GYR if sfh_model.to_s == "burst"
+
+    [nil]
   end
 
   def build_age_bins_for_sweep(age_gyr)

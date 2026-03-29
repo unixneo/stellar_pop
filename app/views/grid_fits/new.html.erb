@@ -69,7 +69,8 @@
       </label>
     <% end %>
 
-    <p><strong>Total combinations:</strong> <span id="grid-total-combinations">600</span></p>
+    <p><strong>Burst age grid (applies only when SFH=burst):</strong> [0.1, 0.5, 1.0, 2.0] Gyr</p>
+    <p><strong>Total combinations:</strong> <span id="grid-total-combinations">1050</span></p>
   </div>
 
       <p><%= f.submit "Create Grid Fit" %></p>
@@ -108,10 +109,16 @@
     }
 
     function updateCombinationCount() {
-      const total = checkedCount("ages") *
-        checkedCount("metallicities") *
-        checkedCount("sfh_models") *
-        checkedCount("imf_types");
+      const ageCount = checkedCount("ages");
+      const metallicityCount = checkedCount("metallicities");
+      const imfCount = checkedCount("imf_types");
+      const selectedSfh = checkboxes
+        .filter((checkbox) => checkbox.dataset.group === "sfh_models" && checkbox.checked)
+        .map((checkbox) => checkbox.value);
+      const hasBurst = selectedSfh.includes("burst");
+      const nonBurstCount = selectedSfh.filter((value) => value !== "burst").length;
+      const sfhEffectiveCount = nonBurstCount + (hasBurst ? 4 : 0);
+      const total = ageCount * metallicityCount * imfCount * sfhEffectiveCount;
       if (totalLabel) totalLabel.textContent = total.toString();
     }
 

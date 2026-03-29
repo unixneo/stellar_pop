@@ -98,8 +98,9 @@
     <p><strong>ages:</strong> [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0] Gyr</p>
     <p><strong>metallicities:</strong> [0.0006, 0.0020, 0.0063, 0.0200, 0.0632]</p>
     <p><strong>sfh_models:</strong> [exponential, delayed_exponential, constant, burst]</p>
+    <p><strong>burst_age_gyr (burst only):</strong> [0.1, 0.5, 1.0, 2.0]</p>
     <p><strong>imf_types:</strong> [kroupa, salpeter, chabrier]</p>
-    <p><strong>Total combinations:</strong> 600</p>
+    <p><strong>Total combinations:</strong> 1050</p>
   </div>
 </div>
 
@@ -212,6 +213,7 @@
           <th>Age (Gyr)</th>
           <th>Metallicity (Z)</th>
           <th>SFH Model</th>
+          <th>Burst Age (Gyr)</th>
           <th>IMF Type</th>
         </tr>
       </thead>
@@ -223,6 +225,7 @@
             <td><%= row["age_gyr"] %></td>
             <td><%= row["metallicity_z"] %></td>
             <td><%= row["sfh_model"] %></td>
+            <td><%= row["sfh_model"] == "burst" ? row["burst_age_gyr"] : "-" %></td>
             <td><%= row["imf_type"] %></td>
           </tr>
         <% end %>
