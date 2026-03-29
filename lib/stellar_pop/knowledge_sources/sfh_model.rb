@@ -13,6 +13,15 @@ module StellarPop
         1.0
       end
 
+      def delayed_exponential(age_gyr, tau = 3.0)
+        validate_non_negative!(age_gyr, "age_gyr")
+        validate_positive!(tau, "tau")
+
+        t = age_gyr.to_f
+        tau_f = tau.to_f
+        (t / (tau_f**2)) * Math.exp(-t / tau_f)
+      end
+
       def burst(age_gyr, burst_age_gyr, width_gyr)
         validate_non_negative!(age_gyr, "age_gyr")
         validate_non_negative!(burst_age_gyr, "burst_age_gyr")
@@ -30,6 +39,8 @@ module StellarPop
           case model
           when :exponential
             exponential_decay(age, fetch_option(options, :tau))
+          when :delayed_exponential
+            delayed_exponential(age, options.fetch(:tau, options.fetch("tau", 3.0)))
           when :constant
             constant(age)
           when :burst

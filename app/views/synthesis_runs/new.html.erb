@@ -22,7 +22,7 @@
       <div class="form-card">
         <p>
           <%= f.label :imf_type, "IMF type" %><br>
-          <%= f.select :imf_type, [["kroupa", "kroupa"], ["salpeter", "salpeter"]], {}, { id: "synthesis-run-imf-type" } %>
+          <%= f.select :imf_type, [["kroupa", "kroupa"], ["salpeter", "salpeter"], ["chabrier", "chabrier"]], {}, { id: "synthesis-run-imf-type" } %>
           <span class="form-help">Kroupa is a common default. Use Salpeter for comparison runs.</span>
         </p>
       </div>
@@ -70,7 +70,7 @@
       <div class="form-card">
         <p>
           <%= f.label :sfh_model, "SFH model" %><br>
-          <%= f.select :sfh_model, [["exponential", "exponential"], ["constant", "constant"], ["burst", "burst"]], {}, { id: "synthesis-run-sfh-model" } %>
+          <%= f.select :sfh_model, [["exponential", "exponential"], ["delayed_exponential", "delayed_exponential"], ["constant", "constant"], ["burst", "burst"]], {}, { id: "synthesis-run-sfh-model" } %>
           <span class="form-help">Exponential is a good default. Burst shows extra burst controls below.</span>
         </p>
       </div>
@@ -208,6 +208,7 @@
 
     function abbreviateSfh(value) {
       if (value === "exponential") return "exp";
+      if (value === "delayed_exponential") return "dexp";
       if (value === "constant") return "con";
       if (value === "burst") return "bur";
       return sanitizePart(value);
@@ -216,6 +217,7 @@
     function abbreviateImf(value) {
       if (value === "kroupa") return "kr";
       if (value === "salpeter") return "sa";
+      if (value === "chabrier") return "ch";
       return sanitizePart(value);
     }
 

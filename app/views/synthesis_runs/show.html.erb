@@ -110,12 +110,15 @@
 <% imf_label =
      if @synthesis_run.imf_type.to_s == "salpeter"
        "Salpeter (1955)"
+     elsif @synthesis_run.imf_type.to_s == "chabrier"
+       "Chabrier (2003)"
      else
        "Kroupa (2001) piecewise power law"
      end %>
 <% sfh_label =
      case @synthesis_run.sfh_model.to_s
      when "exponential" then "Exponential decay"
+     when "delayed_exponential" then "Delayed exponential"
      when "burst" then "Burst"
      else "Constant"
      end %>

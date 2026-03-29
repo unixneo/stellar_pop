@@ -54,7 +54,7 @@
     <% end %>
 
     <p><strong>SFH Models</strong></p>
-    <% %w[exponential constant burst].each do |value| %>
+    <% %w[exponential delayed_exponential constant burst].each do |value| %>
       <label>
         <%= check_box_tag "sweep_sfh_models[]", value, true, class: "grid-checkbox", data: { group: "sfh_models" } %>
         <%= value %>
@@ -62,14 +62,14 @@
     <% end %>
 
     <p><strong>IMF Types</strong></p>
-    <% %w[kroupa salpeter].each do |value| %>
+    <% %w[kroupa salpeter chabrier].each do |value| %>
       <label>
         <%= check_box_tag "sweep_imf_types[]", value, true, class: "grid-checkbox", data: { group: "imf_types" } %>
         <%= value %>
       </label>
     <% end %>
 
-    <p><strong>Total combinations:</strong> <span id="grid-total-combinations">300</span></p>
+    <p><strong>Total combinations:</strong> <span id="grid-total-combinations">600</span></p>
   </div>
 
       <p><%= f.submit "Create Grid Fit" %></p>

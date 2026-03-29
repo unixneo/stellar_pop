@@ -28,11 +28,25 @@ class SfhModelTest < ActiveSupport::TestCase
     ages = [0.1, 1.0, 3.0, 8.0]
 
     exp = sfh.weights(:exponential, ages, tau: 3.0)
+    delayed = sfh.weights(:delayed_exponential, ages, tau: 3.0)
     const = sfh.weights(:constant, ages, {})
     burst = sfh.weights(:burst, ages, burst_age_gyr: 3.0, width_gyr: 1.0)
 
     assert_in_delta 1.0, exp.sum, 1e-12
+    assert_in_delta 1.0, delayed.sum, 1e-12
     assert_in_delta 1.0, const.sum, 1e-12
     assert_in_delta 1.0, burst.sum, 1e-12
+  end
+
+  test "delayed exponential peaks at intermediate age bin" do
+    sfh = StellarPop::KnowledgeSources::SfhModel.new
+    ages = [0.1, 1.0, 3.0, 8.0, 12.0]
+    weights = sfh.weights(:delayed_exponential, ages, tau: 3.0)
+
+    assert_in_delta 1.0, weights.sum, 1e-12
+
+    peak_index = weights.each_with_index.max_by { |weight, _idx| weight }.last
+    assert_operator peak_index, :>, 0
+    assert_operator peak_index, :<, ages.length - 1
   end
 end

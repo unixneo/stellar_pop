@@ -3,8 +3,8 @@ class GridFitJob < ApplicationJob
 
   AGES_GYR = [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0].freeze
   METALLICITIES_Z = [0.0006, 0.0020, 0.0063, 0.0200, 0.0632].freeze
-  SFH_MODELS = %w[exponential constant burst].freeze
-  IMF_TYPES = %w[kroupa salpeter].freeze
+  SFH_MODELS = %w[exponential delayed_exponential constant burst].freeze
+  IMF_TYPES = %w[kroupa salpeter chabrier].freeze
   AGE_BINS_GYR = [0.1, 0.5, 1.0, 2.0, 4.0, 8.0, 12.0].freeze
   WAVELENGTH_RANGE_NM = (350.0..2000.0).freeze
   SDSS_MAX_FETCH_ATTEMPTS = 3
@@ -117,6 +117,8 @@ class GridFitJob < ApplicationJob
     case sfh_model
     when "exponential"
       sfh.weights(:exponential, age_bins, tau: 3.0)
+    when "delayed_exponential"
+      sfh.weights(:delayed_exponential, age_bins, tau: 3.0)
     when "burst"
       sfh.weights(:burst, age_bins, burst_age_gyr: age_gyr.to_f, width_gyr: 0.5)
     else

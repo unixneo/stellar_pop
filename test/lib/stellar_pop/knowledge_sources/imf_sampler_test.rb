@@ -44,4 +44,15 @@ class ImfSamplerTest < ActiveSupport::TestCase
 
     assert_operator salpeter_above_one, :<, kroupa_above_one
   end
+
+  test "chabrier masses stay in 0.1..100 and distribution peaks below 1 solar mass" do
+    sample_size = 20_000
+    masses = StellarPop::KnowledgeSources::ImfSampler.new(seed: 9876, imf_type: :chabrier).sample(sample_size)
+
+    assert masses.all? { |m| m >= 0.1 }
+    assert masses.all? { |m| m <= 100.0 }
+
+    below_one = masses.count { |m| m < 1.0 }.to_f / sample_size
+    assert_operator below_one, :>, 0.5
+  end
 end

@@ -1,8 +1,8 @@
 class GridFitsController < ApplicationController
   AGES_GYR = [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0].freeze
   METALLICITIES_Z = [0.0006, 0.0020, 0.0063, 0.0200, 0.0632].freeze
-  SFH_MODELS = %w[exponential constant burst].freeze
-  IMF_TYPES = %w[kroupa salpeter].freeze
+  SFH_MODELS = %w[exponential delayed_exponential constant burst].freeze
+  IMF_TYPES = %w[kroupa salpeter chabrier].freeze
 
   def index
     @grid_fits = GridFit.order(created_at: :desc)

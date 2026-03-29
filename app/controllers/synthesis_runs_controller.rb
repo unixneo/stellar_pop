@@ -49,9 +49,9 @@ class SynthesisRunsController < ApplicationController
 
   def seed_test
     target = StellarPop::SdssLocalCatalog.galaxy_targets.sample || { ra: 187.2779, dec: 2.0523 }
-    sfh_model = %w[exponential constant burst].sample
+    sfh_model = %w[exponential delayed_exponential constant burst].sample
     spectra_model = %w[basel planck].sample
-    imf_type = %w[kroupa salpeter].sample
+    imf_type = %w[kroupa salpeter chabrier].sample
     age_gyr = [1.0, 3.0, 5.0, 8.0, 10.0, 12.0].sample
     metallicity_z = [0.008, 0.02, 0.03].sample
     burst_age_gyr = sfh_model == "burst" ? [1.0, 2.0, 4.0, 8.0].sample : 2.0
@@ -145,6 +145,7 @@ class SynthesisRunsController < ApplicationController
   def abbreviate_sfh(value)
     case value.to_s
     when "exponential" then "exp"
+    when "delayed_exponential" then "dexp"
     when "constant" then "con"
     when "burst" then "bur"
     else value.to_s
@@ -155,6 +156,7 @@ class SynthesisRunsController < ApplicationController
     case value.to_s
     when "kroupa" then "kr"
     when "salpeter" then "sa"
+    when "chabrier" then "ch"
     else value.to_s
     end
   end

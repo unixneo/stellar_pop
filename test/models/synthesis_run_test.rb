@@ -42,6 +42,12 @@ class SynthesisRunTest < ActiveSupport::TestCase
     assert_includes run.errors[:status], "is not included in the list"
   end
 
+  test "accepts chabrier as a valid imf_type" do
+    run = build_valid_run(imf_type: "chabrier")
+
+    assert run.valid?
+  end
+
   test "enforces numeric ranges" do
     run = build_valid_run(
       age_gyr: 14.0,

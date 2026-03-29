@@ -108,6 +108,7 @@ class SynthesisPipelineJob < ApplicationJob
   def normalize_sfh_model(raw_model)
     model = raw_model.to_s.strip.downcase
     return :exponential if model == "exponential"
+    return :delayed_exponential if model == "delayed_exponential"
     return :burst if model == "burst"
 
     :constant
@@ -117,6 +118,8 @@ class SynthesisPipelineJob < ApplicationJob
     case sfh_model_symbol
     when :exponential
       sfh_model.weights(:exponential, AGE_BINS_GYR, tau: 3.0)
+    when :delayed_exponential
+      sfh_model.weights(:delayed_exponential, AGE_BINS_GYR, tau: 3.0)
     when :burst
       burst_age = synthesis_run.burst_age_gyr.to_f
       burst_width = synthesis_run.burst_width_gyr.to_f

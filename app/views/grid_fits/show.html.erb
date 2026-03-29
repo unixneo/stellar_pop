@@ -97,9 +97,9 @@
   <div class="cyberspace-panel-body" style="font-family: monospace;">
     <p><strong>ages:</strong> [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0] Gyr</p>
     <p><strong>metallicities:</strong> [0.0006, 0.0020, 0.0063, 0.0200, 0.0632]</p>
-    <p><strong>sfh_models:</strong> [exponential, constant, burst]</p>
-    <p><strong>imf_types:</strong> [kroupa, salpeter]</p>
-    <p><strong>Total combinations:</strong> 300</p>
+    <p><strong>sfh_models:</strong> [exponential, delayed_exponential, constant, burst]</p>
+    <p><strong>imf_types:</strong> [kroupa, salpeter, chabrier]</p>
+    <p><strong>Total combinations:</strong> 600</p>
   </div>
 </div>
 
@@ -148,6 +148,7 @@
   <% sfh_phrase =
        case @grid_fit.best_sfh_model.to_s
        when "exponential" then "star birth was stronger in the past and then gradually slowed down"
+       when "delayed_exponential" then "star birth ramped up to a peak and then gradually declined"
        when "constant" then "star birth has stayed at a fairly steady rate over time"
        when "burst" then "the light is better explained by one brief period of intense star birth than by continuous star birth"
        else "star formation history is uncertain"
