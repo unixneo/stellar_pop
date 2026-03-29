@@ -1,6 +1,6 @@
 # TODO
 
-Legend: 🟩 done, 🟨 pending, 🟥 critical pending, 🟦 SDSS blocked
+Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offline
 
 ## Science/Physics
 
