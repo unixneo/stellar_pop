@@ -35,6 +35,7 @@
 - [x] Add local catalog metadata fields (`agn`, `sdss_dr`) and galaxy-only target selection
 - [x] Add parameter grid sweep fitting (GridFit) with ranked chi-squared results
 - [x] Add benchmark calibration workflow (`CalibrationRun`) with pass/warn/fail summary and ranked benchmark fits
+- [ ] Rename internal `CalibrationRun` model/routes/job naming to `BenchmarkRun` for terminology consistency
 - [ ] Add more galaxy targets to local SDSS catalog
 - [ ] Add side-by-side run comparison view
 - [ ] Add spectrum data export as CSV

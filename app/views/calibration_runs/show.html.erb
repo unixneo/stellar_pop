@@ -1,9 +1,32 @@
 <% processing = %w[pending running].include?(@calibration_run.status.to_s) %>
 <% elapsed_start_seconds = [Time.current.to_i - @calibration_run.created_at.to_i, 0].max %>
+<% result_mode = @result.is_a?(Hash) ? @result["mode"].to_s : "" %>
+<%
+  run_mode_label =
+    if result_mode.present?
+      result_mode
+    elsif processing
+      "in progress"
+    else
+      "-"
+    end
+%>
+<%
+  status_label =
+    case @calibration_run.status.to_s
+    when "complete"
+      @calibration_run.runtime_seconds.present? ? "completed in #{@calibration_run.runtime_seconds} seconds" : "complete"
+    when "failed"
+      @calibration_run.runtime_seconds.present? ? "failed after #{@calibration_run.runtime_seconds} seconds" : "failed"
+    else
+      @calibration_run.status
+    end
+%>
 <% if processing %>
+  <% singular_benchmark = @calibration_run.current_step.to_s.match?(/Benchmark\s+\d+\/1:/) %>
   <meta http-equiv="refresh" content="5">
   <div class="processing-banner" style="padding: 10px 14px; border: 1px solid #f59e0b; background: #2b1f07; color: #fde68a; border-radius: 6px; margin: 0 0 14px 0; font-weight: 600;">
-    Running calibration benchmarks for NGC3379 and M101 (full grid sweep + chi-squared ranking)...
+    Running benchmark checks for selected reference <%= singular_benchmark ? "galaxy" : "galaxies" %> (full grid sweep + chi-squared ranking)...
     <span id="processing-elapsed" data-elapsed-seconds="<%= elapsed_start_seconds %>" style="margin-left: 8px; font-family: monospace;">(elapsed: 0s)</span>
   </div>
 
@@ -33,11 +56,12 @@
   <div class="card-header">
     <div>
       <h1 class="card-title"><%= @calibration_run.name %></h1>
-      <p class="card-subtitle">Calibration status and benchmark results.</p>
+      <p class="card-subtitle">Benchmark run status and results.</p>
     </div>
   </div>
   <div class="cyberspace-panel-body">
-    <p><strong>Status:</strong> <%= @calibration_run.status %></p>
+    <p><strong>Status:</strong> <%= status_label %></p>
+    <p><strong>Run mode:</strong> <%= run_mode_label %></p>
     <% if @calibration_run.runtime_seconds.present? %>
       <p><strong>Runtime:</strong> <%= @calibration_run.runtime_seconds %> seconds</p>
     <% end %>
@@ -82,11 +106,13 @@
 
 <% if @result.present? %>
   <% summary = @result["summary"] || {} %>
+  <% run_mode = @result["mode"].to_s.presence || "full" %>
   <div class="cyberspace-panel">
     <div class="card-header">
       <div><h2 class="card-title">Summary</h2></div>
     </div>
     <div class="cyberspace-panel-body" style="font-family: monospace;">
+      <p>mode=<%= run_mode %></p>
       <p>total=<%= summary["total"] %>, pass=<%= summary["pass"] %>, warn=<%= summary["warn"] %>, fail=<%= summary["fail"] %></p>
     </div>
   </div>
@@ -101,9 +127,53 @@
       </div>
       <div class="cyberspace-panel-body">
         <% best = benchmark["best_fit"] || {} %>
+        <% expected = benchmark["expected"] || {} %>
+        <% references = Array(benchmark["references"]) %>
+        <% benchmark_notes = benchmark["notes"].to_s %>
+        <% benchmark_type = benchmark["benchmark_type"].to_s %>
+        <% best_age = best["age_gyr"].to_f %>
+        <% best_z = best["metallicity_z"].to_f %>
+        <% age_min = expected["age_gyr_min"].to_f %>
+        <% age_max = expected["age_gyr_max"].to_f %>
+        <% z_min = expected["metallicity_z_min"].to_f %>
+        <% z_max = expected["metallicity_z_max"].to_f %>
+        <% expected_sfh = Array(expected["sfh_models"]) %>
+        <% age_comparison =
+             if best_age < age_min
+               "too young"
+             elsif best_age > age_max
+               "too old"
+             else
+               "within expected range"
+             end %>
+        <% z_comparison =
+             if best_z < z_min
+               "too low"
+             elsif best_z > z_max
+               "too high"
+             else
+               "within expected range"
+             end %>
+
+        <% if benchmark_type.present? %>
+          <p><strong>Benchmark type:</strong> <%= benchmark_type %></p>
+        <% end %>
+        <% if benchmark_notes.present? %>
+          <p><strong>Notes:</strong> <%= benchmark_notes %></p>
+        <% end %>
+        <p><strong>Published expectation:</strong> age=<%= age_min %>-<%= age_max %> Gyr, Z=<%= z_min %>-<%= z_max %>, sfh=<%= expected_sfh.join(", ") %></p>
         <p><strong>Best fit:</strong> age=<%= best["age_gyr"] %>, Z=<%= best["metallicity_z"] %>, sfh=<%= best["sfh_model"] %>, burst_age=<%= best["burst_age_gyr"] || "-" %>, imf=<%= best["imf_type"] %>, chi2=<%= best["chi_squared"] ? format("%.6f", best["chi_squared"]) : "-" %></p>
+        <p><strong>Comparison:</strong> age is <%= age_comparison %>; metallicity is <%= z_comparison %>.</p>
         <% checks = benchmark["checks"] || {} %>
         <p style="font-family: monospace;">checks: age_ok=<%= checks["age_ok"] %>, metallicity_ok=<%= checks["metallicity_ok"] %>, sfh_ok=<%= checks["sfh_ok"] %></p>
+        <% if references.any? %>
+          <p><strong>References:</strong></p>
+          <ul>
+            <% references.each do |ref| %>
+              <li><%= ref %></li>
+            <% end %>
+          </ul>
+        <% end %>
 
         <details>
           <summary>Top 10 ranked fits</summary>
@@ -142,5 +212,5 @@
 <% end %>
 
 <div class="action-links">
-  <%= link_to "Back to Calibration Runs", calibration_runs_path %>
+  <%= link_to "Back to Benchmark Runs", calibration_runs_path %>
 </div>

@@ -1,8 +1,13 @@
 class CalibrationRunJob < ApplicationJob
   queue_as :synthesis
   PROGRESS_WRITE_EVERY = 10
+  FAST_AGES_GYR = [0.1, 0.5, 2.0, 8.0, 12.0].freeze
+  FAST_METALLICITIES_Z = [0.0020, 0.0200].freeze
+  FAST_SFH_MODELS = %w[exponential delayed_exponential constant burst].freeze
+  FAST_IMF_TYPES = %w[kroupa salpeter].freeze
+  FAST_BURST_AGES_GYR = [0.5, 2.0].freeze
 
-  def perform(calibration_run_id)
+  def perform(calibration_run_id, options = {})
     started_at = Time.current
     calibration_run = CalibrationRun.find(calibration_run_id)
     calibration_run.update!(
@@ -13,11 +18,12 @@ class CalibrationRunJob < ApplicationJob
       current_step: "Initializing benchmarks"
     )
 
-    benchmarks = StellarPop::Calibration::BenchmarkCatalog.all
+    benchmarks = selected_benchmarks(options)
     raise "No calibration benchmarks configured" if benchmarks.empty?
 
     grid_job = GridFitJob.new
-    total_steps = benchmarks.size * combinations_per_benchmark
+    profile = grid_profile(options)
+    total_steps = benchmarks.size * combinations_per_benchmark(profile)
     completed_steps = 0
     calibration_run.update!(progress_total: total_steps, current_step: "Starting benchmark sweep")
 
@@ -26,7 +32,7 @@ class CalibrationRunJob < ApplicationJob
       step_label = "Benchmark #{bench_idx + 1}/#{benchmarks.size}: #{benchmark[:name]}"
       calibration_run.update_columns(current_step: step_label)
 
-      ranked = run_grid_for_photometry(grid_job, photometry, bench_idx) do
+      ranked = run_grid_for_photometry(grid_job, photometry, bench_idx, profile) do
         completed_steps += 1
         if (completed_steps % PROGRESS_WRITE_EVERY).zero? || completed_steps == total_steps
           calibration_run.update_columns(
@@ -43,9 +49,11 @@ class CalibrationRunJob < ApplicationJob
         key: benchmark[:key],
         name: benchmark[:name],
         type: benchmark[:type],
+        benchmark_type: benchmark[:benchmark_type],
         ra: benchmark[:ra],
         dec: benchmark[:dec],
         references: Array(benchmark[:references]),
+        notes: benchmark[:notes],
         expected: benchmark[:expected],
         photometry: photometry,
         best_fit: best,
@@ -64,6 +72,7 @@ class CalibrationRunJob < ApplicationJob
 
     result_payload = {
       generated_at: Time.current.iso8601,
+      mode: profile[:mode],
       summary: summary,
       benchmarks: benchmark_results
     }
@@ -87,15 +96,24 @@ class CalibrationRunJob < ApplicationJob
 
   private
 
-  def run_grid_for_photometry(grid_job, photometry, bench_idx)
+  def selected_benchmarks(options)
+    all = StellarPop::Calibration::BenchmarkCatalog.all
+    requested = Array(options[:benchmark_keys] || options["benchmark_keys"]).map(&:to_s).uniq
+    return all if requested.empty?
+
+    filtered = all.select { |benchmark| requested.include?(benchmark[:key].to_s) }
+    filtered.empty? ? all : filtered
+  end
+
+  def run_grid_for_photometry(grid_job, photometry, bench_idx, profile)
     results = []
     combination_index = 0
 
-    GridFitJob::AGES_GYR.each do |age_gyr|
-      GridFitJob::METALLICITIES_Z.each do |metallicity_z|
-        GridFitJob::SFH_MODELS.each do |sfh_model|
-          burst_ages_for_model(sfh_model).each do |burst_age_gyr|
-            GridFitJob::IMF_TYPES.each do |imf_type|
+    profile[:ages].each do |age_gyr|
+      profile[:metallicities].each do |metallicity_z|
+        profile[:sfh_models].each do |sfh_model|
+          burst_ages_for_model(sfh_model, profile).each do |burst_age_gyr|
+            profile[:imf_types].each do |imf_type|
               seed = (bench_idx + 1) * 1_000_000 + combination_index
               blackboard = grid_job.send(
                 :build_blackboard,
@@ -135,20 +153,45 @@ class CalibrationRunJob < ApplicationJob
     results.sort_by { |row| row[:chi_squared].to_f }
   end
 
-  def combinations_per_benchmark
-    non_burst_models = GridFitJob::SFH_MODELS.reject { |name| name == "burst" }.size
-    sfh_effective = non_burst_models + GridFitJob::BURST_AGES_GYR.size
+  def combinations_per_benchmark(profile)
+    non_burst_models = profile[:sfh_models].reject { |name| name == "burst" }.size
+    sfh_effective = non_burst_models + profile[:burst_ages].size
 
-    GridFitJob::AGES_GYR.size *
-      GridFitJob::METALLICITIES_Z.size *
-      GridFitJob::IMF_TYPES.size *
+    profile[:ages].size *
+      profile[:metallicities].size *
+      profile[:imf_types].size *
       sfh_effective
   end
 
-  def burst_ages_for_model(sfh_model)
-    return GridFitJob::BURST_AGES_GYR if sfh_model.to_s == "burst"
+  def burst_ages_for_model(sfh_model, profile)
+    return profile[:burst_ages] if sfh_model.to_s == "burst"
 
     [nil]
+  end
+
+  def grid_profile(options)
+    fast_mode = ActiveModel::Type::Boolean.new.cast(options[:fast_mode] || options["fast_mode"])
+    return full_profile unless fast_mode
+
+    {
+      mode: "fast",
+      ages: FAST_AGES_GYR,
+      metallicities: FAST_METALLICITIES_Z,
+      sfh_models: FAST_SFH_MODELS,
+      imf_types: FAST_IMF_TYPES,
+      burst_ages: FAST_BURST_AGES_GYR
+    }
+  end
+
+  def full_profile
+    {
+      mode: "full",
+      ages: GridFitJob::AGES_GYR,
+      metallicities: GridFitJob::METALLICITIES_Z,
+      sfh_models: GridFitJob::SFH_MODELS,
+      imf_types: GridFitJob::IMF_TYPES,
+      burst_ages: GridFitJob::BURST_AGES_GYR
+    }
   end
 
   def benchmark_photometry(benchmark)

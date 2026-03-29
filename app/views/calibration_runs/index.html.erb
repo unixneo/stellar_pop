@@ -1,13 +1,13 @@
 <div class="cyberspace-panel">
   <div class="card-header">
     <div>
-      <h1 class="card-title">Calibration Runs</h1>
-      <p class="card-subtitle">Science calibration checks against benchmark galaxies.</p>
+      <h1 class="card-title">Benchmark Runs</h1>
+      <p class="card-subtitle">Science benchmark checks against reference galaxies.</p>
     </div>
   </div>
   <div class="cyberspace-panel-body">
     <div class="action-links">
-      <%= link_to "New Calibration Run", new_calibration_run_path %>
+      <%= link_to "New Benchmark Run", new_calibration_run_path %>
     </div>
 
     <div class="table-wrap">
@@ -16,6 +16,8 @@
           <tr>
             <th>Name</th>
             <th>Status</th>
+            <th>Mode</th>
+            <th>Runtime (s)</th>
             <th>Summary</th>
             <th>Created At</th>
           </tr>
@@ -24,9 +26,12 @@
           <% @calibration_runs.each do |run| %>
             <% parsed = JSON.parse(run.result_json || "{}") rescue {} %>
             <% summary = parsed["summary"] || {} %>
+            <% run_mode = parsed["mode"].to_s.presence || "-" %>
             <tr>
               <td><%= link_to(run.name, calibration_run_path(run)) %></td>
               <td><%= run.status %></td>
+              <td><%= run_mode %></td>
+              <td><%= run.runtime_seconds.present? ? run.runtime_seconds : "-" %></td>
               <td>
                 <% if summary.present? %>
                   pass=<%= summary["pass"] %>, warn=<%= summary["warn"] %>, fail=<%= summary["fail"] %>

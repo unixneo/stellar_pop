@@ -1,7 +1,7 @@
 <div class="cyberspace-panel">
   <div class="card-header">
     <div>
-      <h1 class="card-title">New Calibration Run</h1>
+      <h1 class="card-title">New Benchmark Run</h1>
       <p class="card-subtitle">Run published-science benchmark checks against the current pipeline.</p>
     </div>
   </div>
@@ -9,30 +9,48 @@
     <%= form_with model: @calibration_run do |f| %>
       <div class="form-card">
         <p>
-          <%= f.label :name, "Calibration run name" %>
+          <%= f.label :name, "Benchmark run name" %>
           <%= f.text_field :name, placeholder: "auto-generated if blank" %>
         </p>
       </div>
 
       <div class="form-card" style="font-family: monospace;">
         <p><strong>Benchmarks in this run:</strong></p>
+        <p class="form-help">No benchmarks are preselected by default. Select only what you want to run.</p>
         <% @benchmarks.each do |benchmark| %>
-          <p>
+          <p style="margin-bottom: 8px;">
+            <label style="display: inline-flex; align-items: center; gap: 8px; margin-right: 10px;">
+              <%= check_box_tag "benchmark_keys[]", benchmark[:key], false %>
+              <span><strong><%= benchmark[:name] %></strong> (<%= benchmark[:type] %>)</span>
+            </label>
+          </p>
+          <p class="form-help">
             <strong><%= benchmark[:name] %></strong>
-            (<%= benchmark[:type] %>) —
-            expected age <%= benchmark.dig(:expected, :age_gyr_min) %>-<%= benchmark.dig(:expected, :age_gyr_max) %> Gyr,
+            (<%= benchmark[:type] %>) age <%= benchmark.dig(:expected, :age_gyr_min) %>-<%= benchmark.dig(:expected, :age_gyr_max) %> Gyr,
             expected Z <%= benchmark.dig(:expected, :metallicity_z_min) %>-<%= benchmark.dig(:expected, :metallicity_z_max) %>
           </p>
         <% end %>
       </div>
 
       <div class="form-card">
-        <p><%= f.submit "Start Calibration" %></p>
+        <p>
+          <label style="display: inline-flex; align-items: center; gap: 8px;">
+            <%= check_box_tag :fast_mode, "1", true %>
+            <strong>Fast mode</strong> (reduced grid for quicker benchmark turnaround)
+          </label>
+        </p>
+        <p class="form-help">
+          Fast mode reduces the number of model combinations per benchmark to speed up execution.
+        </p>
+      </div>
+
+      <div class="form-card">
+        <p><%= f.submit "Start Benchmark" %></p>
       </div>
     <% end %>
   </div>
 </div>
 
 <div class="action-links">
-  <%= link_to "Back to Calibration Runs", calibration_runs_path %>
+  <%= link_to "Back to Benchmark Runs", calibration_runs_path %>
 </div>

@@ -31,10 +31,10 @@ StellarPop uses a blackboard pattern in which all intermediate and final values 
 
 The pipeline is organized around knowledge sources:
 
-1. **IMF Sampler**: Implements both piecewise Kroupa and single-power-law Salpeter IMFs with inverse-transform mass sampling.
+1. **IMF Sampler**: Implements Kroupa, Salpeter, and Chabrier IMFs with inverse-transform/rejection-based mass sampling.
 2. **Stellar Spectra**: Supports two selectable spectral sources: BaSeL 3.1 stellar spectral library lookup and Planck-based spectral generation by spectral type.
 3. **Isochrone Corrections**: Uses the MIST isochrone grid (Choi et al. 2016) parsed directly from FSPS repository data files for luminosity weighting, with simple analytic corrections retained for comparison/validation workflows.
-4. **SFH Model**: Provides exponential, constant, and burst star formation history weight functions, with burst age/width parameters exposed through the web UI and persisted per run.
+4. **SFH Model**: Provides exponential, delayed-exponential, constant, and burst star formation history weight functions, with burst age/width parameters exposed through the web UI and persisted per run.
 5. **BaSeL Spectra**: Parses BaSeL 3.1 binary spectral grids in pure Ruby with class-level memoization, Fortran column-major indexing, and sentinel-value filtering for robust library-based spectral retrieval. All six BaSeL metallicity planes are active with nearest-bin selection using zlegend values [0.0002, 0.0006, 0.0020, 0.0063, 0.0200, 0.0632].
 
 Asynchronous execution is handled by Sidekiq through a dedicated synthesis queue. Each synthesis run is persisted in Rails models, executed in a background job, and stored as a composite spectrum in the database. During integration, per-star spectra are interpolated onto a user-configurable wavelength grid (300-1100nm, default 350-900nm), combined with IMF/SFH weighting and MIST-derived luminosity weighting from FSPS-sourced isochrone tables, and smoothed before final normalization. BaSeL spectral lookup and MIST isochrone weighting now use consistent per-run metallicity selection derived from `metallicity_z`. For observational comparison, StellarPop first checks a local SDSS photometry catalog keyed by sky position and falls back to the SDSS SkyServer DR18 SQL API on catalog misses. Chi-squared is then computed using SDSS filter-convolved synthetic fluxes (ugriz) rather than nearest-wavelength approximations.
@@ -49,7 +49,7 @@ StellarPop includes a parameter-grid sweep workflow over 1050 model combinations
 
 ## Calibration workflow
 
-StellarPop now includes a benchmark calibration workflow (`CalibrationRun`) that executes the full grid-fitting pipeline against curated reference galaxies with expected physical ranges. Each calibration run records benchmark-specific best fits, top-ranked alternatives, and pass/warn/fail checks for age, metallicity, and SFH class agreement. A dedicated progress panel reports completed combinations, active benchmark step, and estimated remaining runtime while the calibration job is running.
+StellarPop now includes a benchmark calibration workflow (`CalibrationRun`) that executes the grid-fitting pipeline against curated reference galaxies with expected physical ranges. Benchmark targets are selectable per run from a curated set (`NGC3379`, `M101`, `M87`, `NGC4459`), with a `full` profile (complete sweep) and a `fast` profile (reduced sweep) for quicker turnaround. Each calibration run records benchmark-specific best fits, top-ranked alternatives, and pass/warn/fail checks for age, metallicity, and SFH class agreement. A dedicated progress panel reports completed combinations, active benchmark step, and estimated remaining runtime while the calibration job is running.
 
 ## Results
 

@@ -23,8 +23,8 @@ implemented end-to-end in Ruby on Rails, with:
 StellarPop provides a self-contained stellar population fitting pipeline
 that runs in a browser, requires no local scientific computing environment,
 and produces version-controlled reproducible results. A researcher with
-galaxy coordinates and observed photometry can run a 300-combination
-parameter grid fit and identify the best-fit age, metallicity, and star
+galaxy coordinates and observed photometry can run a 1050-combination
+parameter grid fit (or a reduced fast benchmark sweep) and identify the best-fit age, metallicity, and star
 formation history without installing Python, Fortran, or any astronomy
 library.
 
@@ -186,7 +186,7 @@ isochrone upgrades.
 This project models stellar populations using core components:
 
 - **Initial Mass Function (IMF):** Samples stellar masses from a distribution
-  (`kroupa` piecewise or `salpeter` single power law) to represent how stars
+  (`kroupa` piecewise, `salpeter` single power law, or `chabrier` lognormal+power law) to represent how stars
   are born across mass.
 - **Stellar Spectra:** Generates spectral energy distributions using the BaSeL 3.1
   semi-empirical stellar spectral library (Westera et al. 2002, A&A 381, 524),
@@ -195,8 +195,8 @@ This project models stellar populations using core components:
 - **Isochrones:** Applies age and metallicity evolution corrections, including
   main-sequence lifetime transitions and post-main-sequence behavior.
 - **Star Formation History (SFH):** Weights contributions across stellar ages
-  using constant, exponential-decay, or burst-like models, with burst age/width
-  exposed in the UI and passed through to pipeline weighting.
+  using constant, exponential-decay, delayed-exponential, or burst-like models,
+  with burst age/width exposed in the UI and passed through to pipeline weighting.
 - **BaSeL 3.1 Spectral Library:** Loads and queries the BaSeL grid from
   binary tables using pure Ruby parsing (Fortran column-major indexing and
   sentinel filtering), providing the primary stellar SED source.
@@ -317,12 +317,16 @@ Then open `http://localhost:3000`.
 ### Calibration Benchmarks
 
 - Visit `/calibration_runs/new` to run benchmark calibration checks.
-- Current benchmark set includes `NGC3379` and `M101`, each with fixed reference photometry and expected physical ranges.
-- Calibration executes the full grid sweep for each benchmark and stores:
+- Benchmarks are selectable per run (none preselected by default), currently including:
+  `NGC3379`, `M101`, `M87`, and `NGC4459`, each with fixed reference photometry
+  and literature-backed expected physical ranges.
+- Runs support `fast` mode (reduced grid) or `full` mode (full benchmark grid).
+- Calibration executes the configured sweep for each selected benchmark and stores:
   - pass/warn/fail verdicts for age/metallicity/SFH-class checks
   - best-fit parameters and top ranked solutions
   - summary counts across all benchmarks
 - `/calibration_runs/:id` includes a dedicated progress panel (separate from the top status banner) with completed/total combinations, current benchmark step, and ETA.
+- Benchmark index/show pages display run mode and runtime in seconds.
 
 ## Scientific Results
 
@@ -383,8 +387,8 @@ phot = client.fetch_photometry(187.2779, 2.0523)
   bins active via zlegend nearest-bin selection:
   z=0.0002, 0.0006, 0.0020, 0.0063, 0.0200, 0.0632; spectra sourced
   from the FSPS repository (Conroy et al.)
-- MIST isochrone grid v1.2 (Choi et al. 2016, ApJ 823, 102) — solar
-  metallicity isochrone at [Fe/H]=0.00 sourced from the FSPS repository
+- MIST isochrone grid v1.2 (Choi et al. 2016, ApJ 823, 102) — all 12 FSPS
+  metallicity grids with nearest-[Fe/H] selection from `metallicity_z`
 - Local SDSS photometry catalog (`lib/data/sdss/photometry.csv`) for well-known reference objects (with `agn` and `sdss_dr` provenance fields; current release labels are intentionally conservative and pending row-by-row verification)
 - SDSS SkyServer DR18 — observed photometry via public SQL API
 
