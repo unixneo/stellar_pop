@@ -222,7 +222,7 @@ StellarPop follows a **blackboard pattern**:
 - `StellarPop::KnowledgeSources::BaselSpectra`
 - `StellarPop::Integrator::SpectralIntegrator`
 - `StellarPop::SdssFilterConvolver` (SDSS ugriz filter-weighted synthetic fluxes)
-- `StellarPop::SdssLocalCatalog` (local SDSS photometry lookup from curated CSV)
+- `Galaxy` (SQLite-backed SDSS photometry records loaded from `lib/data/sdss/photometry.csv`)
 - `StellarPop::SdssClient` (Faraday-based SDSS SkyServer DR18 SQL client)
 - `SynthesisPipelineJob` (async orchestration + persistence)
 - `GridFitJob` (1050-combination parameter sweep + ranked inference output)
@@ -236,8 +236,8 @@ StellarPop follows a **blackboard pattern**:
 4. The integrator writes `:composite_spectrum` to the blackboard.
 5. The job saves a `SpectrumResult` (wavelength/flux JSON).
 6. If SDSS coordinates are present, the job resolves `ugriz` photometry using local-first lookup:
-   - first `SdssLocalCatalog` (`lib/data/sdss/photometry.csv`)
-   - fallback to live SDSS API (`SdssClient`) if local lookup misses
+   - first `galaxies` table records in SQLite (30 galaxies loaded from `lib/data/sdss/photometry.csv`)
+   - fallback to live SDSS API (`SdssClient`) if local DB lookup misses
    Then computes chi-squared via SDSS filter convolution and stores:
    - `SpectrumResult.sdss_photometry` (JSON)
    - `SynthesisRun.chi_squared`
@@ -366,7 +366,7 @@ w = sfh.weights(:exponential, [0.1, 1.0, 5.0, 10.0], tau: 3.0)
 conv = StellarPop::SdssFilterConvolver.new
 synthetic = conv.synthetic_magnitudes(library_spectrum)
 
-local_phot = StellarPop::SdssLocalCatalog.lookup(187.2779, 2.0523)
+local_phot = Galaxy.find_by(name: "3C273")&.slice("mag_u", "mag_g", "mag_r", "mag_i", "mag_z", "redshift_z")
 
 client = StellarPop::SdssClient.new
 phot = client.fetch_photometry(187.2779, 2.0523)
@@ -390,7 +390,7 @@ phot = client.fetch_photometry(187.2779, 2.0523)
   from the FSPS repository (Conroy et al.)
 - MIST isochrone grid v1.2 (Choi et al. 2016, ApJ 823, 102) — all 12 FSPS
   metallicity grids with nearest-[Fe/H] selection from `metallicity_z`
-- Local SDSS photometry catalog (`lib/data/sdss/photometry.csv`) for well-known reference objects (with `agn` and `sdss_dr` provenance fields; current release labels are intentionally conservative and pending row-by-row verification)
+- Local SDSS photometry records persisted in the SQLite `galaxies` table (30 entries loaded from `lib/data/sdss/photometry.csv`, including `agn` and `sdss_dr` provenance fields; current release labels are intentionally conservative and pending row-by-row verification)
 - SDSS SkyServer DR18 — observed photometry via public SQL API
 
 ## Citation

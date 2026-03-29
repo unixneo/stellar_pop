@@ -124,12 +124,12 @@
           <select id="sdss-catalog-target" name="sdss_catalog_target">
             <% @catalog_targets.to_a.each do |target| %>
               <option
-                value="<%= target[:name] %>"
-                data-ra="<%= target[:ra] %>"
-                data-dec="<%= target[:dec] %>"
-                <%= "selected" if @synthesis_run.sdss_ra.to_f == target[:ra].to_f && @synthesis_run.sdss_dec.to_f == target[:dec].to_f %>
+                value="<%= target.name %>"
+                data-ra="<%= target.ra %>"
+                data-dec="<%= target.dec %>"
+                <%= "selected" if @synthesis_run.sdss_ra.to_f == target.ra.to_f && @synthesis_run.sdss_dec.to_f == target.dec.to_f %>
               >
-                <%= "#{target[:name]} (#{target[:type]}) — RA #{target[:ra]}, Dec #{target[:dec]}" %>
+                <%= "#{target.name} (#{target.galaxy_type}) — RA #{target.ra}, Dec #{target.dec}" %>
               </option>
             <% end %>
           </select>

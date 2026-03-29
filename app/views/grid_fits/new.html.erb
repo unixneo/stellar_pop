@@ -18,12 +18,12 @@
       <% @catalog_targets.each_with_index do |target, idx| %>
         <option
           value="<%= idx %>"
-          data-name="<%= target[:name] %>"
-          data-type="<%= target[:type] %>"
-          data-ra="<%= target[:ra] %>"
-          data-dec="<%= target[:dec] %>"
+          data-name="<%= target.name %>"
+          data-type="<%= target.galaxy_type %>"
+          data-ra="<%= target.ra %>"
+          data-dec="<%= target.dec %>"
         >
-          <%= "#{target[:name]} — #{target[:type]} (#{target[:ra]}, #{target[:dec]})" %>
+          <%= "#{target.name} — #{target.galaxy_type} (#{target.ra}, #{target.dec})" %>
         </option>
       <% end %>
     </select>

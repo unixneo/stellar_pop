@@ -44,18 +44,12 @@ class SynthesisPipelineJob < ApplicationJob
     sdss_object_name = nil
     sdss_required = non_zero_coordinates?(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
     if sdss_required
-      local_target = StellarPop::SdssLocalCatalog.lookup_target(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
-      if local_target
-        sdss_photometry = {
-          u: local_target[:u],
-          g: local_target[:g],
-          r: local_target[:r],
-          i: local_target[:i],
-          z: local_target[:z],
-          redshift_z: local_target[:redshift_z]
-        }
-        sdss_object_name = local_target[:name]
-        sdss_fetch_note = "SDSS photometry sourced from local catalog"
+      galaxy_target = synthesis_run.galaxy || Galaxy.find_by_ra_dec(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
+      if galaxy_target
+        sdss_photometry = galaxy_target.photometry_hash
+        sdss_object_name = galaxy_target.name
+        synthesis_run.galaxy_id ||= galaxy_target.id
+        sdss_fetch_note = "SDSS photometry sourced from galaxies table"
       else
         sdss_client = StellarPop::SdssClient.new
         sdss_photometry, live_failure_reason = fetch_sdss_photometry_with_retry(
@@ -95,6 +89,7 @@ class SynthesisPipelineJob < ApplicationJob
       status: final_status,
       error_message: sdss_fetch_note,
       chi_squared: chi_squared,
+      galaxy_id: synthesis_run.galaxy_id,
       sdss_object_name: sdss_object_name
     )
   rescue StandardError => e

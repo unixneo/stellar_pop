@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_29_183000) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_29_194100) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -22,6 +22,36 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_29_183000) do
     t.integer "progress_completed", default: 0, null: false
     t.integer "progress_total", default: 0, null: false
     t.string "current_step"
+  end
+
+  create_table "galaxies", force: :cascade do |t|
+    t.string "name", null: false
+    t.float "ra", null: false
+    t.float "dec", null: false
+    t.float "mag_u"
+    t.float "mag_g"
+    t.float "mag_r"
+    t.float "mag_i"
+    t.float "mag_z"
+    t.float "err_u"
+    t.float "err_g"
+    t.float "err_r"
+    t.float "err_i"
+    t.float "err_z"
+    t.float "extinction_u"
+    t.float "extinction_g"
+    t.float "extinction_r"
+    t.float "extinction_i"
+    t.float "extinction_z"
+    t.string "galaxy_type"
+    t.text "notes"
+    t.boolean "agn", default: false, null: false
+    t.string "sdss_dr"
+    t.float "redshift_z"
+    t.string "sdss_objid"
+    t.string "source_catalog", default: "local", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "grid_fits", force: :cascade do |t|
@@ -40,6 +70,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_29_183000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "runtime_seconds"
+    t.integer "galaxy_id"
+    t.index ["galaxy_id"], name: "index_grid_fits_on_galaxy_id"
   end
 
   create_table "pipeline_configs", force: :cascade do |t|
@@ -77,7 +109,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_29_183000) do
     t.string "spectra_model", default: "basel"
     t.integer "wavelength_min", default: 350
     t.integer "wavelength_max", default: 900
+    t.integer "galaxy_id"
+    t.index ["galaxy_id"], name: "index_synthesis_runs_on_galaxy_id"
   end
 
+  add_foreign_key "grid_fits", "galaxies"
   add_foreign_key "spectrum_results", "synthesis_runs"
+  add_foreign_key "synthesis_runs", "galaxies"
 end

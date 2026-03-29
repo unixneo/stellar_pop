@@ -15,7 +15,7 @@ class GridFitJob < ApplicationJob
     selected_sfh_models = sanitize_string_array(sweep_options["sfh_models"] || sweep_options[:sfh_models], sfh_models)
     selected_imf_types = sanitize_string_array(sweep_options["imf_types"] || sweep_options[:imf_types], imf_types)
 
-    sdss_target = StellarPop::SdssLocalCatalog.lookup_target(grid_fit.sdss_ra, grid_fit.sdss_dec)
+    sdss_target = grid_fit.galaxy || Galaxy.find_by_ra_dec(grid_fit.sdss_ra, grid_fit.sdss_dec)
     sdss_photometry, live_failure_reason = if sdss_target
       [build_photometry_hash(sdss_target), nil]
     else
@@ -31,7 +31,7 @@ class GridFitJob < ApplicationJob
       return
     end
 
-    grid_fit.update!(target_name: sdss_target&.dig(:name) || grid_fit.target_name)
+    grid_fit.update!(target_name: sdss_target&.name || grid_fit.target_name, galaxy_id: sdss_target&.id || grid_fit.galaxy_id)
 
     results = []
     combination_index = 0
@@ -145,12 +145,12 @@ class GridFitJob < ApplicationJob
 
   def build_photometry_hash(target)
     {
-      u: target[:u],
-      g: target[:g],
-      r: target[:r],
-      i: target[:i],
-      z: target[:z],
-      redshift_z: target[:redshift_z]
+      u: target.mag_u,
+      g: target.mag_g,
+      r: target.mag_r,
+      i: target.mag_i,
+      z: target.mag_z,
+      redshift_z: target.redshift_z
     }
   end
 

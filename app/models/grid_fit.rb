@@ -1,4 +1,6 @@
 class GridFit < ApplicationRecord
+  belongs_to :galaxy, optional: true
+
   STATUSES = %w[pending running complete failed].freeze
 
   validates :name, presence: true

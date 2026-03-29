@@ -1,4 +1,6 @@
 class SynthesisRun < ApplicationRecord
+  belongs_to :galaxy, optional: true
+
   IMF_TYPES = %w[kroupa salpeter chabrier].freeze
   SFH_MODELS = %w[exponential delayed_exponential constant burst].freeze
   STATUSES = %w[pending running complete failed].freeze
