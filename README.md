@@ -21,7 +21,7 @@ implemented end-to-end in Ruby on Rails, with:
 - and an inspectable web UI for runs, spectra, and fit quality.
 
 StellarPop provides a self-contained stellar population fitting pipeline
-that runs in a browser, requires no local scientific computing environment,
+that is controlled by, and the results viewed, in a browser, requires no local scientific computing environment,
 and produces version-controlled reproducible results. A researcher with
 galaxy coordinates and observed photometry can run a 1050-combination
 parameter grid fit (or a reduced fast benchmark sweep) and identify the best-fit age, metallicity, and star
