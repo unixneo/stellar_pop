@@ -19,8 +19,8 @@
 - [ ] Verify local catalog photometry magnitude type (model vs Petrosian) and update `mag_type` column when SDSS SkyServer is available
 - [ ] Update `SdssClient` SQL query to fetch `modelMag_u/g/r/i/z` instead of default Petrosian magnitudes when SDSS returns
 - [ ] Run `sdss:verify_photometry` rake task and update `sdss_dr` provenance for all catalog entries
-- [ ] Add Chabrier (2003) IMF as a third option alongside Kroupa and Salpeter
-- [ ] Add delayed exponential SFH model (`tau * t * exp(-t/tau)`)
+- [x] Add Chabrier (2003) IMF as a third option alongside Kroupa and Salpeter
+- [x] Add delayed exponential SFH model (`tau * t * exp(-t/tau)`)
 - [x] Implement k-corrections for redshifted galaxies — correct observed ugriz magnitudes to rest-frame before chi-squared comparison; required for catalog objects at `z > 0.01`
 - [x] Add redshift (`z`) column to local SDSS catalog for each object
 - [ ] Verify and document which photometry type (model vs Petrosian) is used for each catalog entry; switch to model magnitudes for all entries when SDSS returns
