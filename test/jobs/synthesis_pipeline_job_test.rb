@@ -80,10 +80,8 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     end
 
     with_stubbed_new(StellarPop::Integrator::SpectralIntegrator, fake_integrator_factory) do
-      with_stubbed_class_method(StellarPop::SdssLocalCatalog, :lookup_target, ->(_ra, _dec, radius_arcmin: 1.0) { _ = radius_arcmin; nil }) do
-        with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
-          SynthesisPipelineJob.perform_now(run.id)
-        end
+      with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
+        SynthesisPipelineJob.perform_now(run.id)
       end
     end
 
@@ -147,10 +145,8 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
 
     with_stubbed_instance_method(SynthesisPipelineJob, :sleep_backoff, ->(_seconds) { nil }) do
       with_stubbed_new(StellarPop::Integrator::SpectralIntegrator, fake_integrator_factory) do
-        with_stubbed_class_method(StellarPop::SdssLocalCatalog, :lookup_target, ->(_ra, _dec, radius_arcmin: 1.0) { _ = radius_arcmin; nil }) do
-          with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
-            SynthesisPipelineJob.perform_now(run.id)
-          end
+        with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
+          SynthesisPipelineJob.perform_now(run.id)
         end
       end
     end
@@ -189,10 +185,8 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     end
 
     with_stubbed_new(StellarPop::Integrator::SpectralIntegrator, fake_integrator_factory) do
-      with_stubbed_class_method(StellarPop::SdssLocalCatalog, :lookup_target, ->(_ra, _dec, radius_arcmin: 1.0) { _ = radius_arcmin; nil }) do
-        with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
-          SynthesisPipelineJob.perform_now(run.id)
-        end
+      with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
+        SynthesisPipelineJob.perform_now(run.id)
       end
     end
 
@@ -204,7 +198,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     assert_nil run.sdss_object_name
   end
 
-  test "uses local catalog photometry and skips live sdss api call when local hit exists" do
+  test "uses galaxies table photometry and skips live sdss api call when local hit exists" do
     run = SynthesisRun.create!(
       name: "job-local-catalog-hit",
       status: "pending",
@@ -226,13 +220,21 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
       raise "live api should not be called when local catalog hits"
     end
 
-    local_target = { name: "NGC4564B", u: 14.0, g: 13.0, r: 12.9, i: 12.6, z: 13.2 }
+    Galaxy.create!(
+      name: "NGC4564B",
+      ra: run.sdss_ra,
+      dec: run.sdss_dec,
+      mag_u: 14.0,
+      mag_g: 13.0,
+      mag_r: 12.9,
+      mag_i: 12.6,
+      mag_z: 13.2,
+      galaxy_type: "elliptical"
+    )
 
     with_stubbed_new(StellarPop::Integrator::SpectralIntegrator, fake_integrator_factory) do
-      with_stubbed_class_method(StellarPop::SdssLocalCatalog, :lookup_target, ->(_ra, _dec, radius_arcmin: 1.0) { _ = radius_arcmin; local_target }) do
-        with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
-          SynthesisPipelineJob.perform_now(run.id)
-        end
+      with_stubbed_new(StellarPop::SdssClient, fake_sdss_client) do
+        SynthesisPipelineJob.perform_now(run.id)
       end
     end
 
@@ -241,7 +243,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     phot = JSON.parse(result.sdss_photometry)
 
     assert_equal "complete", run.status
-    assert_equal "SDSS photometry sourced from local catalog", run.error_message
+    assert_equal "SDSS photometry sourced from galaxies table", run.error_message
     assert_equal({ "u" => 14.0, "g" => 13.0, "r" => 12.9, "i" => 12.6, "z" => 13.2, "redshift_z" => nil }, phot)
     assert_equal "NGC4564B", run.sdss_object_name
   end
@@ -314,17 +316,4 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     klass.define_method(method_name, original_method)
   end
 
-  def with_stubbed_class_method(klass, method_name, replacement_proc)
-    singleton = class << klass; self; end
-    original = singleton.instance_method(method_name)
-
-    singleton.define_method(method_name) do |*args, **kwargs, &block|
-      replacement_proc.call(*args, **kwargs, &block)
-    end
-
-    yield
-  ensure
-    singleton.send(:remove_method, method_name)
-    singleton.define_method(method_name, original)
-  end
 end
