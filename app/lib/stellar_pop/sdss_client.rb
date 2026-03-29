@@ -5,6 +5,7 @@ module StellarPop
   class SdssClient
     API_URL = "https://skyserver.sdss.org/dr18/SkyServerWS/SearchTools/SqlSearch".freeze
     TIMEOUT_SECONDS = 30
+    attr_reader :last_failure_reason
 
     def initialize(connection: nil)
       @connection = connection || Faraday.new(
@@ -14,11 +15,15 @@ module StellarPop
     end
 
     def fetch_photometry(ra, dec, radius_arcmin: 0.5)
+      @last_failure_reason = nil
       sql = nearby_photometry_query(ra.to_f, dec.to_f, radius_arcmin.to_f)
       response = @connection.get(nil, cmd: sql, format: "json")
       payload = parse_json(response.body)
       row = extract_first_row(payload)
-      return nil unless row
+      unless row
+        @last_failure_reason = :no_object_found
+        return nil
+      end
 
       {
         u: to_float_or_nil(row["u"] || row[:u]),
@@ -27,7 +32,17 @@ module StellarPop
         i: to_float_or_nil(row["i"] || row[:i]),
         z: to_float_or_nil(row["z"] || row[:z])
       }
-    rescue Faraday::Error, JSON::ParserError
+    rescue Faraday::TimeoutError
+      @last_failure_reason = :timeout
+      nil
+    rescue Faraday::ConnectionFailed
+      @last_failure_reason = :api_unreachable
+      nil
+    rescue JSON::ParserError
+      @last_failure_reason = :invalid_response
+      nil
+    rescue Faraday::Error
+      @last_failure_reason = :request_error
       nil
     end
 

@@ -280,6 +280,9 @@ Then open `http://localhost:3000`.
 - `/` shows all runs in a status-colored table.
 - `/synthesis_runs/new` creates a new run and enqueues processing.
   - includes an SDSS toggle to enable/disable photometry fetch + chi-squared
+  - includes a local SDSS catalog target selector that auto-fills RA/Dec
+  - supports optional manual RA/Dec entry for advanced use
+  - auto-generates a compact run name from selected parameters (editable)
   - includes a spectra model selector (`basel` or `planck`)
   - includes wavelength range fields (`wavelength_min`, `wavelength_max`)
   - includes burst SFH controls (`burst_age_gyr`, `burst_width_gyr`) that appear when `sfh_model=burst`
@@ -288,13 +291,14 @@ Then open `http://localhost:3000`.
   - run parameters and status
   - wavelength range (`min-max nm`)
   - pipeline configuration (active spectra library, IMF, MIST isochrone weighting, SFH model, and chi-squared method)
-  - informational SDSS note (local/live/fetch-unavailable) on completed runs
+  - explicit SDSS source/failure note (local hit, live API hit, timeout, unreachable API, or no object found)
   - canvas-based spectrum viewer
   - chi-squared (if available)
   - composite spectrum table
   - SDSS `ugriz` photometry table (if fetched)
 - `/synthesis_runs/seed_test` creates a randomized test run (unique name, randomized model parameters, random local SDSS target).
 - `/sidekiq` exposes Sidekiq Web UI.
+- Navbar includes a dynamic git-derived version badge (e.g., `v0.3.0-4-g<sha>`).
 
 ### Parameter Grid Fitting
 
@@ -368,7 +372,7 @@ phot = client.fetch_photometry(187.2779, 2.0523)
   from the FSPS repository (Conroy et al.)
 - MIST isochrone grid v1.2 (Choi et al. 2016, ApJ 823, 102) — solar
   metallicity isochrone at [Fe/H]=0.00 sourced from the FSPS repository
-- Local SDSS photometry catalog (`lib/data/sdss/photometry.csv`) for well-known reference objects (SDSS DR7 for all current entries)
+- Local SDSS photometry catalog (`lib/data/sdss/photometry.csv`) for well-known reference objects (with `agn` and `sdss_dr` provenance fields; current release labels are intentionally conservative and pending row-by-row verification)
 - SDSS SkyServer DR18 — observed photometry via public SQL API
 
 ## Citation

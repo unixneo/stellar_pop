@@ -20,8 +20,8 @@ class GridFitJob < ApplicationJob
     selected_imf_types = sanitize_string_array(sweep_options["imf_types"] || sweep_options[:imf_types], IMF_TYPES)
 
     sdss_target = StellarPop::SdssLocalCatalog.lookup_target(grid_fit.sdss_ra, grid_fit.sdss_dec)
-    sdss_photometry = if sdss_target
-      build_photometry_hash(sdss_target)
+    sdss_photometry, live_failure_reason = if sdss_target
+      [build_photometry_hash(sdss_target), nil]
     else
       fetch_sdss_photometry_with_retry(StellarPop::SdssClient.new, grid_fit.sdss_ra, grid_fit.sdss_dec)
     end
@@ -29,7 +29,7 @@ class GridFitJob < ApplicationJob
     unless sdss_photometry
       grid_fit.update!(
         status: "failed",
-        error_message: "SDSS photometry unavailable - local catalog miss and live API timeout or no object found",
+        error_message: build_sdss_unavailable_note(live_failure_reason),
         runtime_seconds: elapsed_seconds(started_at)
       )
       return
@@ -152,18 +152,20 @@ class GridFitJob < ApplicationJob
 
   def fetch_sdss_photometry_with_retry(sdss_client, ra, dec)
     attempt = 0
+    last_reason = nil
 
     while attempt < SDSS_MAX_FETCH_ATTEMPTS
       attempt += 1
       photometry = sdss_client.fetch_photometry(ra, dec)
-      return photometry if photometry
+      return [photometry, nil] if photometry
+      last_reason = sdss_client.respond_to?(:last_failure_reason) ? sdss_client.last_failure_reason : nil
 
       break if attempt >= SDSS_MAX_FETCH_ATTEMPTS
 
       sleep_backoff(SDSS_BASE_BACKOFF_SECONDS * (2**(attempt - 1)))
     end
 
-    nil
+    [nil, last_reason]
   end
 
   def sleep_backoff(seconds)
@@ -220,5 +222,20 @@ class GridFitJob < ApplicationJob
     return nil unless started_at
 
     [(Time.current - started_at).round, 0].max
+  end
+
+  def build_sdss_unavailable_note(reason)
+    case reason
+    when :no_object_found
+      "SDSS photometry unavailable: local catalog miss; live SDSS API reachable but no nearby object found."
+    when :timeout
+      "SDSS photometry unavailable: local catalog miss; live SDSS API timed out."
+    when :api_unreachable
+      "SDSS photometry unavailable: local catalog miss; live SDSS API unreachable."
+    when :invalid_response
+      "SDSS photometry unavailable: local catalog miss; live SDSS API returned invalid response."
+    else
+      "SDSS photometry unavailable: local catalog miss; live SDSS API request failed."
+    end
   end
 end

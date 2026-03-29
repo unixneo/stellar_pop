@@ -198,8 +198,8 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
 
     run.reload
 
-    assert_equal "complete", run.status
-    assert_equal "SDSS photometry unavailable - local catalog miss and live API timeout or no object found", run.error_message
+    assert_equal "failed", run.status
+    assert_equal "SDSS photometry unavailable: local catalog miss; live SDSS API request failed.", run.error_message
     assert_nil run.chi_squared
     assert_nil run.sdss_object_name
   end

@@ -1,36 +1,51 @@
-<h1>Grid Fits</h1>
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title">Grid Fits</h1>
+      <p class="card-subtitle">Parameter sweep runs and ranked fit results.</p>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body action-links">
+    <%= link_to "New Grid Fit", new_grid_fit_path %>
+  </div>
+</div>
 
-<p><%= link_to "New Grid Fit", new_grid_fit_path %></p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Target</th>
-      <th>Status</th>
-      <th>Best Chi-squared</th>
-      <th>Best Parameters</th>
-      <th>Created At</th>
-      <th>Show</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @grid_fits.each do |grid_fit| %>
-      <tr>
-        <td><%= grid_fit.name %></td>
-        <td><%= grid_fit.target_name.presence || "#{grid_fit.sdss_ra}, #{grid_fit.sdss_dec}" %></td>
-        <td><%= grid_fit.status %></td>
-        <td><%= grid_fit.best_chi_squared ? format("%.6f", grid_fit.best_chi_squared) : "-" %></td>
-        <td>
-          <% if grid_fit.best_age_gyr && grid_fit.best_metallicity_z && grid_fit.best_sfh_model && grid_fit.best_imf_type %>
-            age=<%= grid_fit.best_age_gyr %>, Z=<%= grid_fit.best_metallicity_z %>, sfh=<%= grid_fit.best_sfh_model %>, imf=<%= grid_fit.best_imf_type %>
-          <% else %>
-            -
-          <% end %>
-        </td>
-        <td><%= grid_fit.created_at %></td>
-        <td><%= link_to "Show", grid_fit_path(grid_fit) %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Fit Table</h2>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Target</th>
+          <th>Status</th>
+          <th>Best Chi-squared</th>
+          <th>Best Parameters</th>
+          <th>Created At</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @grid_fits.each do |grid_fit| %>
+          <tr>
+            <td><%= link_to(grid_fit.name, grid_fit_path(grid_fit)) %></td>
+            <td><%= grid_fit.target_name.presence || "#{grid_fit.sdss_ra}, #{grid_fit.sdss_dec}" %></td>
+            <td><%= grid_fit.status %></td>
+            <td><%= grid_fit.best_chi_squared ? format("%.6f", grid_fit.best_chi_squared) : "-" %></td>
+            <td>
+              <% if grid_fit.best_age_gyr && grid_fit.best_metallicity_z && grid_fit.best_sfh_model && grid_fit.best_imf_type %>
+                age=<%= grid_fit.best_age_gyr %>, Z=<%= grid_fit.best_metallicity_z %>, sfh=<%= grid_fit.best_sfh_model %>, imf=<%= grid_fit.best_imf_type %>
+              <% else %>
+                -
+              <% end %>
+            </td>
+            <td><%= grid_fit.created_at %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>

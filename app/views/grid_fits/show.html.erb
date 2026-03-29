@@ -70,32 +70,123 @@
   </script>
 <% end %>
 
-<h1><%= @grid_fit.name.presence || "Grid Fit ##{@grid_fit.id}" %></h1>
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title"><%= @grid_fit.name.presence || "Grid Fit ##{@grid_fit.id}" %></h1>
+      <p class="card-subtitle">Target information and grid sweep status.</p>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <p><strong>Status:</strong> <%= status_label %></p>
+    <p><strong>Target:</strong> <%= @grid_fit.target_name.presence || "Unknown" %></p>
+    <% if @grid_fit.status.to_s == "complete" %>
+      <p><strong>Total runtime:</strong> <%= runtime_seconds_value %> seconds</p>
+    <% end %>
+    <p><strong>SDSS RA:</strong> <%= @grid_fit.sdss_ra %></p>
+    <p><strong>SDSS Dec:</strong> <%= @grid_fit.sdss_dec %></p>
+  </div>
+</div>
 
-<p><strong>Status:</strong> <%= status_label %></p>
-<p><strong>Target:</strong> <%= @grid_fit.target_name.presence || "Unknown" %></p>
-<% if @grid_fit.status.to_s == "complete" %>
-  <p><strong>Total runtime:</strong> <%= runtime_seconds_value %> seconds</p>
-<% end %>
-<p><strong>SDSS RA:</strong> <%= @grid_fit.sdss_ra %></p>
-<p><strong>SDSS Dec:</strong> <%= @grid_fit.sdss_dec %></p>
-
-<h2>Grid Parameters</h2>
-<div style="font-family: monospace;">
-  <p><strong>ages:</strong> [1.0, 3.0, 5.0, 8.0, 10.0, 12.0] Gyr</p>
-  <p><strong>metallicities:</strong> [0.0006, 0.0020, 0.0063, 0.0200, 0.0632]</p>
-  <p><strong>sfh_models:</strong> [exponential, constant, burst]</p>
-  <p><strong>imf_types:</strong> [kroupa, salpeter]</p>
-  <p><strong>Total combinations:</strong> 180</p>
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Grid Parameters</h2>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body" style="font-family: monospace;">
+    <p><strong>ages:</strong> [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0] Gyr</p>
+    <p><strong>metallicities:</strong> [0.0006, 0.0020, 0.0063, 0.0200, 0.0632]</p>
+    <p><strong>sfh_models:</strong> [exponential, constant, burst]</p>
+    <p><strong>imf_types:</strong> [kroupa, salpeter]</p>
+    <p><strong>Total combinations:</strong> 300</p>
+  </div>
 </div>
 
 <% if @grid_fit.status.to_s == "complete" %>
-  <h2>Best Fit</h2>
-  <p><strong>Best chi-squared:</strong> <%= @grid_fit.best_chi_squared ? format("%.6f", @grid_fit.best_chi_squared) : "-" %></p>
-  <p><strong>Best age (Gyr):</strong> <%= @grid_fit.best_age_gyr %></p>
-  <p><strong>Best metallicity (Z):</strong> <%= @grid_fit.best_metallicity_z %></p>
-  <p><strong>Best SFH model:</strong> <%= @grid_fit.best_sfh_model %></p>
-  <p><strong>Best IMF type:</strong> <%= @grid_fit.best_imf_type %></p>
+  <div class="cyberspace-panel">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">Best Fit</h2>
+      </div>
+    </div>
+    <div class="cyberspace-panel-body">
+      <p><strong>Best chi-squared:</strong> <%= @grid_fit.best_chi_squared ? format("%.6f", @grid_fit.best_chi_squared) : "-" %></p>
+      <p><strong>Best age (Gyr):</strong> <%= @grid_fit.best_age_gyr %></p>
+      <p><strong>Best metallicity (Z):</strong> <%= @grid_fit.best_metallicity_z %></p>
+      <p><strong>Best SFH model:</strong> <%= @grid_fit.best_sfh_model %></p>
+      <p><strong>Best IMF type:</strong> <%= @grid_fit.best_imf_type %></p>
+    </div>
+  </div>
+
+  <% age_label =
+       if @grid_fit.best_age_gyr.to_f < 0.1
+         "very young"
+       elsif @grid_fit.best_age_gyr.to_f < 1.0
+         "young"
+       elsif @grid_fit.best_age_gyr.to_f < 5.0
+         "intermediate-age"
+       else
+         "old"
+       end %>
+  <% metallicity_label =
+       if @grid_fit.best_metallicity_z.to_f < 0.01
+         "formed from gas with fewer heavy elements than the Sun"
+       elsif @grid_fit.best_metallicity_z.to_f <= 0.03
+         "formed from gas with a heavy-element mix similar to the Sun"
+       else
+         "formed from gas with more heavy elements than the Sun"
+       end %>
+  <% age_reference_phrase =
+       if @grid_fit.best_age_gyr.to_f < 1.0
+         "Compared with older stellar populations (about 5 to 12 billion years), this best fit points to a younger population (about #{format('%.2f', @grid_fit.best_age_gyr)} billion years)."
+       elsif @grid_fit.best_age_gyr.to_f < 5.0
+         "Compared with very old stellar populations (about 10 to 12 billion years), this best fit points to a middle-aged population (about #{format('%.2f', @grid_fit.best_age_gyr)} billion years)."
+       else
+         "This best fit points to an old stellar population (about #{format('%.2f', @grid_fit.best_age_gyr)} billion years), consistent with long-lived, evolved stars."
+       end %>
+  <% sfh_phrase =
+       case @grid_fit.best_sfh_model.to_s
+       when "exponential" then "star birth was stronger in the past and then gradually slowed down"
+       when "constant" then "star birth has stayed at a fairly steady rate over time"
+       when "burst" then "the light is better explained by one brief period of intense star birth than by continuous star birth"
+       else "star formation history is uncertain"
+       end %>
+  <% fit_quality =
+       if @grid_fit.best_chi_squared.to_f < 0.2
+         "very strong"
+       elsif @grid_fit.best_chi_squared.to_f < 1.0
+         "strong"
+       elsif @grid_fit.best_chi_squared.to_f < 5.0
+         "moderate"
+       else
+         "weak"
+       end %>
+
+  <div class="cyberspace-panel">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">What This Means</h2>
+        <p class="card-subtitle">Plain-language interpretation of the best-fit parameters.</p>
+      </div>
+    </div>
+    <div class="cyberspace-panel-body">
+      <p>
+        <strong><%= age_reference_phrase %></strong>
+      </p>
+      <p>
+        The stars are best matched by a population that is <strong><%= metallicity_label %></strong>
+        (heavy elements here means elements such as carbon, oxygen, and iron).
+      </p>
+      <p>
+        The model suggests that <strong><%= sfh_phrase %></strong>.
+      </p>
+      <p>
+        Fit confidence from this photometry-only run is <strong><%= fit_quality %></strong>
+        (chi-squared <%= format("%.6f", @grid_fit.best_chi_squared) %>; lower is better).
+      </p>
+    </div>
+  </div>
 <% end %>
 
 <% if @grid_fit.status.to_s == "failed" && @grid_fit.error_message.present? %>
@@ -105,30 +196,40 @@
   </div>
 <% end %>
 
-<h2>Ranked Results (Top 20)</h2>
-<table>
-  <thead>
-    <tr>
-      <th>Rank</th>
-      <th>Chi-squared</th>
-      <th>Age (Gyr)</th>
-      <th>Metallicity (Z)</th>
-      <th>SFH Model</th>
-      <th>IMF Type</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @ranked_results.first(20).each_with_index do |row, idx| %>
-      <tr>
-        <td><%= idx + 1 %></td>
-        <td><%= row["chi_squared"] ? format("%.6f", row["chi_squared"]) : "-" %></td>
-        <td><%= row["age_gyr"] %></td>
-        <td><%= row["metallicity_z"] %></td>
-        <td><%= row["sfh_model"] %></td>
-        <td><%= row["imf_type"] %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Ranked Results (Top 20)</h2>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Chi-squared</th>
+          <th>Age (Gyr)</th>
+          <th>Metallicity (Z)</th>
+          <th>SFH Model</th>
+          <th>IMF Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @ranked_results.first(20).each_with_index do |row, idx| %>
+          <tr>
+            <td><%= idx + 1 %></td>
+            <td><%= row["chi_squared"] ? format("%.6f", row["chi_squared"]) : "-" %></td>
+            <td><%= row["age_gyr"] %></td>
+            <td><%= row["metallicity_z"] %></td>
+            <td><%= row["sfh_model"] %></td>
+            <td><%= row["imf_type"] %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
 
-<p><%= link_to "Back to Grid Fits", grid_fits_path %></p>
+<div class="action-links">
+  <%= link_to "Back to Grid Fits", grid_fits_path %>
+</div>

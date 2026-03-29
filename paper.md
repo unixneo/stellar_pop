@@ -41,6 +41,8 @@ Asynchronous execution is handled by Sidekiq through a dedicated synthesis queue
 
 Three pipeline fixes were required to recover physically correct color behavior: (1) BaSeL binary parsing was corrected from big-endian (`g*`) to little-endian (`e*`) unpacking; (2) spectral lookup now uses MIST-evolved `teff/logg` per star instead of a mass-only mapping; and (3) chi-squared moved to magnitude-space color comparison normalized to `r`-band, reducing scale artifacts in photometric fitting.
 
+Recent usability and provenance updates focused on reproducible interpretation: local SDSS catalog entries now carry `agn` and `sdss_dr` metadata, the run form defaults to catalog-driven target selection with RA/Dec autofill (manual override optional), and run notes now distinguish SDSS failure causes (no object found vs API timeout vs unreachable API) instead of using a single ambiguous message.
+
 ## Grid fitting
 
 StellarPop includes a parameter-grid sweep workflow over 300 model combinations (10 ages × 5 metallicities × 3 SFH models × 2 IMF choices). The age grid is `[0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0]` Gyr. For each combination, the pipeline generates a synthetic spectrum and computes chi-squared against observed SDSS photometry. Results are sorted by chi-squared, and the best-fit age, metallicity, SFH, and IMF are recorded automatically. This ranking-based sweep is the primary inference mechanism for deriving physical galaxy properties from observed photometry.
@@ -48,6 +50,8 @@ StellarPop includes a parameter-grid sweep workflow over 300 model combinations 
 ## Results
 
 First grid-fit results show plausible astrophysical behavior and known photometric fitting limits. For M101, the best fit was age `0.1` Gyr, metallicity `Z=0.0063`, and exponential SFH, consistent with a young star-forming spiral. For NGC3379, the best fit was age `0.5` Gyr, `Z=0.02`, burst SFH, with older-age solutions close in chi-squared, demonstrating the expected age-metallicity degeneracy in broadband photometric SPS fitting. After the pipeline fixes, synthetic `g-r` colors span approximately `-0.44` (young `0.01` Gyr) to `+0.65` (old `12` Gyr), covering the observed galaxy color range and restoring physically correct age dependence.
+
+To reduce interpretation burden for non-specialists, Grid Fit outputs now include a deterministic plain-language summary generated from the best-fit parameters (age class, enrichment level, SFH interpretation, and qualitative fit-strength bucket from chi-squared), without requiring any LLM dependency.
 
 ## Isochrone validation
 

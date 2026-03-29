@@ -1,6 +1,12 @@
-<h1>New Grid Fit</h1>
-
-<%= form_with model: @grid_fit do |f| %>
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title">New Grid Fit</h1>
+      <p class="card-subtitle">Select a target and choose sweep dimensions.</p>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <%= form_with model: @grid_fit do |f| %>
   <p>
     <%= f.label :name %><br>
     <%= f.text_field :name, id: "grid-fit-name" %>
@@ -66,8 +72,10 @@
     <p><strong>Total combinations:</strong> <span id="grid-total-combinations">300</span></p>
   </div>
 
-  <p><%= f.submit "Create Grid Fit" %></p>
-<% end %>
+      <p><%= f.submit "Create Grid Fit" %></p>
+    <% end %>
+  </div>
+</div>
 
 <script>
   (function() {
@@ -119,4 +127,6 @@
   })();
 </script>
 
-<p><%= link_to "Back to Grid Fits", grid_fits_path %></p>
+<div class="action-links">
+  <%= link_to "Back to Grid Fits", grid_fits_path %>
+</div>

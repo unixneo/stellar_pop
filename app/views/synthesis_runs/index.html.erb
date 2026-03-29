@@ -1,58 +1,57 @@
-<h1>Synthesis Runs</h1>
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title">Synthesis Runs</h1>
+      <p class="card-subtitle">Manage and inspect stellar population runs.</p>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body action-links">
+    <%= link_to "New Synthesis Run", new_synthesis_run_path %>
+    <%= link_to "Run Test", seed_test_synthesis_runs_path %>
+  </div>
+</div>
 
-<p><%= link_to "New Synthesis Run", new_synthesis_run_path %></p>
-<p><%= link_to "Run Test", seed_test_synthesis_runs_path %></p>
-
-<% if @synthesis_runs.any? %>
-  <style>
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #1f2937; padding: 8px; text-align: left; color: #e5e7eb; }
-    th { background-color: #111827; color: #a7f3d0; }
-    tbody tr { background-color: #0f1720; }
-    tbody tr:nth-child(even) { background-color: #111827; }
-    tbody tr a { color: #7dd3fc; }
-    .gray { background-color: #374151; color: #f3f4f6; }
-    .yellow { background-color: #7c2d12; color: #fed7aa; }
-    .green { background-color: #14532d; color: #bbf7d0; }
-    .red { background-color: #7f1d1d; color: #fecaca; }
-    .gray a, .yellow a, .green a, .red a { color: #e5e7eb; }
-  </style>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Status</th>
-        <th>IMF Type</th>
-        <th>Age (Gyr)</th>
-        <th>Metallicity (Z)</th>
-        <th>SFH Model</th>
-        <th>Created At</th>
-        <th>Show</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @synthesis_runs.each do |run| %>
-        <% row_class = case run.status.to_s
-                       when "pending" then "gray"
-                       when "running" then "yellow"
-                       when "complete" then "green"
-                       when "failed" then "red"
-                       else ""
-                       end %>
-        <tr class="<%= row_class %>">
-          <td><%= run.name.presence || "Run ##{run.id}" %></td>
-          <td><%= run.status %></td>
-          <td><%= run.imf_type %></td>
-          <td><%= run.age_gyr %></td>
-          <td><%= run.metallicity_z %></td>
-          <td><%= run.sfh_model %></td>
-          <td><%= run.created_at %></td>
-          <td><%= link_to "Show", synthesis_run_path(run) %></td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-<% else %>
-  <p>No synthesis runs yet.</p>
-<% end %>
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Run Table</h2>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <% if @synthesis_runs.any? %>
+      <div class="table-wrap">
+        <table class="synthesis-runs-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Status</th>
+              <th>IMF Type</th>
+              <th>Age (Gyr)</th>
+              <th>Metallicity (Z)</th>
+              <th>SFH Model</th>
+              <th>Created At</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @synthesis_runs.each do |run| %>
+              <tr>
+                <td class="run-name-cell">
+                  <% run_label = run.name.presence || "Run ##{run.id}" %>
+                  <%= link_to(run_label, synthesis_run_path(run), class: "run-name-link", title: run_label) %>
+                </td>
+                <td><%= run.status %></td>
+                <td><%= run.imf_type %></td>
+                <td><%= run.age_gyr %></td>
+                <td><%= run.metallicity_z %></td>
+                <td><%= run.sfh_model %></td>
+                <td><%= run.created_at %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p>No synthesis runs yet.</p>
+    <% end %>
+  </div>
+</div>

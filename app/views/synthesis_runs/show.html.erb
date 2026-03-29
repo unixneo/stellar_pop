@@ -1,5 +1,20 @@
 <% processing = %w[pending running].include?(@synthesis_run.status.to_s) %>
 <% elapsed_start_seconds = [Time.current.to_i - @synthesis_run.created_at.to_i, 0].max %>
+<%
+  runtime_seconds_value =
+    if @synthesis_run.status.to_s == "complete"
+      [(@synthesis_run.updated_at.to_i - @synthesis_run.created_at.to_i), 0].max
+    end
+%>
+<%
+  status_label =
+    if @synthesis_run.status.to_s == "complete"
+      total_seconds = runtime_seconds_value.to_i
+      "completed in #{total_seconds} seconds"
+    else
+      @synthesis_run.status
+    end
+%>
 <% processing_message =
      if @synthesis_run.status.to_s == "pending"
        "Loading stellar libraries and preparing synthesis pipeline..."
@@ -57,27 +72,35 @@
   </script>
 <% end %>
 
-<h1><%= @synthesis_run.name.presence || "Synthesis Run ##{@synthesis_run.id}" %></h1>
-
-<p><strong>Status:</strong> <%= @synthesis_run.status %></p>
-<p><strong>IMF type:</strong> <%= @synthesis_run.imf_type %></p>
-<p><strong>Spectra model:</strong> <%= @synthesis_run.spectra_model %></p>
-<p><strong>Age (Gyr):</strong> <%= @synthesis_run.age_gyr %></p>
-<p><strong>Metallicity (Z):</strong> <%= @synthesis_run.metallicity_z %></p>
-<p><strong>Wavelength range:</strong> <%= @synthesis_run.wavelength_min %>-<%= @synthesis_run.wavelength_max %> nm</p>
-<p><strong>SFH model:</strong> <%= @synthesis_run.sfh_model %></p>
-<% if @synthesis_run.sfh_model.to_s == "burst" %>
-  <p><strong>Burst age (Gyr):</strong> <%= @synthesis_run.burst_age_gyr %></p>
-  <p><strong>Burst width (Gyr):</strong> <%= @synthesis_run.burst_width_gyr %></p>
-<% end %>
-<p><strong>SDSS RA:</strong> <%= @synthesis_run.sdss_ra %></p>
-<p><strong>SDSS Dec:</strong> <%= @synthesis_run.sdss_dec %></p>
-<% if @synthesis_run.sdss_object_name.present? %>
-  <p><strong>SDSS target:</strong> <%= @synthesis_run.sdss_object_name %></p>
-<% end %>
-<% if !@synthesis_run.chi_squared.nil? %>
-  <p><strong>Chi-squared:</strong> <%= format("%.6f", @synthesis_run.chi_squared) %></p>
-<% end %>
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title"><%= @synthesis_run.name.presence || "Synthesis Run ##{@synthesis_run.id}" %></h1>
+      <p class="card-subtitle">Run parameters and current synthesis status.</p>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <p><strong>Status:</strong> <%= status_label %></p>
+    <p><strong>IMF type:</strong> <%= @synthesis_run.imf_type %></p>
+    <p><strong>Spectra model:</strong> <%= @synthesis_run.spectra_model %></p>
+    <p><strong>Age (Gyr):</strong> <%= @synthesis_run.age_gyr %></p>
+    <p><strong>Metallicity (Z):</strong> <%= @synthesis_run.metallicity_z %></p>
+    <p><strong>Wavelength range:</strong> <%= @synthesis_run.wavelength_min %>-<%= @synthesis_run.wavelength_max %> nm</p>
+    <p><strong>SFH model:</strong> <%= @synthesis_run.sfh_model %></p>
+    <% if @synthesis_run.sfh_model.to_s == "burst" %>
+      <p><strong>Burst age (Gyr):</strong> <%= @synthesis_run.burst_age_gyr %></p>
+      <p><strong>Burst width (Gyr):</strong> <%= @synthesis_run.burst_width_gyr %></p>
+    <% end %>
+    <p><strong>SDSS RA:</strong> <%= @synthesis_run.sdss_ra %></p>
+    <p><strong>SDSS Dec:</strong> <%= @synthesis_run.sdss_dec %></p>
+    <% if @synthesis_run.sdss_object_name.present? %>
+      <p><strong>SDSS target:</strong> <%= @synthesis_run.sdss_object_name %></p>
+    <% end %>
+    <% if !@synthesis_run.chi_squared.nil? %>
+      <p><strong>Chi-squared:</strong> <%= format("%.6f", @synthesis_run.chi_squared) %></p>
+    <% end %>
+  </div>
+</div>
 <% spectra_library_label =
      if @synthesis_run.spectra_model.to_s == "planck"
        "Planck blackbody"
@@ -98,14 +121,20 @@
      end %>
 <% mist_selected_feh = StellarPop::KnowledgeSources::MistIsochrone.nearest_feh_for_metallicity(@synthesis_run.metallicity_z.to_f) %>
 
-<h2>Pipeline Configuration</h2>
-<div style="font-family: monospace;">
-  <p><strong>Spectra library:</strong> <%= spectra_library_label %></p>
-  <p><strong>IMF:</strong> <%= imf_label %></p>
-  <p><strong>Isochrone weighting:</strong> MIST v1.2 (Choi et al. 2016)</p>
-  <p><strong>MIST selected [Fe/H] bin:</strong> <%= format("%.2f", mist_selected_feh) %></p>
-  <p><strong>SFH model:</strong> <%= sfh_label %></p>
-  <p><strong>Chi-squared method:</strong> SDSS ugriz filter convolution (Fukugita et al. 1996)</p>
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">Pipeline Configuration</h2>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body" style="font-family: monospace;">
+    <p><strong>Spectra library:</strong> <%= spectra_library_label %></p>
+    <p><strong>IMF:</strong> <%= imf_label %></p>
+    <p><strong>Isochrone weighting:</strong> MIST v1.2 (Choi et al. 2016)</p>
+    <p><strong>MIST selected [Fe/H] bin:</strong> <%= format("%.2f", mist_selected_feh) %></p>
+    <p><strong>SFH model:</strong> <%= sfh_label %></p>
+    <p><strong>Chi-squared method:</strong> SDSS ugriz filter convolution (Fukugita et al. 1996)</p>
+  </div>
 </div>
 
 <% if @synthesis_run.status.to_s == "failed" && @synthesis_run.error_message.present? %>
@@ -126,7 +155,13 @@
   <% fluxes = JSON.parse(@spectrum_result.flux_data || "[]") rescue [] %>
   <% sdss_photometry = JSON.parse(@spectrum_result.sdss_photometry || "{}") rescue {} %>
 
-  <h2>Composite Spectrum</h2>
+  <div class="cyberspace-panel">
+    <div class="card-header">
+      <div>
+        <h2 class="card-title">Composite Spectrum</h2>
+      </div>
+    </div>
+    <div class="cyberspace-panel-body">
   <% spectrum_points = wavelengths.each_with_index.map { |wavelength, idx| [wavelength.to_f, fluxes[idx].to_f] } %>
   <canvas id="spectrum-canvas" height="320" style="display: block; width: 100%; border: 1px solid #334155; margin-bottom: 12px;"></canvas>
 
@@ -227,26 +262,36 @@
       </tbody>
     </table>
   </details>
+    </div>
+  </div>
 
   <% if sdss_photometry.present? %>
-    <h2>SDSS Photometry</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Band</th>
-          <th>Magnitude</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% %w[u g r i z].each do |band| %>
-          <% next if sdss_photometry[band].nil? %>
-          <tr>
-            <td><%= band %></td>
-            <td><%= sdss_photometry[band] %></td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
+    <div class="cyberspace-panel">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">SDSS Photometry</h2>
+        </div>
+      </div>
+      <div class="cyberspace-panel-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Band</th>
+              <th>Magnitude</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% %w[u g r i z].each do |band| %>
+              <% next if sdss_photometry[band].nil? %>
+              <tr>
+                <td><%= band %></td>
+                <td><%= sdss_photometry[band] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
   <% end %>
 <% else %>
   <p>No spectrum result yet.</p>

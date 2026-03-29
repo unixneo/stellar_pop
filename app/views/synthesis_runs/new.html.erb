@@ -1,95 +1,286 @@
-<h1>New Synthesis Run</h1>
-
-<%= form_with model: @synthesis_run do |f| %>
-  <p>
-    <%= f.label :name %><br>
-    <%= f.text_field :name %>
-  </p>
-
-  <p>
-    <%= f.label :imf_type %><br>
-    <%= f.select :imf_type, [["kroupa", "kroupa"], ["salpeter", "salpeter"]] %>
-  </p>
-
-  <p>
-    <%= f.label :spectra_model, "Spectra model" %><br>
-    <%= f.select :spectra_model, [["basel", "basel"], ["planck", "planck"]] %>
-  </p>
-
-  <p>
-    <%= f.label :age_gyr %><br>
-    <%= f.number_field :age_gyr, step: 0.1, min: 0.1, max: 13.8 %>
-  </p>
-
-  <p>
-    <%= f.label :metallicity_z %><br>
-    <%= f.number_field :metallicity_z, step: 0.001, min: 0.001, max: 0.05 %>
-  </p>
-
-  <p>
-    <%= f.label :wavelength_min, "Wavelength min (nm)" %><br>
-    <%= f.number_field :wavelength_min, step: 10, min: 300, max: 500 %>
-  </p>
-
-  <p>
-    <%= f.label :wavelength_max, "Wavelength max (nm)" %><br>
-    <%= f.number_field :wavelength_max, step: 10, min: 600, max: 1100 %>
-  </p>
-
-  <p>
-    <%= f.label :sfh_model %><br>
-    <%= f.select :sfh_model, [["exponential", "exponential"], ["constant", "constant"], ["burst", "burst"]], {}, { id: "sfh-model-select" } %>
-  </p>
-
-  <div id="burst-fields" style="display: none;" data-burst-fields="true">
-    <p>
-      <%= f.label :burst_age_gyr %><br>
-      <%= f.number_field :burst_age_gyr, step: 0.1, min: 0.1, max: 13.0 %>
-    </p>
-
-    <p>
-      <%= f.label :burst_width_gyr %><br>
-      <%= f.number_field :burst_width_gyr, step: 0.1, min: 0.1, max: 3.0 %>
-    </p>
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title">New Synthesis Run</h1>
+      <p class="card-subtitle">Configure model parameters and enqueue a run.</p>
+    </div>
   </div>
+  <div class="cyberspace-panel-body">
+    <p class="form-help">
+      Quick start: use <code>age_gyr=5.0</code>, <code>metallicity_z=0.02</code>, <code>sfh_model=exponential</code>,
+      <code>wavelength 350-900</code>, and SDSS coordinates for your target galaxy.
+    </p>
+    <%= form_with model: @synthesis_run do |f| %>
+      <div class="form-card">
+        <p>
+          <%= f.label :name, "Run name" %><br>
+          <%= f.text_field :name, placeholder: "auto-generated from selected parameters", id: "synthesis-run-name" %>
+          <span class="form-help">Any label to identify this run in the table.</span>
+        </p>
+      </div>
 
-  <script>
-    (function() {
-      const select = document.getElementById("sfh-model-select");
-      const burstFields = document.getElementById("burst-fields");
-      if (!select || !burstFields) return;
+      <div class="form-card">
+        <p>
+          <%= f.label :imf_type, "IMF type" %><br>
+          <%= f.select :imf_type, [["kroupa", "kroupa"], ["salpeter", "salpeter"]], {}, { id: "synthesis-run-imf-type" } %>
+          <span class="form-help">Kroupa is a common default. Use Salpeter for comparison runs.</span>
+        </p>
+      </div>
 
-      function toggleBurstFields() {
-        burstFields.style.display = (select.value === "burst") ? "block" : "none";
+      <div class="form-card">
+        <p>
+          <%= f.label :spectra_model, "Spectra model" %><br>
+          <%= f.select :spectra_model, [["basel", "basel"], ["planck", "planck"]], {}, { id: "synthesis-run-spectra-model" } %>
+          <span class="form-help">Use <code>basel</code> for realistic stellar library spectra. <code>planck</code> is a simplified baseline.</span>
+        </p>
+      </div>
+
+      <div class="form-card">
+        <p>
+          <%= f.label :age_gyr, "Age (Gyr)" %><br>
+          <%= f.number_field :age_gyr, step: 0.1, min: 0.1, max: 13.8, value: (@synthesis_run.age_gyr || 5.0), id: "synthesis-run-age-gyr" %>
+          <span class="form-help">Population age in billions of years. Typical: 0.1 (young), 5.0 (intermediate), 10.0+ (old).</span>
+        </p>
+      </div>
+
+      <div class="form-card">
+        <p>
+          <%= f.label :metallicity_z, "Metallicity (Z)" %><br>
+          <%= f.number_field :metallicity_z, step: 0.001, min: 0.001, max: 0.05, value: (@synthesis_run.metallicity_z || 0.02), id: "synthesis-run-metallicity-z" %>
+          <span class="form-help"><code>0.02</code> is near-solar. Lower is metal-poor, higher is metal-rich.</span>
+        </p>
+      </div>
+
+      <div class="form-card">
+        <p>
+          <%= f.label :wavelength_min, "Wavelength min (nm)" %><br>
+          <%= f.number_field :wavelength_min, step: 10, min: 300, max: 500, value: (@synthesis_run.wavelength_min || 350) %>
+          <span class="form-help">Start wavelength for synthesis range.</span>
+        </p>
+      </div>
+
+      <div class="form-card">
+        <p>
+          <%= f.label :wavelength_max, "Wavelength max (nm)" %><br>
+          <%= f.number_field :wavelength_max, step: 10, min: 600, max: 1100, value: (@synthesis_run.wavelength_max || 900) %>
+          <span class="form-help">End wavelength for synthesis range. 350-900 works well for SDSS <code>ugriz</code>.</span>
+        </p>
+      </div>
+
+      <div class="form-card">
+        <p>
+          <%= f.label :sfh_model, "SFH model" %><br>
+          <%= f.select :sfh_model, [["exponential", "exponential"], ["constant", "constant"], ["burst", "burst"]], {}, { id: "synthesis-run-sfh-model" } %>
+          <span class="form-help">Exponential is a good default. Burst shows extra burst controls below.</span>
+        </p>
+      </div>
+
+      <div id="burst-fields" style="display: none;" data-burst-fields="true">
+        <div class="form-card">
+          <p>
+            <%= f.label :burst_age_gyr, "Burst age (Gyr)" %><br>
+            <%= f.number_field :burst_age_gyr, step: 0.1, min: 0.1, max: 13.0, value: (@synthesis_run.burst_age_gyr || 2.0) %>
+            <span class="form-help">Age where burst peaks.</span>
+          </p>
+        </div>
+
+        <div class="form-card">
+          <p>
+            <%= f.label :burst_width_gyr, "Burst width (Gyr)" %><br>
+            <%= f.number_field :burst_width_gyr, step: 0.1, min: 0.1, max: 3.0, value: (@synthesis_run.burst_width_gyr || 0.5) %>
+            <span class="form-help">Gaussian width of burst episode.</span>
+          </p>
+        </div>
+      </div>
+
+      <script>
+        (function() {
+          const select = document.getElementById("synthesis-run-sfh-model");
+          const burstFields = document.getElementById("burst-fields");
+          if (!select || !burstFields) return;
+
+          function toggleBurstFields() {
+            burstFields.style.display = (select.value === "burst") ? "block" : "none";
+          }
+
+          toggleBurstFields();
+          select.addEventListener("change", toggleBurstFields);
+        })();
+      </script>
+
+      <div class="form-card">
+        <p>
+          <strong>SDSS Options</strong>
+        </p>
+        <p>
+          <label for="fetch_sdss">
+            <%= check_box_tag :fetch_sdss, "1", true, id: "fetch_sdss" %>
+            Enable SDSS photometry fetch and chi-squared comparison
+          </label>
+        </p>
+        <p class="form-help">Uncheck to skip SDSS lookup and run synthesis only.</p>
+        <p>
+          <label for="sdss-catalog-target">Target from local SDSS catalog</label><br>
+          <select id="sdss-catalog-target" name="sdss_catalog_target">
+            <% @catalog_targets.to_a.each do |target| %>
+              <option
+                value="<%= target[:name] %>"
+                data-ra="<%= target[:ra] %>"
+                data-dec="<%= target[:dec] %>"
+                <%= "selected" if @synthesis_run.sdss_ra.to_f == target[:ra].to_f && @synthesis_run.sdss_dec.to_f == target[:dec].to_f %>
+              >
+                <%= "#{target[:name]} (#{target[:type]}) — RA #{target[:ra]}, Dec #{target[:dec]}" %>
+              </option>
+            <% end %>
+          </select>
+          <span class="form-help">Recommended: pick a known target so SDSS comparison is likely to succeed.</span>
+        </p>
+        <p>
+          <label for="manual_sdss_coordinates">
+            <%= check_box_tag :manual_sdss_coordinates, "1", false, id: "manual_sdss_coordinates" %>
+            Enter RA/Dec manually instead of using selected catalog target
+          </label>
+        </p>
+      </div>
+
+      <div class="form-card">
+        <p>
+          <%= f.label :sdss_ra, "SDSS RA" %><br>
+          <%= f.number_field :sdss_ra, step: 0.0001, placeholder: "example: 161.9570", id: "synthesis-run-sdss-ra" %>
+          <span class="form-help">Right ascension in decimal degrees.</span>
+        </p>
+      </div>
+
+      <div class="form-card">
+        <p>
+          <%= f.label :sdss_dec, "SDSS Dec" %><br>
+          <%= f.number_field :sdss_dec, step: 0.0001, placeholder: "example: 12.5847", id: "synthesis-run-sdss-dec" %>
+          <span class="form-help">Declination in decimal degrees.</span>
+        </p>
+      </div>
+
+      <div class="form-card">
+        <p><%= f.submit "Create Synthesis Run" %></p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const nameInput = document.getElementById("synthesis-run-name");
+    const imfInput = document.getElementById("synthesis-run-imf-type");
+    const spectraInput = document.getElementById("synthesis-run-spectra-model");
+    const ageInput = document.getElementById("synthesis-run-age-gyr");
+    const metallicityInput = document.getElementById("synthesis-run-metallicity-z");
+    const sfhInput = document.getElementById("synthesis-run-sfh-model");
+    const fetchSdss = document.getElementById("fetch_sdss");
+    const manualToggle = document.getElementById("manual_sdss_coordinates");
+    const targetSelect = document.getElementById("sdss-catalog-target");
+    const raInput = document.getElementById("synthesis-run-sdss-ra");
+    const decInput = document.getElementById("synthesis-run-sdss-dec");
+    if (!raInput || !decInput) return;
+    const autoSuffix = Math.random().toString(16).slice(2, 6).padEnd(4, "0").slice(0, 4);
+
+    let userEditedName = false;
+    if (nameInput) {
+      nameInput.addEventListener("input", function() {
+        userEditedName = nameInput.value.trim().length > 0;
+      });
+    }
+
+    function selectedOption() {
+      if (!targetSelect || targetSelect.selectedIndex < 0) return null;
+      return targetSelect.options[targetSelect.selectedIndex];
+    }
+
+    function syncCoordinatesFromCatalog() {
+      const option = selectedOption();
+      if (!option) return;
+      raInput.value = option.dataset.ra || "";
+      decInput.value = option.dataset.dec || "";
+      updateAutoName();
+    }
+
+    function sanitizePart(text) {
+      return (text || "").toString().toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    }
+
+    function abbreviateSfh(value) {
+      if (value === "exponential") return "exp";
+      if (value === "constant") return "con";
+      if (value === "burst") return "bur";
+      return sanitizePart(value);
+    }
+
+    function abbreviateImf(value) {
+      if (value === "kroupa") return "kr";
+      if (value === "salpeter") return "sa";
+      return sanitizePart(value);
+    }
+
+    function abbreviateSpectra(value) {
+      if (value === "basel") return "ba";
+      if (value === "planck") return "pl";
+      return sanitizePart(value);
+    }
+
+    function updateAutoName() {
+      if (!nameInput || userEditedName) return;
+
+      const option = selectedOption();
+      const manualEnabled = manualToggle ? manualToggle.checked : false;
+      const target = manualEnabled
+        ? sanitizePart("ra" + (raInput.value || "na") + "_dec" + (decInput.value || "na"))
+        : (option ? sanitizePart(option.value || option.dataset.name || "target") : "target");
+      const sfh = abbreviateSfh(sfhInput ? sfhInput.value : "sfh");
+      const imf = abbreviateImf(imfInput ? imfInput.value : "imf");
+      const spectra = abbreviateSpectra(spectraInput ? spectraInput.value : "spectra");
+      const age = sanitizePart(ageInput ? ageInput.value : "age");
+      const z = sanitizePart(metallicityInput ? metallicityInput.value : "z");
+      const year = (new Date()).getFullYear().toString();
+
+      nameInput.value = [target, sfh, imf, spectra, "a" + age, "z" + z, year, autoSuffix].join("_");
+    }
+
+    function updateSdssInputMode() {
+      const sdssEnabled = fetchSdss ? fetchSdss.checked : true;
+      const manualEnabled = manualToggle ? manualToggle.checked : false;
+      const useManual = sdssEnabled && manualEnabled;
+
+      if (!useManual) {
+        syncCoordinatesFromCatalog();
       }
 
-      toggleBurstFields();
-      select.addEventListener("change", toggleBurstFields);
-    })();
-  </script>
+      raInput.readOnly = !useManual;
+      decInput.readOnly = !useManual;
+      raInput.style.opacity = useManual ? "1.0" : "0.78";
+      decInput.style.opacity = useManual ? "1.0" : "0.78";
 
-  <fieldset class="sdss-toggle">
-    <legend>SDSS Options</legend>
-    <p>
-      <label for="fetch_sdss">
-        <%= check_box_tag :fetch_sdss, "1", true, id: "fetch_sdss" %>
-        Enable SDSS photometry fetch and chi-squared comparison
-      </label>
-    </p>
-    <p>Uncheck to skip SDSS lookup for this run.</p>
-  </fieldset>
+      if (targetSelect) {
+        targetSelect.disabled = !sdssEnabled || manualEnabled;
+        targetSelect.style.opacity = (!sdssEnabled || manualEnabled) ? "0.65" : "1.0";
+      }
 
-  <p>
-    <%= f.label :sdss_ra %><br>
-    <%= f.number_field :sdss_ra, step: 0.0001 %>
-  </p>
+      updateAutoName();
+    }
 
-  <p>
-    <%= f.label :sdss_dec %><br>
-    <%= f.number_field :sdss_dec, step: 0.0001 %>
-  </p>
+    if (targetSelect) targetSelect.addEventListener("change", syncCoordinatesFromCatalog);
+    if (sfhInput) sfhInput.addEventListener("change", updateAutoName);
+    if (imfInput) imfInput.addEventListener("change", updateAutoName);
+    if (spectraInput) spectraInput.addEventListener("change", updateAutoName);
+    if (ageInput) ageInput.addEventListener("input", updateAutoName);
+    if (metallicityInput) metallicityInput.addEventListener("input", updateAutoName);
+    if (raInput) raInput.addEventListener("input", updateAutoName);
+    if (decInput) decInput.addEventListener("input", updateAutoName);
+    if (manualToggle) manualToggle.addEventListener("change", updateSdssInputMode);
+    if (fetchSdss) fetchSdss.addEventListener("change", updateSdssInputMode);
 
-  <p><%= f.submit "Create Synthesis Run" %></p>
-<% end %>
+    updateSdssInputMode();
+    updateAutoName();
+  })();
+</script>
 
-<p><%= link_to "Back to Runs", synthesis_runs_path %></p>
+<div class="action-links">
+  <%= link_to "Back to Runs", synthesis_runs_path %>
+</div>

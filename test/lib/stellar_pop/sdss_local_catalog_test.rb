@@ -19,7 +19,7 @@ class SdssLocalCatalogTest < ActiveSupport::TestCase
     assert_not_nil target
     assert_equal "3C273", target[:name]
     assert_in_delta 13.99292, target[:u], 1e-6
-    assert_equal "DR7", target[:sdss_dr]
+    assert_equal "unknown", target[:sdss_dr]
   end
 
   test "random_target returns expected keys" do

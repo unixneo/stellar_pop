@@ -45,7 +45,8 @@ class SynthesisPipelineJob < ApplicationJob
     chi_squared = nil
     sdss_fetch_note = nil
     sdss_object_name = nil
-    if non_zero_coordinates?(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
+    sdss_required = non_zero_coordinates?(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
+    if sdss_required
       local_target = StellarPop::SdssLocalCatalog.lookup_target(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
       if local_target
         sdss_photometry = {
@@ -59,7 +60,7 @@ class SynthesisPipelineJob < ApplicationJob
         sdss_fetch_note = "SDSS photometry sourced from local catalog"
       else
         sdss_client = StellarPop::SdssClient.new
-        sdss_photometry = fetch_sdss_photometry_with_retry(
+        sdss_photometry, live_failure_reason = fetch_sdss_photometry_with_retry(
           sdss_client,
           synthesis_run.sdss_ra,
           synthesis_run.sdss_dec
@@ -68,7 +69,7 @@ class SynthesisPipelineJob < ApplicationJob
           if sdss_photometry
             "SDSS photometry sourced from live SDSS API"
           else
-            "SDSS photometry unavailable - local catalog miss and live API timeout or no object found"
+            build_sdss_unavailable_note(live_failure_reason)
           end
       end
       chi_squared = compute_chi_squared(composite_spectrum, sdss_photometry) if sdss_photometry
@@ -84,8 +85,15 @@ class SynthesisPipelineJob < ApplicationJob
       sdss_photometry: sdss_photometry&.to_json
     )
 
+    final_status =
+      if sdss_required && sdss_photometry.nil?
+        "failed"
+      else
+        "complete"
+      end
+
     synthesis_run.update!(
-      status: "complete",
+      status: final_status,
       error_message: sdss_fetch_note,
       chi_squared: chi_squared,
       sdss_object_name: sdss_object_name
@@ -150,18 +158,20 @@ class SynthesisPipelineJob < ApplicationJob
 
   def fetch_sdss_photometry_with_retry(sdss_client, ra, dec)
     attempt = 0
+    last_reason = nil
 
     while attempt < SDSS_MAX_FETCH_ATTEMPTS
       attempt += 1
       photometry = sdss_client.fetch_photometry(ra, dec)
-      return photometry if photometry
+      return [photometry, nil] if photometry
+      last_reason = sdss_client.respond_to?(:last_failure_reason) ? sdss_client.last_failure_reason : nil
 
       break if attempt >= SDSS_MAX_FETCH_ATTEMPTS
 
       sleep_backoff(SDSS_BASE_BACKOFF_SECONDS * (2**(attempt - 1)))
     end
 
-    nil
+    [nil, last_reason]
   end
 
   def sleep_backoff(seconds)
@@ -200,6 +210,21 @@ class SynthesisPipelineJob < ApplicationJob
     bands.sum do |band|
       delta = norm_syn[band].to_f - norm_obs[band].to_f
       delta**2
+    end
+  end
+
+  def build_sdss_unavailable_note(reason)
+    case reason
+    when :no_object_found
+      "SDSS photometry unavailable: local catalog miss; live SDSS API reachable but no nearby object found."
+    when :timeout
+      "SDSS photometry unavailable: local catalog miss; live SDSS API timed out."
+    when :api_unreachable
+      "SDSS photometry unavailable: local catalog miss; live SDSS API unreachable."
+    when :invalid_response
+      "SDSS photometry unavailable: local catalog miss; live SDSS API returned invalid response."
+    else
+      "SDSS photometry unavailable: local catalog miss; live SDSS API request failed."
     end
   end
 end

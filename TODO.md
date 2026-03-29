@@ -10,6 +10,7 @@
 - [x] Add model option to switch between Planck spectra and BaSeL library spectra in pipeline/UI
 - [x] Implement Salpeter IMF in `ImfSampler` and pass `imf_type` through pipeline jobs
 - [x] Expose burst SFH `burst_age_gyr` and `burst_width_gyr` parameters in UI and pipeline
+- [x] Clarify SDSS failure reasons (timeout vs unreachable API vs no object found) in run notes
 - [x] Validate isochrone temperature corrections against published tables
 - [x] Replace simple Isochrone KS with MistIsochrone in pipeline as default
 - [x] Integrate MIST corrections for non-solar metallicities
@@ -20,6 +21,7 @@
 ## Data and Persistence
 
 - [x] Add local SDSS reference catalog CSV and nearest-object lookup
+- [x] Add local catalog metadata fields (`agn`, `sdss_dr`) and galaxy-only target selection
 - [x] Add parameter grid sweep fitting (GridFit) with ranked chi-squared results
 - [ ] Add more galaxy targets to local SDSS catalog
 - [ ] Add side-by-side run comparison view
@@ -52,6 +54,8 @@
 - [x] Add visible processing banner for pending/running runs
 - [x] Show error details in UI when a run fails
 - [x] Make SDSS fetch optional/toggleable in UI
+- [x] Make SynthesisRun form usable by default with catalog target selector + RA/Dec autofill
+- [x] Add deterministic plain-language interpretation panel on Grid Fit show page
 - [ ] Improve CSS polish across index/new/show views
 - [ ] Add configuration page for pipeline parameters
 - [ ] Add confidence intervals or chi-squared contour plots for grid fit results
