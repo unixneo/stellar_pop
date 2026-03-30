@@ -185,6 +185,12 @@ main > h2 {
   background: rgba(153, 27, 27, 0.98);
 }
 
+.delete-disabled-note {
+  color: #94a3b8;
+  font-size: 0.86rem;
+  font-family: "JetBrains Mono", "Fira Code", "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
 .form-help {
   display: block;
   margin-top: 0.32rem;

@@ -33,6 +33,11 @@ class BenchmarkRunsController < ApplicationController
 
   def destroy
     benchmark_run = BenchmarkRun.find(params[:id])
+    if %w[pending running].include?(benchmark_run.status.to_s)
+      redirect_to benchmark_run_path(benchmark_run), alert: "Cannot delete a benchmark run while it is pending or running."
+      return
+    end
+
     benchmark_run.destroy!
     redirect_to benchmark_runs_path, notice: "Benchmark run deleted."
   end

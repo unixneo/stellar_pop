@@ -50,6 +50,11 @@ class GridFitsController < ApplicationController
 
   def destroy
     grid_fit = GridFit.find(params[:id])
+    if %w[pending running].include?(grid_fit.status.to_s)
+      redirect_to grid_fit_path(grid_fit), alert: "Cannot delete a grid fit while it is pending or running."
+      return
+    end
+
     grid_fit.destroy!
     redirect_to grid_fits_path, notice: "Grid fit deleted."
   end

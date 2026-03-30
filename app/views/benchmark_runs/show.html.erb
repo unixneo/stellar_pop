@@ -267,10 +267,14 @@
   <div class="action-links">
     <%= link_to "Back to Benchmark Runs", benchmark_runs_path %>
   </div>
-  <%= button_to "Delete Benchmark Run",
-                benchmark_run_path(@benchmark_run),
-                method: :delete,
-                class: "danger-button",
-                form: { class: "danger-button-form" },
-                data: { turbo_confirm: "Delete this benchmark run permanently?" } %>
+  <% if %w[pending running].include?(@benchmark_run.status.to_s) %>
+    <span class="delete-disabled-note">Delete disabled while benchmark run is pending/running.</span>
+  <% else %>
+    <%= button_to "Delete Benchmark Run",
+                  benchmark_run_path(@benchmark_run),
+                  method: :delete,
+                  class: "danger-button",
+                  form: { class: "danger-button-form" },
+                  data: { turbo_confirm: "Delete this benchmark run permanently?" } %>
+  <% end %>
 </div>

@@ -56,6 +56,11 @@ class SynthesisRunsController < ApplicationController
 
   def destroy
     synthesis_run = SynthesisRun.find(params[:id])
+    if %w[pending running].include?(synthesis_run.status.to_s)
+      redirect_to synthesis_run_path(synthesis_run), alert: "Cannot delete a run while it is pending or running."
+      return
+    end
+
     synthesis_run.destroy!
     redirect_to synthesis_runs_path, notice: "Synthesis run deleted."
   end
