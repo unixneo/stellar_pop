@@ -1,21 +1,13 @@
-require "csv"
-
 namespace :sdss do
-  desc "Verify local SDSS catalog photometry against SDSS DR18 (WRITE=true to update sdss_dr)"
+  desc "Verify Galaxy photometry against SDSS DR18 (WRITE=true to update galaxies.sdss_dr)"
   task verify_photometry: :environment do
-    csv_path = Rails.root.join("lib/data/sdss/photometry.csv")
     bands = %w[u g r i z].freeze
     tolerance = 0.01
     write_enabled = ActiveModel::Type::Boolean.new.cast(ENV["WRITE"])
 
-    unless File.exist?(csv_path)
-      puts "Catalog not found: #{csv_path}"
-      next
-    end
-
-    rows = CSV.read(csv_path, headers: true)
-    if rows.empty?
-      puts "Catalog is empty: #{csv_path}"
+    galaxies = Galaxy.order(:id).to_a
+    if galaxies.empty?
+      puts "No galaxies found in DB."
       next
     end
 
@@ -26,10 +18,10 @@ namespace :sdss do
     discrepancy_count = 0
     significant_differences = []
 
-    rows.each do |row|
-      name = row["name"].to_s
-      ra = row["ra"].to_f
-      dec = row["dec"].to_f
+    galaxies.each do |galaxy|
+      name = galaxy.name.to_s
+      ra = galaxy.ra.to_f
+      dec = galaxy.dec.to_f
 
       fetched = client.fetch_photometry(ra, dec)
       if fetched.nil?
@@ -39,7 +31,7 @@ namespace :sdss do
 
       differences = {}
       bands.each do |band|
-        stored_raw = row[band]
+        stored_raw = galaxy.public_send("mag_#{band}")
         fetched_raw = fetched[band.to_sym]
         next if stored_raw.nil? || fetched_raw.nil?
 
@@ -51,10 +43,11 @@ namespace :sdss do
 
       if differences.empty?
         verified_count += 1
-        row["sdss_dr"] = "DR18"
+        galaxy.update!(sdss_dr: "DR18") if write_enabled
       else
         discrepancy_count += 1
         significant_differences << {
+          galaxy_id: galaxy.id,
           name: name,
           ra: ra,
           dec: dec,
@@ -72,16 +65,12 @@ namespace :sdss do
       puts "Significant differences (>#{tolerance} mag):"
       significant_differences.each do |entry|
         diffs = entry[:differences].map { |band, delta| "#{band}=#{format('%.5f', delta)}" }.join(", ")
-        puts "  #{entry[:name]} (ra=#{entry[:ra]}, dec=#{entry[:dec]}): #{diffs}"
+        puts "  ##{entry[:galaxy_id]} #{entry[:name]} (ra=#{entry[:ra]}, dec=#{entry[:dec]}): #{diffs}"
       end
     end
 
     if write_enabled
-      CSV.open(csv_path, "w") do |csv|
-        csv << rows.headers
-        rows.each { |row| csv << row.fields }
-      end
-      puts "Updated catalog written to #{csv_path}"
+      puts "Updated galaxies.sdss_dr for verified rows."
     else
       puts "Dry run only (set WRITE=true to persist updates)."
     end
