@@ -33,13 +33,13 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 
 ## Data and Persistence
 
-- 🟩 Rename internal `CalibrationRun` model/routes/job naming to `BenchmarkRun` for terminology consistency
 - 🟨 Add more galaxy targets to local SDSS catalog
 - 🟨 Add side-by-side run comparison view
 - 🟨 Add spectrum data export as CSV
-- 🟩 Add run deletion from the UI
 - 🟨 Add user or session scoping to `SynthesisRuns`
 - 🟨 Build galaxy import tool to load new galaxies from CSV or GSWLC
+- 🟩 Rename internal `CalibrationRun` model/routes/job naming to `BenchmarkRun` for terminology consistency
+- 🟩 Add run deletion from the UI
 - 🟩 Update `sdss:verify_photometry` rake task to read from `galaxies` table instead of `lib/data/sdss/photometry.csv` (then `photometry.csv` becomes archival only)
 - 🟩 Retire `SdssLocalCatalog` after all tests/docs are migrated to `Galaxy` model lookups
 - 🟩 Add local SDSS reference catalog CSV and nearest-object lookup
