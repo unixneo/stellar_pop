@@ -53,13 +53,13 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 
 ## Infrastructure
 
-- 🟨 Add production environment configuration
+- ⬜ Add production environment configuration
 - 🟩 Review fail2ban setup for static asset and app endpoints
 - 🟩 Add health check endpoint
 
 ## Testing
 
-- 🟨 Add CI configuration (workflow file push requires PAT with `workflow` scope)
+- ⬜ Add CI configuration (workflow file push requires PAT with `workflow` scope)
 - 🟩 Add tests for `SynthesisPipelineJob` success/failure paths
 - 🟩 Add tests for `StellarPop::SdssClient` response parsing and nil/error handling
 - 🟩 Add tests for chi-squared calculation against known fixtures
@@ -69,9 +69,9 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 
 ## UI/UX
 
-- 🟨 Improve CSS polish across index/new/show views
 - 🟨 Add confidence intervals or chi-squared contour plots for grid fit results
 - 🟨 Document deployment and runbook updates
+- ⬜ Improve CSS polish across index/new/show views
 - ⬜ Add zoom and pan to canvas spectrum viewer
 - ⬜ Investigate age-metallicity degeneracy breaking with additional photometric bands
 - 🟩 Add configuration page for pipeline parameters
