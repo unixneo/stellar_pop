@@ -222,8 +222,8 @@ StellarPop follows a **blackboard pattern**:
 - `StellarPop::KnowledgeSources::BaselSpectra`
 - `StellarPop::Integrator::SpectralIntegrator`
 - `StellarPop::SdssFilterConvolver` (SDSS ugriz filter-weighted synthetic fluxes)
-- `Galaxy` (SQLite-backed SDSS photometry records loaded from `lib/data/sdss/photometry.csv`)
-- `StellarPop::SdssClient` (Faraday-based SDSS SkyServer DR18 SQL client)
+- `Galaxy` (SQLite-backed SDSS photometry/provenance records with `sdss_objid`, `mag_type`, and separate `petro_*` / `model_*` magnitude columns)
+- `StellarPop::SdssClient` (Faraday-based SDSS SkyServer SQL client with configurable dataset release `DR18`/`DR19`, default `DR19`)
 - `SynthesisPipelineJob` (async orchestration + persistence)
 - `GridFitJob` (1050-combination parameter sweep + ranked inference output)
 - `CalibrationRunJob` (benchmark calibration checks against published science targets)
@@ -238,7 +238,8 @@ StellarPop follows a **blackboard pattern**:
 6. If SDSS coordinates are present, the job resolves `ugriz` photometry using local-first lookup:
    - first `galaxies` table records in SQLite (30 galaxies loaded from `lib/data/sdss/photometry.csv`)
    - fallback to live SDSS API (`SdssClient`) if local DB lookup misses
-   Then computes chi-squared via SDSS filter convolution and stores:
+   - live lookup utilities support objid-first fetch (`fetch_photometry_by_objid`) with coordinate fallback for catalog maintenance tasks
+   Then applies redshift k-corrections to observed magnitudes and computes chi-squared via SDSS filter convolution, and stores:
    - `SpectrumResult.sdss_photometry` (JSON)
    - `SynthesisRun.chi_squared`
    - informational source/fetch note in `SynthesisRun.error_message` for complete runs
@@ -299,6 +300,7 @@ Then open `http://localhost:3000`.
   - SDSS `ugriz` photometry table (if fetched)
 - `/synthesis_runs/seed_test` creates a randomized test run (unique name, randomized model parameters, random local SDSS target).
 - `/pipeline_config/edit` provides a centralized configuration page for runtime pipeline constants (sample sizes, age grids, SFH taus, wavelength defaults, retry/backoff, and benchmark fast-mode profiles).
+- `/pipeline_config/edit` also controls active SDSS dataset release (`DR18` or `DR19`), with `DR19` as default.
 - `/sidekiq` exposes Sidekiq Web UI.
 - Navbar includes a dynamic git-derived version badge (e.g., `v0.3.0-4-g<sha>`) and a Sidekiq status dot (green=online, red=offline).
 
@@ -318,6 +320,7 @@ Then open `http://localhost:3000`.
 ### Calibration Benchmarks
 
 - Visit `/calibration_runs/new` to run benchmark calibration checks.
+  - benchmark target selection is filtered to the active SDSS release configured in pipeline settings.
 - Benchmarks are selectable per run (none preselected by default), currently including:
   `NGC3379`, `M101`, `M87`, and `NGC4459`, each with fixed reference photometry
   and literature-backed expected physical ranges.

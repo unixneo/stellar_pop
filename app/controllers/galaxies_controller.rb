@@ -111,9 +111,11 @@ class GalaxiesController < ApplicationController
     params.require(:galaxy).permit(
       :name, :ra, :dec,
       :mag_u, :mag_g, :mag_r, :mag_i, :mag_z,
+      :petro_u, :petro_g, :petro_r, :petro_i, :petro_z,
+      :model_u, :model_g, :model_r, :model_i, :model_z,
       :err_u, :err_g, :err_r, :err_i, :err_z,
       :extinction_u, :extinction_g, :extinction_r, :extinction_i, :extinction_z,
-      :galaxy_type, :notes, :agn, :sdss_dr, :redshift_z, :sdss_objid, :source_catalog
+      :galaxy_type, :notes, :agn, :sdss_dr, :redshift_z, :sdss_objid, :source_catalog, :mag_type
     )
   end
 

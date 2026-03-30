@@ -14,15 +14,19 @@
         </tr>
       </thead>
       <tbody>
+        <tr><td>ID</td><td><%= @galaxy.id %></td></tr>
         <tr><td>Type</td><td><%= @galaxy.galaxy_type %></td></tr>
         <tr><td>RA</td><td><%= @galaxy.ra %></td></tr>
         <tr><td>Dec</td><td><%= @galaxy.dec %></td></tr>
         <tr><td>Redshift z</td><td><%= @galaxy.redshift_z %></td></tr>
         <tr><td>AGN</td><td><%= @galaxy.agn %></td></tr>
+        <tr><td>Mag Type</td><td><%= @galaxy.mag_type %></td></tr>
         <tr><td>SDSS DR</td><td><%= @galaxy.sdss_dr %></td></tr>
         <tr><td>SDSS ObjID</td><td><%= @galaxy.sdss_objid %></td></tr>
         <tr><td>Source Catalog</td><td><%= @galaxy.source_catalog %></td></tr>
         <tr><td>Notes</td><td><%= @galaxy.notes %></td></tr>
+        <tr><td>Created At</td><td><%= @galaxy.created_at %></td></tr>
+        <tr><td>Updated At</td><td><%= @galaxy.updated_at %></td></tr>
       </tbody>
     </table>
   </div>
@@ -37,16 +41,26 @@
       <thead>
         <tr>
           <th>Band</th>
-          <th>Magnitude</th>
+          <th>Active Mag</th>
+          <th>Petro Mag</th>
+          <th>Model Mag</th>
           <th>Error</th>
           <th>Extinction</th>
         </tr>
       </thead>
       <tbody>
-        <% [%w[u mag_u err_u extinction_u], %w[g mag_g err_g extinction_g], %w[r mag_r err_r extinction_r], %w[i mag_i err_i extinction_i], %w[z mag_z err_z extinction_z]].each do |band, mag_col, err_col, ext_col| %>
+        <% [
+             %w[u mag_u petro_u model_u err_u extinction_u],
+             %w[g mag_g petro_g model_g err_g extinction_g],
+             %w[r mag_r petro_r model_r err_r extinction_r],
+             %w[i mag_i petro_i model_i err_i extinction_i],
+             %w[z mag_z petro_z model_z err_z extinction_z]
+           ].each do |band, mag_col, petro_col, model_col, err_col, ext_col| %>
           <tr>
             <td><%= band %></td>
             <td><%= @galaxy.public_send(mag_col) %></td>
+            <td><%= @galaxy.public_send(petro_col) %></td>
+            <td><%= @galaxy.public_send(model_col) %></td>
             <td><%= @galaxy.public_send(err_col) %></td>
             <td><%= @galaxy.public_send(ext_col) %></td>
           </tr>

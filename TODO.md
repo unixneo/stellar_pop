@@ -4,9 +4,9 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 
 ## Science/Physics
 
-- 🟦 Verify local catalog photometry magnitude type (model vs Petrosian) and update `mag_type` column when SDSS SkyServer is available
-- 🟦 Update `SdssClient` SQL query to fetch `modelMag_u/g/r/i/z` instead of default Petrosian magnitudes when SDSS returns
-- 🟦 Verify and document which photometry type (model vs Petrosian) is used for each catalog entry; switch to model magnitudes for all entries when SDSS returns
+- 🟩 Store both Petrosian and model magnitudes in `galaxies` (`petro_*`, `model_*`) and keep active photometry provenance in `mag_type`
+- 🟩 Update `SdssClient` photometry query path to retrieve both `petroMag_*` and `modelMag_*` fields
+- 🟩 Add DR19 objid maintenance tasks (`sdss:verify_objids`, `sdss:fix_objids`) and objid-first photometry fetch for catalog refresh (`sdss:fetch_dr19_photometry`)
 - 🟦 Investigate NGC3379 age estimate — best fit 0.5 Gyr is too young for a known passive elliptical, likely related to photometry magnitude type
 - 🟦 Validate grid fit results against published SPS fits for M101 and NGC3379 from the literature
 - 🟨 Run `sdss:verify_photometry` rake task and update `sdss_dr` provenance for all catalog entries
@@ -33,7 +33,7 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 
 ## Data and Persistence
 
-- 🟦 Backfill `sdss_objid` for galaxies via SDSS query and persist in `galaxies` table
+- 🟨 Backfill `sdss_objid` for all galaxies via SDSS query and persist in `galaxies` table
 - 🟨 Add side-by-side run comparison view
 - 🟨 Add GSWLC-specific importer/profile mapping (column normalization + validation presets)
 - ⬜ Add spectrum data export as CSV
@@ -45,6 +45,7 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 - 🟩 Retire `SdssLocalCatalog` after all tests/docs are migrated to `Galaxy` model lookups
 - 🟩 Add local SDSS reference catalog CSV and nearest-object lookup
 - 🟩 Add local catalog metadata fields (`agn`, `sdss_dr`) and galaxy-only target selection
+- 🟩 Add configurable SDSS dataset release (`DR18`/`DR19`) in pipeline config UI and apply it to selectors/API-backed workflows
 - 🟩 Migrate galaxy photometry to SQLite `galaxies` table and add `galaxy_id` foreign keys on `synthesis_runs`/`grid_fits`
 - 🟩 Switch synthesis/grid runtime lookup path from `SdssLocalCatalog` to `Galaxy` table (`find_by(name)` / `find_by_ra_dec`)
 - 🟩 Add `observations` table for academic benchmark data
