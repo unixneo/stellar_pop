@@ -14,6 +14,7 @@ v0.3.3 doc sync:
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution
 - 🟨 Add more galaxy targets to local SDSS catalog covering wider range of types and environments
+- 🟨 Stellar mass estimator needs calibration -- current M/L ratios produce systematic underestimates; validate against NGC3379 and NGC4472 published masses and recalibrate SFH_BASE_MASS_TO_LIGHT and age_scale formula
 - 🟨 Add photometric error columns to `galaxies` table: `petro_u_err`, `petro_g_err`, `petro_r_err`, `petro_i_err`, `petro_z_err`, `model_u_err`, `model_g_err`, `model_r_err`, `model_i_err`, `model_z_err` and fetch from SDSS `petroMagErr` and `modelMagErr` fields (added to TODO in v0.3.3)
 - 🟨 Add observation uncertainty columns to `observations` table: `age_err_plus`, `age_err_minus`, `metallicity_err_plus`, `metallicity_err_minus`, `method_note`
 - 🟨 Update chi-squared to weighted form: `sum((model-observed)^2 / sigma^2)` per band (added to TODO in v0.3.3)

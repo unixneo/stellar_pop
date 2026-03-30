@@ -15,7 +15,7 @@ module StellarPop
       "constant" => 4.0,
       "exponential" => 3.0,
       "delayed_exponential" => 3.5,
-      "burst" => 0.3
+      "burst" => 2.0
     }.freeze
 
     class << self
@@ -71,13 +71,7 @@ module StellarPop
     def mass_to_light_ratio
       sfh_base = SFH_BASE_MASS_TO_LIGHT.fetch(@sfh_model, SFH_BASE_MASS_TO_LIGHT["constant"])
       imf_multiplier = IMF_MULTIPLIERS.fetch(@imf_type, IMF_MULTIPLIERS["kroupa"])
-      age_for_scale =
-        if @sfh_model == "burst" && @burst_age_gyr.positive?
-          @burst_age_gyr
-        else
-          @age_gyr
-        end
-      age_scale = [(age_for_scale / 10.0)**0.7, 0.05].max
+      age_scale = [(@age_gyr / 10.0)**0.7, 0.05].max
 
       burst_scale =
         if @sfh_model == "burst" && @burst_age_gyr.positive?
