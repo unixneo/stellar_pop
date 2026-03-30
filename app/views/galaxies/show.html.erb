@@ -84,7 +84,7 @@
             <th>Source Paper</th>
             <th>Age (Gyr)</th>
             <th>Metallicity (Z)</th>
-            <th>Stellar Mass</th>
+            <th>Stellar Mass (M☉)</th>
             <th>SFR</th>
             <th>Method</th>
             <th>Notes</th>
@@ -97,7 +97,7 @@
               <td><%= observation.source_paper %></td>
               <td><%= observation.age_gyr %></td>
               <td><%= observation.metallicity_z %></td>
-              <td><%= observation.stellar_mass %></td>
+              <td><%= observation.stellar_mass.present? ? format("%.3e", observation.stellar_mass) : "-" %></td>
               <td><%= observation.sfr %></td>
               <td><%= observation.method_used %></td>
               <td><%= observation.notes %></td>

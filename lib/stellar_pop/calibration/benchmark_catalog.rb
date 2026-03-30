@@ -39,6 +39,8 @@ module StellarPop
               age_gyr_max: numeric_max(observations, :age_gyr),
               metallicity_z_min: numeric_min(observations, :metallicity_z),
               metallicity_z_max: numeric_max(observations, :metallicity_z),
+              stellar_mass_min: numeric_min(observations, :stellar_mass),
+              stellar_mass_max: numeric_max(observations, :stellar_mass),
               sfh_models: []
             },
             notes: observations.map(&:notes).map(&:to_s).reject(&:empty?).uniq.join(" "),

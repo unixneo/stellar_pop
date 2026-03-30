@@ -7,6 +7,7 @@ v0.3.3 doc sync:
 - 🟩 Objid-first SDSS photometry fetch documented
 - 🟩 Petro/model dual photometry + `mag_type` control documented
 - 🟩 Chabrier IMF, delayed-exponential SFH, `burst_age_gyr` grid sweep, and k-corrections documented
+- 🟩 Synthesis-run stellar mass estimation documented (best-fit SFH/IMF + observed `r` + redshift-distance)
 - 🟩 Literature observations update documented for 16 galaxies with published sources
 - 🟩 NGC3379 age correction documented (`0.5` Gyr -> `8-10` Gyr)
 
@@ -41,6 +42,7 @@ v0.3.3 doc sync:
 - 🟩 Implement k-corrections for redshifted galaxies — correct observed ugriz magnitudes to rest-frame before chi-squared comparison; required for catalog objects at `z > 0.01`
 - 🟩 Add redshift (`z`) column to local SDSS catalog for each object
 - 🟩 Extend grid sweep to include `burst_age_gyr` variation
+- 🟩 Add stellar mass estimation to synthesis pipeline and persist to `synthesis_runs.stellar_mass` (derived from SFH, IMF, observed `r` magnitude, and redshift-based luminosity distance)
 - 🟩 Run `sdss:verify_photometry` rake task and update `sdss_dr` provenance for all catalog entries — provenance updated via DR19 objid-based fetch with both Petrosian and model magnitude storage
 
 

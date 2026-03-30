@@ -42,6 +42,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     assert_equal "complete", run.status
     assert_nil run.error_message
     assert_nil run.chi_squared
+    assert_nil run.stellar_mass
     assert_nil run.sdss_object_name
 
     assert_equal [350.0, 360.0, 370.0], JSON.parse(result.wavelength_data)
@@ -76,7 +77,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     fake_sdss_client = Object.new
     def fake_sdss_client.fetch_photometry(_ra, _dec, radius_arcmin: 0.5)
       _ = radius_arcmin
-      { u: 0.0, g: 0.0, r: 0.0, i: 0.0, z: 0.0 }
+      { u: 0.0, g: 0.0, r: 0.0, i: 0.0, z: 0.0, redshift_z: 0.01 }
     end
 
     with_stubbed_new(StellarPop::Integrator::SpectralIntegrator, fake_integrator_factory) do
@@ -89,20 +90,12 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     result = SpectrumResult.find_by!(synthesis_run_id: run.id)
     phot = JSON.parse(result.sdss_photometry)
 
-    synthetic_fluxes = StellarPop::SdssFilterConvolver.new.synthetic_magnitudes(composite)
-    observed_fluxes = { u: 1.0, g: 1.0, r: 1.0, i: 1.0, z: 1.0 }
-    synthetic_mags = synthetic_fluxes.transform_values { |f| f.to_f.positive? ? (-2.5 * Math.log10(f.to_f)) : 999.0 }
-    observed_mags = observed_fluxes.transform_values { |f| f.to_f.positive? ? (-2.5 * Math.log10(f.to_f)) : 999.0 }
-    norm_syn = synthetic_mags.transform_values { |m| m - synthetic_mags[:r] }
-    norm_obs = observed_mags.transform_values { |m| m - observed_mags[:r] }
-    expected_chi_squared = %i[u g r i z].sum do |band|
-      delta = norm_syn[band] - norm_obs[band]
-      delta**2
-    end
+    expected_chi_squared = SynthesisPipelineJob.new.send(:compute_chi_squared, composite, phot.transform_keys(&:to_sym))
 
     assert_equal "complete", run.status
     assert_in_delta expected_chi_squared, run.chi_squared, 1e-9
-    assert_equal({ "u" => 0.0, "g" => 0.0, "r" => 0.0, "i" => 0.0, "z" => 0.0 }, phot)
+    assert run.stellar_mass.to_f.positive?
+    assert_equal({ "u" => 0.0, "g" => 0.0, "r" => 0.0, "i" => 0.0, "z" => 0.0, "redshift_z" => 0.01 }, phot)
     assert_equal "SDSS photometry sourced from live SDSS API", run.error_message
     assert_nil run.sdss_object_name
   end
@@ -195,6 +188,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     assert_equal "failed", run.status
     assert_equal "SDSS photometry unavailable: local catalog miss; live SDSS API request failed.", run.error_message
     assert_nil run.chi_squared
+    assert_nil run.stellar_mass
     assert_nil run.sdss_object_name
   end
 
@@ -245,6 +239,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
     assert_equal "complete", run.status
     assert_equal "SDSS photometry sourced from galaxies table", run.error_message
     assert_equal({ "u" => 14.0, "g" => 13.0, "r" => 12.9, "i" => 12.6, "z" => 13.2, "redshift_z" => nil }, phot)
+    assert_nil run.stellar_mass
     assert_equal "NGC4564B", run.sdss_object_name
   end
 
@@ -272,6 +267,7 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
 
     assert_equal "failed", run.status
     assert_match(/forced failure/, run.error_message)
+    assert_nil run.stellar_mass
     assert_equal 0, SpectrumResult.where(synthesis_run_id: run.id).count
   end
 

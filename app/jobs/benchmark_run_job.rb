@@ -42,6 +42,7 @@ class BenchmarkRunJob < ApplicationJob
       end
       best = ranked.first || {}
       evaluation = evaluate_best_fit(best, benchmark)
+      stellar_mass_comparison = compare_stellar_mass(best, benchmark, photometry)
 
       {
         key: benchmark[:key],
@@ -55,6 +56,7 @@ class BenchmarkRunJob < ApplicationJob
         expected: benchmark[:expected],
         photometry: photometry,
         best_fit: best,
+        stellar_mass_comparison: stellar_mass_comparison,
         verdict: evaluation[:verdict],
         checks: evaluation[:checks],
         top_results: ranked.first(20)
@@ -242,6 +244,47 @@ class BenchmarkRunJob < ApplicationJob
     end
 
     { verdict: verdict, checks: checks }
+  end
+
+  def compare_stellar_mass(best, benchmark, photometry)
+    expected = benchmark[:expected] || {}
+    observed_min = expected[:stellar_mass_min] || expected["stellar_mass_min"]
+    observed_max = expected[:stellar_mass_max] || expected["stellar_mass_max"]
+    observed_mass =
+      if observed_min && observed_max
+        (observed_min.to_f + observed_max.to_f) / 2.0
+      elsif observed_min
+        observed_min.to_f
+      elsif observed_max
+        observed_max.to_f
+      end
+
+    sps_mass = estimate_sps_stellar_mass(best, photometry)
+    return {} if observed_mass.nil? || sps_mass.nil?
+    return {} unless observed_mass.positive? && sps_mass.positive?
+
+    delta = sps_mass - observed_mass
+
+    {
+      sps_stellar_mass: sps_mass,
+      observed_stellar_mass: observed_mass,
+      delta_stellar_mass: delta,
+      ratio_sps_to_observed: sps_mass / observed_mass
+    }
+  end
+
+  def estimate_sps_stellar_mass(best, photometry)
+    return nil unless best.is_a?(Hash)
+    return nil unless photometry.is_a?(Hash)
+
+    StellarPop::StellarMassEstimator.estimate(
+      sfh_model: best[:sfh_model] || best["sfh_model"],
+      imf_type: best[:imf_type] || best["imf_type"],
+      age_gyr: best[:age_gyr] || best["age_gyr"],
+      observed_r_mag: photometry[:r] || photometry["r"],
+      redshift_z: photometry[:redshift_z] || photometry["redshift_z"],
+      burst_age_gyr: best[:burst_age_gyr] || best["burst_age_gyr"]
+    )
   end
 
   def elapsed_seconds(started_at)

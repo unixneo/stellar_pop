@@ -231,6 +231,7 @@
         <% references = Array(benchmark["references"]) %>
         <% benchmark_notes = benchmark["notes"].to_s %>
         <% benchmark_type = benchmark["benchmark_type"].to_s %>
+        <% mass_cmp = benchmark["stellar_mass_comparison"] || {} %>
         <% best_age = best["age_gyr"].to_f %>
         <% best_z = best["metallicity_z"].to_f %>
         <% age_min = expected["age_gyr_min"].to_f %>
@@ -261,9 +262,53 @@
         <% if benchmark_notes.present? %>
           <p><strong>Notes:</strong> <%= benchmark_notes %></p>
         <% end %>
-        <p><strong>Published expectation:</strong> age=<%= age_min %>-<%= age_max %> Gyr, Z=<%= z_min %>-<%= z_max %>, sfh=<%= expected_sfh.join(", ") %></p>
-        <p><strong>Best fit:</strong> age=<%= best["age_gyr"] %>, Z=<%= best["metallicity_z"] %>, sfh=<%= best["sfh_model"] %>, burst_age=<%= best["burst_age_gyr"] || "-" %>, imf=<%= best["imf_type"] %>, chi2=<%= best["chi_squared"] ? format("%.6f", best["chi_squared"]) : "-" %></p>
-        <p><strong>Comparison:</strong> age is <%= age_comparison %>; metallicity is <%= z_comparison %>.</p>
+
+        <div class="form-card">
+          <h3 style="margin: 0 0 8px;">Measured vs Observational</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Measured</th>
+                <th>Observational</th>
+                <th>Assessment</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Age (Gyr)</td>
+                <td><%= best["age_gyr"] %></td>
+                <td><%= age_min %>-<%= age_max %></td>
+                <td><%= age_comparison %></td>
+              </tr>
+              <tr>
+                <td>Metallicity (Z)</td>
+                <td><%= best["metallicity_z"] %></td>
+                <td><%= z_min %>-<%= z_max %></td>
+                <td><%= z_comparison %></td>
+              </tr>
+              <tr>
+                <td>SFH model</td>
+                <td><%= best["sfh_model"] %></td>
+                <td><%= expected_sfh.join(", ") %></td>
+                <td><%= expected_sfh.include?(best["sfh_model"].to_s) ? "within expected range" : "outside expected range" %></td>
+              </tr>
+              <tr>
+                <td>Stellar mass (M☉)</td>
+                <% if mass_cmp["sps_stellar_mass"] && mass_cmp["observed_stellar_mass"] %>
+                  <td><%= format("%.3e", mass_cmp["sps_stellar_mass"].to_f) %></td>
+                  <td><%= format("%.3e", mass_cmp["observed_stellar_mass"].to_f) %></td>
+                  <% ratio = mass_cmp["ratio_sps_to_observed"].to_f %>
+                  <td><%= ratio.nan? ? "unavailable" : format("%.3f", ratio) %>x</td>
+                <% else %>
+                  <td>-</td>
+                  <td>-</td>
+                  <td>unavailable</td>
+                <% end %>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <% checks = benchmark["checks"] || {} %>
         <p style="font-family: monospace;">checks: age_ok=<%= checks["age_ok"] %>, metallicity_ok=<%= checks["metallicity_ok"] %>, sfh_ok=<%= checks["sfh_ok"] %></p>
         <% if references.any? %>

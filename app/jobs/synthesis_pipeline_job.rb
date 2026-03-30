@@ -7,7 +7,7 @@ class SynthesisPipelineJob < ApplicationJob
     age_bins_gyr = config.float_array("synthesis_age_bins_gyr")
     imf_sample_size = config.int_value("synthesis_imf_sample_size")
     synthesis_run = SynthesisRun.find(synthesis_run_id)
-    synthesis_run.update!(status: "running", error_message: nil)
+    synthesis_run.update!(status: "running", error_message: nil, chi_squared: nil, stellar_mass: nil)
 
     blackboard = StellarPop::Blackboard.new
 
@@ -41,6 +41,7 @@ class SynthesisPipelineJob < ApplicationJob
 
     sdss_photometry = nil
     chi_squared = nil
+    stellar_mass = nil
     sdss_fetch_note = nil
     sdss_object_name = nil
     sdss_required = non_zero_coordinates?(synthesis_run.sdss_ra, synthesis_run.sdss_dec)
@@ -67,6 +68,7 @@ class SynthesisPipelineJob < ApplicationJob
           end
       end
       chi_squared = compute_chi_squared(composite_spectrum, sdss_photometry) if sdss_photometry
+      stellar_mass = estimate_stellar_mass(synthesis_run, sdss_photometry, chi_squared)
     end
 
     wavelengths = composite_spectrum.keys.sort
@@ -90,6 +92,7 @@ class SynthesisPipelineJob < ApplicationJob
       status: final_status,
       error_message: sdss_fetch_note,
       chi_squared: chi_squared,
+      stellar_mass: stellar_mass,
       galaxy_id: synthesis_run.galaxy_id,
       sdss_object_name: sdss_object_name
     )
@@ -228,5 +231,39 @@ class SynthesisPipelineJob < ApplicationJob
     else
       "SDSS photometry unavailable: local catalog miss; live SDSS API request failed."
     end
+  end
+
+  def estimate_stellar_mass(synthesis_run, sdss_photometry, chi_squared)
+    return nil if sdss_photometry.nil?
+    return nil if chi_squared.nil?
+
+    redshift = sdss_photometry[:redshift_z] || sdss_photometry["redshift_z"]
+    return nil unless redshift.to_f.positive?
+
+    observed_r_mag = corrected_r_band_magnitude(sdss_photometry, redshift)
+    return nil if observed_r_mag.nil?
+
+    StellarPop::StellarMassEstimator.estimate(
+      sfh_model: synthesis_run.sfh_model,
+      imf_type: synthesis_run.imf_type,
+      age_gyr: synthesis_run.age_gyr,
+      observed_r_mag: observed_r_mag,
+      redshift_z: redshift,
+      burst_age_gyr: synthesis_run.burst_age_gyr
+    )
+  end
+
+  def corrected_r_band_magnitude(sdss_photometry, redshift)
+    bands = %i[u g r i z]
+    observed_magnitudes = {}
+    bands.each do |band|
+      observed_mag = sdss_photometry[band] || sdss_photometry[band.to_s]
+      return nil if observed_mag.nil?
+
+      observed_magnitudes[band] = observed_mag.to_f
+    end
+
+    corrected = StellarPop::KCorrection.correct(observed_magnitudes, redshift)
+    corrected[:r]
   end
 end

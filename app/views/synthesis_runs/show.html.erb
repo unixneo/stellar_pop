@@ -117,6 +117,9 @@
         <% if !@synthesis_run.chi_squared.nil? %>
           <tr><td class="synthesis-run-name-col">Chi-squared</td><td><%= format("%.6f", @synthesis_run.chi_squared) %></td></tr>
         <% end %>
+        <% if !@synthesis_run.stellar_mass.nil? %>
+          <tr><td class="synthesis-run-name-col">Estimated stellar mass</td><td><%= format("%.3e", @synthesis_run.stellar_mass) %> Msun</td></tr>
+        <% end %>
       </tbody>
     </table>
   </div>

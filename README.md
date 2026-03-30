@@ -19,6 +19,7 @@ chi-squared metric.
 - Added delayed exponential SFH (`tau * t * exp(-t/tau)`).
 - Added `burst_age_gyr` as a grid-sweep parameter for burst SFH runs.
 - Added redshift k-corrections before SDSS `ugriz` chi-squared comparison.
+- Added synthesis-run stellar mass estimation from best-fit SFH/IMF, observed `r`-band magnitude, and redshift-based luminosity distance.
 - Updated literature-backed observations for 16 galaxies with published sources.
 - Corrected NGC3379 best-fit age interpretation from `0.5` Gyr to `8-10` Gyr.
 
@@ -234,6 +235,7 @@ StellarPop follows a **blackboard pattern**:
 - `StellarPop::KnowledgeSources::BaselSpectra`
 - `StellarPop::Integrator::SpectralIntegrator`
 - `StellarPop::SdssFilterConvolver` (SDSS ugriz filter-weighted synthetic fluxes)
+- `StellarPop::StellarMassEstimator` (run-level stellar mass estimator from IMF/SFH + observed `r` magnitude + redshift distance)
 - `Galaxy` (SQLite-backed SDSS photometry/provenance records with `sdss_objid`, `mag_type`, and separate `petro_*` / `model_*` magnitude columns)
 - `StellarPop::SdssClient` (Faraday-based SDSS SkyServer SQL client with configurable dataset release `DR18`/`DR19`, default `DR19`)
 - `SynthesisPipelineJob` (async orchestration + persistence)
@@ -254,6 +256,7 @@ StellarPop follows a **blackboard pattern**:
    Then applies redshift k-corrections to observed magnitudes and computes chi-squared via SDSS filter convolution, and stores:
    - `SpectrumResult.sdss_photometry` (JSON)
    - `SynthesisRun.chi_squared`
+   - `SynthesisRun.stellar_mass` (estimated stellar mass in solar-mass units)
    - informational source/fetch note in `SynthesisRun.error_message` for complete runs
 7. The run is marked `complete` (or `failed` with `error_message` on exceptions).
 
@@ -308,6 +311,7 @@ Then open `http://localhost:3000`.
   - explicit SDSS source/failure note (local hit, live API hit, timeout, unreachable API, or no object found)
   - canvas-based spectrum viewer
   - chi-squared (if available)
+  - estimated stellar mass (if available)
   - composite spectrum table
   - SDSS `ugriz` photometry table (if fetched)
 - `/synthesis_runs/seed_test` creates a randomized test run (unique name, randomized model parameters, random local SDSS target).

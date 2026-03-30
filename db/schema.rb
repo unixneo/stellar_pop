@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_30_110000) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_30_123000) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -136,6 +136,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_30_110000) do
     t.integer "wavelength_min", default: 350
     t.integer "wavelength_max", default: 900
     t.integer "galaxy_id"
+    t.float "stellar_mass"
     t.index ["galaxy_id"], name: "index_synthesis_runs_on_galaxy_id"
   end
 
