@@ -96,10 +96,10 @@ class BenchmarkRunJob < ApplicationJob
     sdss_release = PipelineConfig.current.sdss_dataset_release
     all = StellarPop::Calibration::BenchmarkCatalog.all(sdss_release: sdss_release)
     requested = Array(options[:benchmark_keys] || options["benchmark_keys"]).map(&:to_s).uniq
-    return all if requested.empty?
+    return [] if requested.empty?
 
     filtered = all.select { |benchmark| requested.include?(benchmark[:key].to_s) }
-    filtered.empty? ? all : filtered
+    filtered
   end
 
   def run_grid_for_photometry(grid_job, photometry, bench_idx, profile, config)

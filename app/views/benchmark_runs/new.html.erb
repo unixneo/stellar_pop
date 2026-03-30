@@ -18,21 +18,36 @@
       </div>
 
       <div class="form-card" style="font-family: monospace;">
-        <p><strong>Benchmarks in this run:</strong></p>
-        <p class="form-help">No benchmarks are preselected by default. Select only what you want to run.</p>
-        <% @benchmarks.each do |benchmark| %>
-          <p style="margin-bottom: 8px;">
-            <label style="display: inline-flex; align-items: center; gap: 8px; margin-right: 10px;">
-              <%= check_box_tag "benchmark_keys[]", benchmark[:key], false %>
-              <span><strong><%= benchmark[:name] %></strong> (<%= benchmark[:type] %>)</span>
-            </label>
-          </p>
-          <p class="form-help">
-            <strong><%= benchmark[:name] %></strong>
-            (<%= benchmark[:type] %>) age <%= benchmark.dig(:expected, :age_gyr_min) %>-<%= benchmark.dig(:expected, :age_gyr_max) %> Gyr,
-            expected Z <%= benchmark.dig(:expected, :metallicity_z_min) %>-<%= benchmark.dig(:expected, :metallicity_z_max) %>
-          </p>
-        <% end %>
+        <p><strong>Benchmark target for this run:</strong></p>
+        <p class="form-help">Select one target from the active SDSS dataset release.</p>
+        <p>
+          <label for="benchmark_key">Benchmark target</label>
+          <%= select_tag :benchmark_key,
+                         options_for_select(@benchmarks.map { |benchmark| ["#{benchmark[:name]} (#{benchmark[:type]})", benchmark[:key]] }, params[:benchmark_key]),
+                         include_blank: "Select one benchmark target",
+                         id: "benchmark_key" %>
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Expected Age (Gyr)</th>
+              <th>Expected Z</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @benchmarks.each do |benchmark| %>
+              <tr>
+                <td><%= benchmark[:name] %></td>
+                <td><%= benchmark[:type] %></td>
+                <td><%= benchmark.dig(:expected, :age_gyr_min) %>-<%= benchmark.dig(:expected, :age_gyr_max) %></td>
+                <td><%= benchmark.dig(:expected, :metallicity_z_min) %>-<%= benchmark.dig(:expected, :metallicity_z_max) %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
       </div>
 
       <div class="form-card">
