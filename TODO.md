@@ -35,9 +35,9 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 
 - 🟨 Add side-by-side run comparison view
 - 🟨 Add GSWLC-specific importer/profile mapping (column normalization + validation presets)
-- 🟩 Build galaxy import tool to load new galaxies from CSV
 - ⬜ Add spectrum data export as CSV
 - ⬜ Add user or session scoping to `SynthesisRuns`
+- 🟩 Build galaxy import tool to load new galaxies from CSV
 - 🟩 Rename internal `CalibrationRun` model/routes/job naming to `BenchmarkRun` for terminology consistency
 - 🟩 Add run deletion from the UI
 - 🟩 Update `sdss:verify_photometry` rake task to read from `galaxies` table instead of `lib/data/sdss/photometry.csv` (then `photometry.csv` becomes archival only)
