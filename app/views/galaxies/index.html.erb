@@ -1,0 +1,75 @@
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title">Galaxies</h1>
+      <p class="card-subtitle">Manage local galaxy records and import catalog CSV files.</p>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <div class="action-links">
+      <%= link_to "New Galaxy", new_galaxy_path %>
+    </div>
+
+    <div class="form-card">
+      <%= form_with url: galaxies_path, method: :get do %>
+        <p>
+          <label for="q">Search name/type</label>
+          <input type="text" id="q" name="q" value="<%= @query %>" placeholder="e.g. M101, elliptical">
+        </p>
+        <p><input type="submit" value="Search"></p>
+      <% end %>
+    </div>
+
+    <div class="form-card">
+      <%= form_with url: import_galaxies_path, method: :post, multipart: true do %>
+        <p>
+          <label for="csv_file">Import CSV</label>
+          <input type="file" id="csv_file" name="csv_file" accept=".csv,text/csv">
+          <span class="form-help">Upsert by name, fallback by RA/Dec match.</span>
+        </p>
+        <p><input type="submit" value="Import CSV"></p>
+      <% end %>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>RA</th>
+            <th>Dec</th>
+            <th>u</th>
+            <th>g</th>
+            <th>r</th>
+            <th>i</th>
+            <th>z</th>
+            <th>SDSS DR</th>
+            <th>Source</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @galaxies.each do |galaxy| %>
+            <tr>
+              <td><%= link_to galaxy.name, galaxy_path(galaxy) %></td>
+              <td><%= galaxy.galaxy_type %></td>
+              <td><%= galaxy.ra %></td>
+              <td><%= galaxy.dec %></td>
+              <td><%= galaxy.mag_u %></td>
+              <td><%= galaxy.mag_g %></td>
+              <td><%= galaxy.mag_r %></td>
+              <td><%= galaxy.mag_i %></td>
+              <td><%= galaxy.mag_z %></td>
+              <td><%= galaxy.sdss_dr %></td>
+              <td><%= galaxy.source_catalog %></td>
+              <td>
+                <%= link_to "Edit", edit_galaxy_path(galaxy) %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

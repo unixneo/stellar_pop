@@ -1,0 +1,60 @@
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title"><%= @galaxy.name %></h1>
+      <p class="card-subtitle">Galaxy record details and provenance.</p>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <p><strong>Type:</strong> <%= @galaxy.galaxy_type %></p>
+    <p><strong>RA:</strong> <%= @galaxy.ra %></p>
+    <p><strong>Dec:</strong> <%= @galaxy.dec %></p>
+    <p><strong>Redshift z:</strong> <%= @galaxy.redshift_z %></p>
+    <p><strong>AGN:</strong> <%= @galaxy.agn %></p>
+    <p><strong>SDSS DR:</strong> <%= @galaxy.sdss_dr %></p>
+    <p><strong>SDSS ObjID:</strong> <%= @galaxy.sdss_objid %></p>
+    <p><strong>Source Catalog:</strong> <%= @galaxy.source_catalog %></p>
+    <p><strong>Notes:</strong> <%= @galaxy.notes %></p>
+  </div>
+</div>
+
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div><h2 class="card-title">Photometry</h2></div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <table>
+      <thead>
+        <tr>
+          <th>Band</th>
+          <th>Magnitude</th>
+          <th>Error</th>
+          <th>Extinction</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% [%w[u mag_u err_u extinction_u], %w[g mag_g err_g extinction_g], %w[r mag_r err_r extinction_r], %w[i mag_i err_i extinction_i], %w[z mag_z err_z extinction_z]].each do |band, mag_col, err_col, ext_col| %>
+          <tr>
+            <td><%= band %></td>
+            <td><%= @galaxy.public_send(mag_col) %></td>
+            <td><%= @galaxy.public_send(err_col) %></td>
+            <td><%= @galaxy.public_send(ext_col) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="run-show-actions">
+  <div class="action-links">
+    <%= link_to "Back to Galaxies", galaxies_path %>
+    <%= link_to "Edit", edit_galaxy_path(@galaxy) %>
+  </div>
+  <%= button_to "Delete Galaxy",
+                galaxy_path(@galaxy),
+                method: :delete,
+                class: "danger-button",
+                form: { class: "danger-button-form" },
+                data: { turbo_confirm: "Delete this galaxy permanently?" } %>
+</div>

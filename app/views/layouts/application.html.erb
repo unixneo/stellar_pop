@@ -26,6 +26,7 @@
             <%= link_to "Run Test", seed_test_synthesis_runs_path %>
             <%= link_to "Grid Fits", grid_fits_path %>
             <%= link_to "Benchmarks", benchmark_runs_path %>
+            <%= link_to "Galaxies", galaxies_path %>
             <%= link_to "Config", edit_pipeline_config_path %>
           </nav>
           <span
@@ -38,6 +39,9 @@
       </div>
     </header>
     <main>
+      <% flash.each do |key, message| %>
+        <div class="flash-banner <%= key == "alert" ? "flash-alert" : "flash-notice" %>"><%= message %></div>
+      <% end %>
       <%= yield %>
     </main>
   </body>

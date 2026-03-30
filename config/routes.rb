@@ -15,6 +15,11 @@ Rails.application.routes.draw do
   resources :synthesis_runs, only: %i[index show new create destroy]
   resources :grid_fits, only: %i[index show new create destroy]
   resources :benchmark_runs, only: %i[index show new create destroy]
+  resources :galaxies do
+    collection do
+      post :import
+    end
+  end
   resource :pipeline_config, only: %i[show edit update] do
     patch :reset
   end

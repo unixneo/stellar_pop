@@ -1,0 +1,32 @@
+<%= form_with model: galaxy do |f| %>
+  <div class="form-card">
+    <p><%= f.label :name %><%= f.text_field :name %></p>
+    <p><%= f.label :galaxy_type %><%= f.text_field :galaxy_type %></p>
+    <p><%= f.label :notes %><%= f.text_area :notes, rows: 3 %></p>
+  </div>
+
+  <div class="form-card">
+    <p><%= f.label :ra, "RA" %><%= f.number_field :ra, step: 0.0001 %></p>
+    <p><%= f.label :dec, "Dec" %><%= f.number_field :dec, step: 0.0001 %></p>
+    <p><%= f.label :redshift_z %><%= f.number_field :redshift_z, step: 0.000001 %></p>
+    <p><%= f.label :agn %><%= f.check_box :agn %></p>
+  </div>
+
+  <div class="form-card">
+    <p><%= f.label :mag_u %><%= f.number_field :mag_u, step: 0.0001 %></p>
+    <p><%= f.label :mag_g %><%= f.number_field :mag_g, step: 0.0001 %></p>
+    <p><%= f.label :mag_r %><%= f.number_field :mag_r, step: 0.0001 %></p>
+    <p><%= f.label :mag_i %><%= f.number_field :mag_i, step: 0.0001 %></p>
+    <p><%= f.label :mag_z %><%= f.number_field :mag_z, step: 0.0001 %></p>
+  </div>
+
+  <div class="form-card">
+    <p><%= f.label :sdss_dr %><%= f.text_field :sdss_dr %></p>
+    <p><%= f.label :sdss_objid %><%= f.text_field :sdss_objid %></p>
+    <p><%= f.label :source_catalog %><%= f.text_field :source_catalog %></p>
+  </div>
+
+  <div class="form-card">
+    <p><%= f.submit %></p>
+  </div>
+<% end %>
