@@ -54,6 +54,12 @@ class SynthesisRunsController < ApplicationController
     end
   end
 
+  def destroy
+    synthesis_run = SynthesisRun.find(params[:id])
+    synthesis_run.destroy!
+    redirect_to synthesis_runs_path, notice: "Synthesis run deleted."
+  end
+
   def seed_test
     target = Galaxy.where(agn: false).order(:name).to_a.sample
     target_name = target&.name || "fallback"

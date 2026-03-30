@@ -31,6 +31,12 @@ class CalibrationRunsController < ApplicationController
     end
   end
 
+  def destroy
+    calibration_run = CalibrationRun.find(params[:id])
+    calibration_run.destroy!
+    redirect_to calibration_runs_path, notice: "Benchmark run deleted."
+  end
+
   private
 
   def calibration_run_params

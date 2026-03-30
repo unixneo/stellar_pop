@@ -263,6 +263,14 @@
   <% end %>
 <% end %>
 
-<div class="action-links">
-  <%= link_to "Back to Benchmark Runs", calibration_runs_path %>
+<div class="run-show-actions">
+  <div class="action-links">
+    <%= link_to "Back to Benchmark Runs", calibration_runs_path %>
+  </div>
+  <%= button_to "Delete Benchmark Run",
+                calibration_run_path(@calibration_run),
+                method: :delete,
+                class: "danger-button",
+                form: { class: "danger-button-form" },
+                data: { turbo_confirm: "Delete this benchmark run permanently?" } %>
 </div>

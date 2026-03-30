@@ -234,6 +234,14 @@
   </div>
 </div>
 
-<div class="action-links">
-  <%= link_to "Back to Grid Fits", grid_fits_path %>
+<div class="run-show-actions">
+  <div class="action-links">
+    <%= link_to "Back to Grid Fits", grid_fits_path %>
+  </div>
+  <%= button_to "Delete Grid Fit",
+                grid_fit_path(@grid_fit),
+                method: :delete,
+                class: "danger-button",
+                form: { class: "danger-button-form" },
+                data: { turbo_confirm: "Delete this grid fit permanently?" } %>
 </div>

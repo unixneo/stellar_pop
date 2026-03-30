@@ -48,6 +48,12 @@ class GridFitsController < ApplicationController
     end
   end
 
+  def destroy
+    grid_fit = GridFit.find(params[:id])
+    grid_fit.destroy!
+    redirect_to grid_fits_path, notice: "Grid fit deleted."
+  end
+
   private
 
   def grid_fit_params

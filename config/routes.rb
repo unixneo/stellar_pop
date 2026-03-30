@@ -12,9 +12,9 @@ Rails.application.routes.draw do
   mount Sidekiq::Web => "/sidekiq"
 
   get "/synthesis_runs/seed_test", to: "synthesis_runs#seed_test", as: :seed_test_synthesis_runs
-  resources :synthesis_runs, only: %i[index show new create]
-  resources :grid_fits, only: %i[index show new create]
-  resources :calibration_runs, only: %i[index show new create]
+  resources :synthesis_runs, only: %i[index show new create destroy]
+  resources :grid_fits, only: %i[index show new create destroy]
+  resources :calibration_runs, only: %i[index show new create destroy]
   resource :pipeline_config, only: %i[show edit update] do
     patch :reset
   end

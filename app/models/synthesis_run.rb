@@ -1,5 +1,6 @@
 class SynthesisRun < ApplicationRecord
   belongs_to :galaxy, optional: true
+  has_many :spectrum_results, dependent: :destroy
 
   IMF_TYPES = %w[kroupa salpeter chabrier].freeze
   SFH_MODELS = %w[exponential delayed_exponential constant burst].freeze

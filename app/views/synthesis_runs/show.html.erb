@@ -300,4 +300,12 @@
   <p>No spectrum result yet.</p>
 <% end %>
 
-<p><%= link_to "Back to Runs", synthesis_runs_path %></p>
+<div class="run-show-actions">
+  <p><%= link_to "Back to Runs", synthesis_runs_path %></p>
+  <%= button_to "Delete Run",
+                synthesis_run_path(@synthesis_run),
+                method: :delete,
+                class: "danger-button",
+                form: { class: "danger-button-form" },
+                data: { turbo_confirm: "Delete this run permanently?" } %>
+</div>
