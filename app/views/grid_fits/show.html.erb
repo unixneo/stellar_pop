@@ -78,13 +78,23 @@
     </div>
   </div>
   <div class="cyberspace-panel-body">
-    <p><strong>Status:</strong> <%= status_label %></p>
-    <p><strong>Target:</strong> <%= @grid_fit.target_name.presence || "Unknown" %></p>
-    <% if @grid_fit.status.to_s == "complete" %>
-      <p><strong>Total runtime:</strong> <%= runtime_seconds_value %> seconds</p>
-    <% end %>
-    <p><strong>SDSS RA:</strong> <%= @grid_fit.sdss_ra %></p>
-    <p><strong>SDSS Dec:</strong> <%= @grid_fit.sdss_dec %></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Status</td><td><%= status_label %></td></tr>
+        <tr><td>Target</td><td><%= @grid_fit.target_name.presence || "Unknown" %></td></tr>
+        <% if @grid_fit.status.to_s == "complete" %>
+          <tr><td>Total runtime</td><td><%= runtime_seconds_value %> seconds</td></tr>
+        <% end %>
+        <tr><td>SDSS RA</td><td><%= @grid_fit.sdss_ra %></td></tr>
+        <tr><td>SDSS Dec</td><td><%= @grid_fit.sdss_dec %></td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -95,12 +105,22 @@
     </div>
   </div>
   <div class="cyberspace-panel-body" style="font-family: monospace;">
-    <p><strong>ages:</strong> [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0] Gyr</p>
-    <p><strong>metallicities:</strong> [0.0006, 0.0020, 0.0063, 0.0200, 0.0632]</p>
-    <p><strong>sfh_models:</strong> [exponential, delayed_exponential, constant, burst]</p>
-    <p><strong>burst_age_gyr (burst only):</strong> [0.1, 0.5, 1.0, 2.0]</p>
-    <p><strong>imf_types:</strong> [kroupa, salpeter, chabrier]</p>
-    <p><strong>Total combinations:</strong> 1050</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>ages</td><td>[0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0] Gyr</td></tr>
+        <tr><td>metallicities</td><td>[0.0006, 0.0020, 0.0063, 0.0200, 0.0632]</td></tr>
+        <tr><td>sfh_models</td><td>[exponential, delayed_exponential, constant, burst]</td></tr>
+        <tr><td>burst_age_gyr (burst only)</td><td>[0.1, 0.5, 1.0, 2.0]</td></tr>
+        <tr><td>imf_types</td><td>[kroupa, salpeter, chabrier]</td></tr>
+        <tr><td>Total combinations</td><td>1050</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -112,11 +132,21 @@
       </div>
     </div>
     <div class="cyberspace-panel-body">
-      <p><strong>Best chi-squared:</strong> <%= @grid_fit.best_chi_squared ? format("%.6f", @grid_fit.best_chi_squared) : "-" %></p>
-      <p><strong>Best age (Gyr):</strong> <%= @grid_fit.best_age_gyr %></p>
-      <p><strong>Best metallicity (Z):</strong> <%= @grid_fit.best_metallicity_z %></p>
-      <p><strong>Best SFH model:</strong> <%= @grid_fit.best_sfh_model %></p>
-      <p><strong>Best IMF type:</strong> <%= @grid_fit.best_imf_type %></p>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Best chi-squared</td><td><%= @grid_fit.best_chi_squared ? format("%.6f", @grid_fit.best_chi_squared) : "-" %></td></tr>
+          <tr><td>Best age (Gyr)</td><td><%= @grid_fit.best_age_gyr %></td></tr>
+          <tr><td>Best metallicity (Z)</td><td><%= @grid_fit.best_metallicity_z %></td></tr>
+          <tr><td>Best SFH model</td><td><%= @grid_fit.best_sfh_model %></td></tr>
+          <tr><td>Best IMF type</td><td><%= @grid_fit.best_imf_type %></td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 

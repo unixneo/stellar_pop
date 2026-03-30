@@ -7,73 +7,118 @@
   </div>
   <div class="cyberspace-panel-body">
     <%= form_with model: @grid_fit do |f| %>
-  <p>
-    <%= f.label :name %><br>
-    <%= f.text_field :name, id: "grid-fit-name" %>
-  </p>
+      <div class="form-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><%= f.label :name %></td>
+              <td><%= f.text_field :name, id: "grid-fit-name" %></td>
+            </tr>
+            <tr>
+              <td><label for="catalog-target-select">Select SDSS Catalog Target</label></td>
+              <td>
+                <select id="catalog-target-select">
+                  <% @catalog_targets.each_with_index do |target, idx| %>
+                    <option
+                      value="<%= idx %>"
+                      data-name="<%= target.name %>"
+                      data-type="<%= target.galaxy_type %>"
+                      data-ra="<%= target.ra %>"
+                      data-dec="<%= target.dec %>"
+                    >
+                      <%= "#{target.name} — #{target.galaxy_type} (#{target.ra}, #{target.dec})" %>
+                    </option>
+                  <% end %>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Selected coordinates</td>
+              <td id="selected-coordinates" style="font-family: monospace;">Selected coordinates: -</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-  <p>
-    <label for="catalog-target-select">Select SDSS Catalog Target</label><br>
-    <select id="catalog-target-select">
-      <% @catalog_targets.each_with_index do |target, idx| %>
-        <option
-          value="<%= idx %>"
-          data-name="<%= target.name %>"
-          data-type="<%= target.galaxy_type %>"
-          data-ra="<%= target.ra %>"
-          data-dec="<%= target.dec %>"
-        >
-          <%= "#{target.name} — #{target.galaxy_type} (#{target.ra}, #{target.dec})" %>
-        </option>
-      <% end %>
-    </select>
-  </p>
+      <%= f.hidden_field :sdss_ra, id: "grid-fit-sdss-ra" %>
+      <%= f.hidden_field :sdss_dec, id: "grid-fit-sdss-dec" %>
+      <%= hidden_field_tag :sdss_object_name, nil, id: "grid-fit-object-name" %>
 
-  <%= f.hidden_field :sdss_ra, id: "grid-fit-sdss-ra" %>
-  <%= f.hidden_field :sdss_dec, id: "grid-fit-sdss-dec" %>
-  <%= hidden_field_tag :sdss_object_name, nil, id: "grid-fit-object-name" %>
+      <div class="form-card">
+        <h2>Parameter Grid Sweep</h2>
+        <table style="font-family: monospace;">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Ages (Gyr)</td>
+              <td>
+                <% @grid_ages.each do |value| %>
+                  <label>
+                    <%= check_box_tag "sweep_ages[]", value, true, class: "grid-checkbox", data: { group: "ages" } %>
+                    <%= value %>
+                  </label>
+                <% end %>
+              </td>
+            </tr>
+            <tr>
+              <td>Metallicities</td>
+              <td>
+                <% @grid_metallicities.each do |value| %>
+                  <label>
+                    <%= check_box_tag "sweep_metallicities[]", value, true, class: "grid-checkbox", data: { group: "metallicities" } %>
+                    <%= value %>
+                  </label>
+                <% end %>
+              </td>
+            </tr>
+            <tr>
+              <td>SFH Models</td>
+              <td>
+                <% @grid_sfh_models.each do |value| %>
+                  <label>
+                    <%= check_box_tag "sweep_sfh_models[]", value, true, class: "grid-checkbox", data: { group: "sfh_models" } %>
+                    <%= value %>
+                  </label>
+                <% end %>
+              </td>
+            </tr>
+            <tr>
+              <td>IMF Types</td>
+              <td>
+                <% @grid_imf_types.each do |value| %>
+                  <label>
+                    <%= check_box_tag "sweep_imf_types[]", value, true, class: "grid-checkbox", data: { group: "imf_types" } %>
+                    <%= value %>
+                  </label>
+                <% end %>
+              </td>
+            </tr>
+            <tr>
+              <td>Burst age grid (applies only when SFH=burst)</td>
+              <td>[<%= @grid_burst_ages.join(", ") %>] Gyr</td>
+            </tr>
+            <tr>
+              <td>Total combinations</td>
+              <td><span id="grid-total-combinations">0</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-  <p id="selected-coordinates" style="font-family: monospace;">Selected coordinates: -</p>
-
-  <h2>Parameter Grid Sweep</h2>
-  <div style="font-family: monospace; border: 1px solid #334155; padding: 12px; border-radius: 6px; margin-bottom: 12px;">
-    <p><strong>Ages (Gyr)</strong></p>
-    <% @grid_ages.each do |value| %>
-      <label>
-        <%= check_box_tag "sweep_ages[]", value, true, class: "grid-checkbox", data: { group: "ages" } %>
-        <%= value %>
-      </label>
-    <% end %>
-
-    <p><strong>Metallicities</strong></p>
-    <% @grid_metallicities.each do |value| %>
-      <label>
-        <%= check_box_tag "sweep_metallicities[]", value, true, class: "grid-checkbox", data: { group: "metallicities" } %>
-        <%= value %>
-      </label>
-    <% end %>
-
-    <p><strong>SFH Models</strong></p>
-    <% @grid_sfh_models.each do |value| %>
-      <label>
-        <%= check_box_tag "sweep_sfh_models[]", value, true, class: "grid-checkbox", data: { group: "sfh_models" } %>
-        <%= value %>
-      </label>
-    <% end %>
-
-    <p><strong>IMF Types</strong></p>
-    <% @grid_imf_types.each do |value| %>
-      <label>
-        <%= check_box_tag "sweep_imf_types[]", value, true, class: "grid-checkbox", data: { group: "imf_types" } %>
-        <%= value %>
-      </label>
-    <% end %>
-
-    <p><strong>Burst age grid (applies only when SFH=burst):</strong> [<%= @grid_burst_ages.join(", ") %>] Gyr</p>
-    <p><strong>Total combinations:</strong> <span id="grid-total-combinations">0</span></p>
-  </div>
-
-      <p><%= f.submit "Create Grid Fit" %></p>
+      <div class="form-card">
+        <p><%= f.submit "Create Grid Fit" %></p>
+      </div>
     <% end %>
   </div>
 </div>
