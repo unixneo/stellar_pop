@@ -34,7 +34,8 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 ## Data and Persistence
 
 - 🟨 Add side-by-side run comparison view
-- 🟨 Build galaxy import tool to load new galaxies from CSV or GSWLC
+- 🟨 Add GSWLC-specific importer/profile mapping (column normalization + validation presets)
+- 🟩 Build galaxy import tool to load new galaxies from CSV
 - ⬜ Add spectrum data export as CSV
 - ⬜ Add user or session scoping to `SynthesisRuns`
 - 🟩 Rename internal `CalibrationRun` model/routes/job naming to `BenchmarkRun` for terminology consistency
