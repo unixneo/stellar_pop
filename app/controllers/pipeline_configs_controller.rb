@@ -1,6 +1,7 @@
 class PipelineConfigsController < ApplicationController
   def show
-    redirect_to edit_pipeline_config_path
+    @pipeline_config = PipelineConfig.current
+    @settings = @pipeline_config.settings
   end
 
   def edit
@@ -11,7 +12,7 @@ class PipelineConfigsController < ApplicationController
   def update
     @pipeline_config = PipelineConfig.current
     @pipeline_config.update_from_form(config_params)
-    redirect_to edit_pipeline_config_path, notice: "Pipeline configuration updated."
+    redirect_to pipeline_config_path, notice: "Pipeline configuration updated."
   rescue StandardError => e
     @settings = @pipeline_config.settings
     flash.now[:alert] = "Unable to update configuration: #{e.message}"
@@ -21,7 +22,7 @@ class PipelineConfigsController < ApplicationController
   def reset
     @pipeline_config = PipelineConfig.current
     @pipeline_config.update!(settings_json: PipelineConfig::DEFAULTS.to_json)
-    redirect_to edit_pipeline_config_path, notice: "Pipeline configuration reset to defaults."
+    redirect_to pipeline_config_path, notice: "Pipeline configuration reset to defaults."
   end
 
   private
@@ -36,6 +37,7 @@ class PipelineConfigsController < ApplicationController
       :synthesis_burst_default_width_gyr,
       :synthesis_default_wavelength_min_nm,
       :synthesis_default_wavelength_max_nm,
+      :synthesis_permit_celestial_coordinate_searches,
       :synthesis_sdss_max_fetch_attempts,
       :synthesis_sdss_base_backoff_seconds,
       :grid_ages_gyr,

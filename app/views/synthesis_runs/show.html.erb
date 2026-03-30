@@ -83,25 +83,35 @@
     </div>
   </div>
   <div class="cyberspace-panel-body">
-    <p><strong>Status:</strong> <%= status_label %></p>
-    <p><strong>IMF type:</strong> <%= @synthesis_run.imf_type %></p>
-    <p><strong>Spectra model:</strong> <%= @synthesis_run.spectra_model %></p>
-    <p><strong>Age (Gyr):</strong> <%= @synthesis_run.age_gyr %></p>
-    <p><strong>Metallicity (Z):</strong> <%= @synthesis_run.metallicity_z %></p>
-    <p><strong>Wavelength range:</strong> <%= @synthesis_run.wavelength_min %>-<%= @synthesis_run.wavelength_max %> nm</p>
-    <p><strong>SFH model:</strong> <%= @synthesis_run.sfh_model %></p>
-    <% if @synthesis_run.sfh_model.to_s == "burst" %>
-      <p><strong>Burst age (Gyr):</strong> <%= @synthesis_run.burst_age_gyr %></p>
-      <p><strong>Burst width (Gyr):</strong> <%= @synthesis_run.burst_width_gyr %></p>
-    <% end %>
-    <p><strong>SDSS RA:</strong> <%= @synthesis_run.sdss_ra %></p>
-    <p><strong>SDSS Dec:</strong> <%= @synthesis_run.sdss_dec %></p>
-    <% if @synthesis_run.sdss_object_name.present? %>
-      <p><strong>SDSS target:</strong> <%= @synthesis_run.sdss_object_name %></p>
-    <% end %>
-    <% if !@synthesis_run.chi_squared.nil? %>
-      <p><strong>Chi-squared:</strong> <%= format("%.6f", @synthesis_run.chi_squared) %></p>
-    <% end %>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Status</td><td><%= status_label %></td></tr>
+        <tr><td>IMF type</td><td><%= @synthesis_run.imf_type %></td></tr>
+        <tr><td>Spectra model</td><td><%= @synthesis_run.spectra_model %></td></tr>
+        <tr><td>Age (Gyr)</td><td><%= @synthesis_run.age_gyr %></td></tr>
+        <tr><td>Metallicity (Z)</td><td><%= @synthesis_run.metallicity_z %></td></tr>
+        <tr><td>Wavelength range</td><td><%= @synthesis_run.wavelength_min %>-<%= @synthesis_run.wavelength_max %> nm</td></tr>
+        <tr><td>SFH model</td><td><%= @synthesis_run.sfh_model %></td></tr>
+        <% if @synthesis_run.sfh_model.to_s == "burst" %>
+          <tr><td>Burst age (Gyr)</td><td><%= @synthesis_run.burst_age_gyr %></td></tr>
+          <tr><td>Burst width (Gyr)</td><td><%= @synthesis_run.burst_width_gyr %></td></tr>
+        <% end %>
+        <tr><td>SDSS RA</td><td><%= @synthesis_run.sdss_ra %></td></tr>
+        <tr><td>SDSS Dec</td><td><%= @synthesis_run.sdss_dec %></td></tr>
+        <% if @synthesis_run.sdss_object_name.present? %>
+          <tr><td>SDSS target</td><td><%= @synthesis_run.sdss_object_name %></td></tr>
+        <% end %>
+        <% if !@synthesis_run.chi_squared.nil? %>
+          <tr><td>Chi-squared</td><td><%= format("%.6f", @synthesis_run.chi_squared) %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
   </div>
 </div>
 <% spectra_library_label =
@@ -134,12 +144,22 @@
     </div>
   </div>
   <div class="cyberspace-panel-body" style="font-family: monospace;">
-    <p><strong>Spectra library:</strong> <%= spectra_library_label %></p>
-    <p><strong>IMF:</strong> <%= imf_label %></p>
-    <p><strong>Isochrone weighting:</strong> MIST v1.2 (Choi et al. 2016)</p>
-    <p><strong>MIST selected [Fe/H] bin:</strong> <%= format("%.2f", mist_selected_feh) %></p>
-    <p><strong>SFH model:</strong> <%= sfh_label %></p>
-    <p><strong>Chi-squared method:</strong> SDSS ugriz filter convolution (Fukugita et al. 1996)</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Spectra library</td><td><%= spectra_library_label %></td></tr>
+        <tr><td>IMF</td><td><%= imf_label %></td></tr>
+        <tr><td>Isochrone weighting</td><td>MIST v1.2 (Choi et al. 2016)</td></tr>
+        <tr><td>MIST selected [Fe/H] bin</td><td><%= format("%.2f", mist_selected_feh) %></td></tr>
+        <tr><td>SFH model</td><td><%= sfh_label %></td></tr>
+        <tr><td>Chi-squared method</td><td>SDSS ugriz filter convolution (Fukugita et al. 1996)</td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 

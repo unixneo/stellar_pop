@@ -1,0 +1,77 @@
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title">Pipeline Configuration</h1>
+      <p class="card-subtitle">Current runtime settings for synthesis, grid fitting, and benchmarks.</p>
+    </div>
+    <div>
+      <%= link_to "Edit Configuration", edit_pipeline_config_path, class: "primary-action-button" %>
+    </div>
+  </div>
+
+  <div class="cyberspace-panel-body">
+    <div class="form-card">
+      <h2>Synthesis Pipeline</h2>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Age bins (Gyr)</td><td><%= Array(@settings["synthesis_age_bins_gyr"]).join(", ") %></td></tr>
+          <tr><td>IMF sample size</td><td><%= @settings["synthesis_imf_sample_size"] %></td></tr>
+          <tr><td>Exponential SFH tau (Gyr)</td><td><%= @settings["synthesis_exponential_tau"] %></td></tr>
+          <tr><td>Delayed-exponential SFH tau (Gyr)</td><td><%= @settings["synthesis_delayed_exponential_tau"] %></td></tr>
+          <tr><td>Burst default age (Gyr)</td><td><%= @settings["synthesis_burst_default_age_gyr"] %></td></tr>
+          <tr><td>Burst default width (Gyr)</td><td><%= @settings["synthesis_burst_default_width_gyr"] %></td></tr>
+          <tr><td>Default wavelength min (nm)</td><td><%= @settings["synthesis_default_wavelength_min_nm"] %></td></tr>
+          <tr><td>Default wavelength max (nm)</td><td><%= @settings["synthesis_default_wavelength_max_nm"] %></td></tr>
+          <tr><td>Permit Celestial Coordinate Searches</td><td><%= ActiveModel::Type::Boolean.new.cast(@settings["synthesis_permit_celestial_coordinate_searches"]) ? "true" : "false" %></td></tr>
+          <tr><td>SDSS max fetch attempts</td><td><%= @settings["synthesis_sdss_max_fetch_attempts"] %></td></tr>
+          <tr><td>SDSS backoff base seconds</td><td><%= @settings["synthesis_sdss_base_backoff_seconds"] %></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="form-card">
+      <h2>Grid Fit</h2>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Ages (Gyr)</td><td><%= Array(@settings["grid_ages_gyr"]).join(", ") %></td></tr>
+          <tr><td>Metallicities Z</td><td><%= Array(@settings["grid_metallicities_z"]).join(", ") %></td></tr>
+          <tr><td>SFH models</td><td><%= Array(@settings["grid_sfh_models"]).join(", ") %></td></tr>
+          <tr><td>IMF types</td><td><%= Array(@settings["grid_imf_types"]).join(", ") %></td></tr>
+          <tr><td>Burst ages (Gyr)</td><td><%= Array(@settings["grid_burst_ages_gyr"]).join(", ") %></td></tr>
+          <tr><td>Internal age bins (Gyr)</td><td><%= Array(@settings["grid_age_bins_gyr"]).join(", ") %></td></tr>
+          <tr><td>IMF sample size</td><td><%= @settings["grid_imf_sample_size"] %></td></tr>
+          <tr><td>Wavelength min (nm)</td><td><%= @settings["grid_wavelength_min_nm"] %></td></tr>
+          <tr><td>Wavelength max (nm)</td><td><%= @settings["grid_wavelength_max_nm"] %></td></tr>
+          <tr><td>Exponential SFH tau (Gyr)</td><td><%= @settings["grid_exponential_tau"] %></td></tr>
+          <tr><td>Delayed-exponential SFH tau (Gyr)</td><td><%= @settings["grid_delayed_exponential_tau"] %></td></tr>
+          <tr><td>Burst width (Gyr)</td><td><%= @settings["grid_burst_width_gyr"] %></td></tr>
+          <tr><td>SDSS max fetch attempts</td><td><%= @settings["grid_sdss_max_fetch_attempts"] %></td></tr>
+          <tr><td>SDSS backoff base seconds</td><td><%= @settings["grid_sdss_base_backoff_seconds"] %></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="form-card">
+      <h2>Benchmark Run</h2>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Progress write frequency (steps)</td><td><%= @settings["calibration_progress_write_every"] %></td></tr>
+          <tr><td>Fast mode ages (Gyr)</td><td><%= Array(@settings["calibration_fast_ages_gyr"]).join(", ") %></td></tr>
+          <tr><td>Fast mode metallicities</td><td><%= Array(@settings["calibration_fast_metallicities_z"]).join(", ") %></td></tr>
+          <tr><td>Fast mode SFH models</td><td><%= Array(@settings["calibration_fast_sfh_models"]).join(", ") %></td></tr>
+          <tr><td>Fast mode IMF types</td><td><%= Array(@settings["calibration_fast_imf_types"]).join(", ") %></td></tr>
+          <tr><td>Fast mode burst ages</td><td><%= Array(@settings["calibration_fast_burst_ages_gyr"]).join(", ") %></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

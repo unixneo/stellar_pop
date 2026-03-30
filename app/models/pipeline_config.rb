@@ -8,6 +8,7 @@ class PipelineConfig < ApplicationRecord
     "synthesis_burst_default_width_gyr" => 0.5,
     "synthesis_default_wavelength_min_nm" => 350.0,
     "synthesis_default_wavelength_max_nm" => 900.0,
+    "synthesis_permit_celestial_coordinate_searches" => false,
     "synthesis_sdss_max_fetch_attempts" => 3,
     "synthesis_sdss_base_backoff_seconds" => 0.5,
     "grid_ages_gyr" => [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0],
@@ -72,6 +73,7 @@ class PipelineConfig < ApplicationRecord
     assign_scalar(merged, "synthesis_burst_default_width_gyr", form_params[:synthesis_burst_default_width_gyr], :float)
     assign_scalar(merged, "synthesis_default_wavelength_min_nm", form_params[:synthesis_default_wavelength_min_nm], :float)
     assign_scalar(merged, "synthesis_default_wavelength_max_nm", form_params[:synthesis_default_wavelength_max_nm], :float)
+    assign_boolean(merged, "synthesis_permit_celestial_coordinate_searches", form_params[:synthesis_permit_celestial_coordinate_searches])
     assign_scalar(merged, "synthesis_sdss_max_fetch_attempts", form_params[:synthesis_sdss_max_fetch_attempts], :int)
     assign_scalar(merged, "synthesis_sdss_base_backoff_seconds", form_params[:synthesis_sdss_base_backoff_seconds], :float)
 
@@ -137,5 +139,11 @@ class PipelineConfig < ApplicationRecord
       else
         raw
       end
+  end
+
+  def assign_boolean(target, key, raw)
+    return if raw.nil?
+
+    target[key] = ActiveModel::Type::Boolean.new.cast(raw)
   end
 end
