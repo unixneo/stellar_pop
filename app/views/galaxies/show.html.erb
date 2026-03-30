@@ -70,6 +70,47 @@
   </div>
 </div>
 
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div><h2 class="card-title">Observations</h2></div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <% observations = @galaxy.observations.order(:id) %>
+    <% if observations.any? %>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Source Paper</th>
+            <th>Age (Gyr)</th>
+            <th>Metallicity (Z)</th>
+            <th>Stellar Mass</th>
+            <th>SFR</th>
+            <th>Method</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% observations.each do |observation| %>
+            <tr>
+              <td><%= observation.id %></td>
+              <td><%= observation.source_paper %></td>
+              <td><%= observation.age_gyr %></td>
+              <td><%= observation.metallicity_z %></td>
+              <td><%= observation.stellar_mass %></td>
+              <td><%= observation.sfr %></td>
+              <td><%= observation.method_used %></td>
+              <td><%= observation.notes %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p>No observations linked to this galaxy.</p>
+    <% end %>
+  </div>
+</div>
+
 <div class="run-show-actions">
   <div class="action-links">
     <%= link_to "Back to Galaxies", galaxies_path %>
