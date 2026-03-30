@@ -5,7 +5,7 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 ## Science/Physics
 
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution
-- 🟨 Run `sdss:verify_photometry` rake task and update `sdss_dr` provenance for all catalog entries
+- 🟩 Run `sdss:verify_photometry` rake task and update `sdss_dr` provenance for all catalog entries — provenance updated via DR19 objid-based fetch with both Petrosian and model magnitude storage
 - 🟨 Add more galaxy targets to local SDSS catalog covering wider range of types and environments
 - 🟨 Add photometric error columns to `galaxies` table: `petro_u_err`, `petro_g_err`, `petro_r_err`, `petro_i_err`, `petro_z_err`, `model_u_err`, `model_g_err`, `model_r_err`, `model_i_err`, `model_z_err` and fetch from SDSS `petroMagErr` and `modelMagErr` fields
 - 🟨 Add observation uncertainty columns to `observations` table: `age_err_plus`, `age_err_minus`, `metallicity_err_plus`, `metallicity_err_minus`, `method_note`
