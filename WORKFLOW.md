@@ -21,7 +21,8 @@
 - Tagged releases: `vX.Y.Z` for Zenodo deposits
 
 ## Documentation Rule
-Always update `README.md`, `TODO.md`, and `paper.md` before committing science or pipeline changes. Never commit science changes without updating documentation first.
+_ Always update `README.md`, `TODO.md`, and `paper.md` before committing science or pipeline changes. Never commit science changes without updating documentation first.
+_ Always keep TODO order exactly: 🟥 → 🟦 → 🟨 → ⬜ → 🟩 in every section, every edit.
 
 ## Science Validation Rule
 Always validate physics results in the Rails console before committing. Never trust Codex smoke tests alone for science correctness. Post console output to Claude for review before committing.
