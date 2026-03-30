@@ -10,6 +10,18 @@ and SFH model). It runs an async pipeline, persists the resulting spectrum, and
 optionally compares synthetic output against SDSS `ugriz` photometry using a
 chi-squared metric.
 
+## v0.3.2 Updates
+
+- SDSS `DR19` is now the default dataset release, configurable in `/pipeline_config/edit`.
+- Live SDSS photometry refresh now uses objid-based fetch as the primary path (`sdss_objid`), replacing coordinate-first lookup for runtime fetches.
+- The `galaxies` table stores both Petrosian and model magnitudes (`petro_*`, `model_*`) per galaxy, with `mag_type` controlling active `mag_u..mag_z`.
+- Added Chabrier IMF support alongside Kroupa and Salpeter.
+- Added delayed exponential SFH (`tau * t * exp(-t/tau)`).
+- Added `burst_age_gyr` as a grid-sweep parameter for burst SFH runs.
+- Added redshift k-corrections before SDSS `ugriz` chi-squared comparison.
+- Updated literature-backed observations for 16 galaxies with published sources.
+- Corrected NGC3379 best-fit age interpretation from `0.5` Gyr to `8-10` Gyr.
+
 ## Why This App Exists
 
 The goal is to show that a practical stellar population synthesis workflow can be
@@ -235,10 +247,10 @@ StellarPop follows a **blackboard pattern**:
 3. The job sets status `running`, builds a blackboard, samples IMF masses, computes SFH weights, applies a user-configurable wavelength range (`wavelength_min..wavelength_max`, 300-1100nm, default 350-900nm), and runs the spectral integrator.
 4. The integrator writes `:composite_spectrum` to the blackboard.
 5. The job saves a `SpectrumResult` (wavelength/flux JSON).
-6. If SDSS coordinates are present, the job resolves `ugriz` photometry using local-first lookup:
+6. If SDSS target metadata is present, the job resolves `ugriz` photometry using local-first lookup:
    - first `galaxies` table records in SQLite (30 galaxies loaded from `lib/data/sdss/photometry.csv`)
    - fallback to live SDSS API (`SdssClient`) if local DB lookup misses
-   - live lookup utilities support objid-first fetch (`fetch_photometry_by_objid`) with coordinate fallback for catalog maintenance tasks
+   - live fetch is objid-first (`fetch_photometry_by_objid`) for runtime/catalog refresh; coordinate fallback is retained for maintenance utilities
    Then applies redshift k-corrections to observed magnitudes and computes chi-squared via SDSS filter convolution, and stores:
    - `SpectrumResult.sdss_photometry` (JSON)
    - `SynthesisRun.chi_squared`
@@ -325,6 +337,7 @@ Then open `http://localhost:3000`.
 - Benchmarks are selectable per run (none preselected by default), currently including:
   `NGC3379`, `M101`, `M87`, and `NGC4459`, each with fixed reference photometry
   and literature-backed expected physical ranges.
+- Observation records now include a wider literature-backed set (16 galaxies with published sources), used for benchmark metadata and reference context.
 - Runs support `fast` mode (reduced grid) or `full` mode (full benchmark grid).
 - Calibration executes the configured sweep for each selected benchmark and stores:
   - pass/warn/fail verdicts for age/metallicity/SFH-class checks
@@ -339,9 +352,9 @@ First grid-fit results on local SDSS targets show physically plausible trends:
 
 - `M101` best fit: age `0.1` Gyr, `Z=0.0063`, exponential SFH; consistent with
   a young, star-forming spiral population.
-- `NGC3379` best fit: age `0.5` Gyr, `Z=0.02`, burst SFH, with older-age
-  solutions close in chi-squared; this reflects the known age-metallicity
-  degeneracy in photometric SPS fitting.
+- `NGC3379` best fit: age `8-10` Gyr, near-solar `Z`, consistent with published
+  old-population constraints for this elliptical after DR19 objid-based
+  photometry correction.
 - Synthetic `g-r` colors now span approximately `-0.44` (young `0.01` Gyr) to
   `+0.65` (old `12` Gyr), consistent with the observed galaxy color range.
 
