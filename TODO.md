@@ -1,6 +1,6 @@
 # TODO
 
-Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offline
+Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offline, ⬜ Optional
 
 ## Science/Physics
 
@@ -36,8 +36,8 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 - 🟨 Add more galaxy targets to local SDSS catalog
 - 🟨 Add side-by-side run comparison view
 - 🟨 Add spectrum data export as CSV
-- 🟨 Add user or session scoping to `SynthesisRuns`
 - 🟨 Build galaxy import tool to load new galaxies from CSV or GSWLC
+- ⬜ Add user or session scoping to `SynthesisRuns`
 - 🟩 Rename internal `CalibrationRun` model/routes/job naming to `BenchmarkRun` for terminology consistency
 - 🟩 Add run deletion from the UI
 - 🟩 Update `sdss:verify_photometry` rake task to read from `galaxies` table instead of `lib/data/sdss/photometry.csv` (then `photometry.csv` becomes archival only)
@@ -72,8 +72,8 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 - 🟨 Add zoom and pan to canvas spectrum viewer
 - 🟨 Improve CSS polish across index/new/show views
 - 🟨 Add confidence intervals or chi-squared contour plots for grid fit results
-- 🟨 Investigate age-metallicity degeneracy breaking with additional photometric bands
 - 🟨 Document deployment and runbook updates
+- ⬜ Investigate age-metallicity degeneracy breaking with additional photometric bands
 - 🟩 Add configuration page for pipeline parameters
 - 🟩 Add canvas-based spectrum viewer on `SynthesisRun#show`
 - 🟩 Show pipeline configuration panel with active scientific model selections and citations
