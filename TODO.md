@@ -33,6 +33,7 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 
 ## Data and Persistence
 
+- 🟦 Backfill `sdss_objid` for galaxies via SDSS query and persist in `galaxies` table
 - 🟨 Add side-by-side run comparison view
 - 🟨 Add GSWLC-specific importer/profile mapping (column normalization + validation presets)
 - ⬜ Add spectrum data export as CSV

@@ -26,6 +26,12 @@
   <meta http-equiv="refresh" content="5">
 <% end %>
 
+<style>
+  .synthesis-run-name-col {
+    width: 210px;
+  }
+</style>
+
 <% if processing %>
   <style>
     .processing-banner {
@@ -86,29 +92,29 @@
     <table>
       <thead>
         <tr>
-          <th>Name</th>
+          <th class="synthesis-run-name-col">Name</th>
           <th>Value</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td>Status</td><td><%= status_label %></td></tr>
-        <tr><td>IMF type</td><td><%= @synthesis_run.imf_type %></td></tr>
-        <tr><td>Spectra model</td><td><%= @synthesis_run.spectra_model %></td></tr>
-        <tr><td>Age (Gyr)</td><td><%= @synthesis_run.age_gyr %></td></tr>
-        <tr><td>Metallicity (Z)</td><td><%= @synthesis_run.metallicity_z %></td></tr>
-        <tr><td>Wavelength range</td><td><%= @synthesis_run.wavelength_min %>-<%= @synthesis_run.wavelength_max %> nm</td></tr>
-        <tr><td>SFH model</td><td><%= @synthesis_run.sfh_model %></td></tr>
+        <tr><td class="synthesis-run-name-col">Status</td><td><%= status_label %></td></tr>
+        <tr><td class="synthesis-run-name-col">IMF type</td><td><%= @synthesis_run.imf_type %></td></tr>
+        <tr><td class="synthesis-run-name-col">Spectra model</td><td><%= @synthesis_run.spectra_model %></td></tr>
+        <tr><td class="synthesis-run-name-col">Age (Gyr)</td><td><%= @synthesis_run.age_gyr %></td></tr>
+        <tr><td class="synthesis-run-name-col">Metallicity (Z)</td><td><%= @synthesis_run.metallicity_z %></td></tr>
+        <tr><td class="synthesis-run-name-col">Wavelength range</td><td><%= @synthesis_run.wavelength_min %>-<%= @synthesis_run.wavelength_max %> nm</td></tr>
+        <tr><td class="synthesis-run-name-col">SFH model</td><td><%= @synthesis_run.sfh_model %></td></tr>
         <% if @synthesis_run.sfh_model.to_s == "burst" %>
-          <tr><td>Burst age (Gyr)</td><td><%= @synthesis_run.burst_age_gyr %></td></tr>
-          <tr><td>Burst width (Gyr)</td><td><%= @synthesis_run.burst_width_gyr %></td></tr>
+          <tr><td class="synthesis-run-name-col">Burst age (Gyr)</td><td><%= @synthesis_run.burst_age_gyr %></td></tr>
+          <tr><td class="synthesis-run-name-col">Burst width (Gyr)</td><td><%= @synthesis_run.burst_width_gyr %></td></tr>
         <% end %>
-        <tr><td>SDSS RA</td><td><%= @synthesis_run.sdss_ra %></td></tr>
-        <tr><td>SDSS Dec</td><td><%= @synthesis_run.sdss_dec %></td></tr>
+        <tr><td class="synthesis-run-name-col">SDSS RA</td><td><%= @synthesis_run.sdss_ra %></td></tr>
+        <tr><td class="synthesis-run-name-col">SDSS Dec</td><td><%= @synthesis_run.sdss_dec %></td></tr>
         <% if @synthesis_run.sdss_object_name.present? %>
-          <tr><td>SDSS target</td><td><%= @synthesis_run.sdss_object_name %></td></tr>
+          <tr><td class="synthesis-run-name-col">SDSS target</td><td><%= @synthesis_run.sdss_object_name %></td></tr>
         <% end %>
         <% if !@synthesis_run.chi_squared.nil? %>
-          <tr><td>Chi-squared</td><td><%= format("%.6f", @synthesis_run.chi_squared) %></td></tr>
+          <tr><td class="synthesis-run-name-col">Chi-squared</td><td><%= format("%.6f", @synthesis_run.chi_squared) %></td></tr>
         <% end %>
       </tbody>
     </table>
@@ -147,17 +153,17 @@
     <table>
       <thead>
         <tr>
-          <th>Name</th>
+          <th class="synthesis-run-name-col">Name</th>
           <th>Value</th>
         </tr>
       </thead>
       <tbody>
-        <tr><td>Spectra library</td><td><%= spectra_library_label %></td></tr>
-        <tr><td>IMF</td><td><%= imf_label %></td></tr>
-        <tr><td>Isochrone weighting</td><td>MIST v1.2 (Choi et al. 2016)</td></tr>
-        <tr><td>MIST selected [Fe/H] bin</td><td><%= format("%.2f", mist_selected_feh) %></td></tr>
-        <tr><td>SFH model</td><td><%= sfh_label %></td></tr>
-        <tr><td>Chi-squared method</td><td>SDSS ugriz filter convolution (Fukugita et al. 1996)</td></tr>
+        <tr><td class="synthesis-run-name-col">Spectra library</td><td><%= spectra_library_label %></td></tr>
+        <tr><td class="synthesis-run-name-col">IMF</td><td><%= imf_label %></td></tr>
+        <tr><td class="synthesis-run-name-col">Isochrone weighting</td><td>MIST v1.2 (Choi et al. 2016)</td></tr>
+        <tr><td class="synthesis-run-name-col">MIST selected<br>[Fe/H] bin</td><td><%= format("%.2f", mist_selected_feh) %></td></tr>
+        <tr><td class="synthesis-run-name-col">SFH model</td><td><%= sfh_label %></td></tr>
+        <tr><td class="synthesis-run-name-col">Chi-squared method</td><td>SDSS ugriz filter convolution (Fukugita et al. 1996)</td></tr>
       </tbody>
     </table>
   </div>

@@ -6,15 +6,25 @@
     </div>
   </div>
   <div class="cyberspace-panel-body">
-    <p><strong>Type:</strong> <%= @galaxy.galaxy_type %></p>
-    <p><strong>RA:</strong> <%= @galaxy.ra %></p>
-    <p><strong>Dec:</strong> <%= @galaxy.dec %></p>
-    <p><strong>Redshift z:</strong> <%= @galaxy.redshift_z %></p>
-    <p><strong>AGN:</strong> <%= @galaxy.agn %></p>
-    <p><strong>SDSS DR:</strong> <%= @galaxy.sdss_dr %></p>
-    <p><strong>SDSS ObjID:</strong> <%= @galaxy.sdss_objid %></p>
-    <p><strong>Source Catalog:</strong> <%= @galaxy.source_catalog %></p>
-    <p><strong>Notes:</strong> <%= @galaxy.notes %></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Type</td><td><%= @galaxy.galaxy_type %></td></tr>
+        <tr><td>RA</td><td><%= @galaxy.ra %></td></tr>
+        <tr><td>Dec</td><td><%= @galaxy.dec %></td></tr>
+        <tr><td>Redshift z</td><td><%= @galaxy.redshift_z %></td></tr>
+        <tr><td>AGN</td><td><%= @galaxy.agn %></td></tr>
+        <tr><td>SDSS DR</td><td><%= @galaxy.sdss_dr %></td></tr>
+        <tr><td>SDSS ObjID</td><td><%= @galaxy.sdss_objid %></td></tr>
+        <tr><td>Source Catalog</td><td><%= @galaxy.source_catalog %></td></tr>
+        <tr><td>Notes</td><td><%= @galaxy.notes %></td></tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
