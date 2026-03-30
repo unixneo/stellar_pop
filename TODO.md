@@ -4,7 +4,7 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 
 ## Science/Physics
 
-- 🟦 Validate grid fit results against published SPS fits for M101 and NGC3379 from the literature
+- 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution
 - 🟨 Run `sdss:verify_photometry` rake task and update `sdss_dr` provenance for all catalog entries
 - 🟨 Add more galaxy targets to local SDSS catalog covering wider range of types and environments
 - 🟨 Add photometric error columns to `galaxies` table: `petro_u_err`, `petro_g_err`, `petro_r_err`, `petro_i_err`, `petro_z_err`, `model_u_err`, `model_g_err`, `model_r_err`, `model_i_err`, `model_z_err` and fetch from SDSS `petroMagErr` and `modelMagErr` fields
@@ -15,6 +15,7 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 - 🟩 Update `SdssClient` photometry query path to retrieve both `petroMag_*` and `modelMag_*` fields
 - 🟩 Add DR19 objid maintenance tasks (`sdss:verify_objids`, `sdss:fix_objids`) and objid-first photometry fetch for catalog refresh (`sdss:fetch_dr19_photometry`)
 - 🟩 Investigate NGC3379 age estimate — resolved by correcting DR19 objid-based photometry fetch (root cause was source-object selection, not magnitude type)
+- 🟩 Validate grid fit results for NGC3379 against published SPS fits — validated: best fit age 8-10 Gyr is consistent with published 9.3 Gyr after DR19 photometry fix
 - 🟩 Verify smoothed composite spectrum shape is physically reasonable
 - 🟩 Validate local-catalog elliptical target scenario (NGC3379) with lower chi-squared than quasar baseline
 - 🟩 Add BaSeL 3.1 spectral library parser (`BaselSpectra`) with Fortran-order indexing and flux sentinel filtering
