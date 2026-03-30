@@ -1,6 +1,6 @@
 # TODO
 
-Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offline, ⬜ Optional
+Legend: 🟩 Done, ⬜ Optional, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offline
 
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution
