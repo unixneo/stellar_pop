@@ -6,8 +6,8 @@
     </div>
   </div>
   <div class="cyberspace-panel-body">
-    <div class="action-links">
-      <%= link_to "New Galaxy", new_galaxy_path %>
+    <div class="galaxies-index-actions">
+      <%= link_to "New Galaxy", new_galaxy_path, class: "primary-action-button" %>
     </div>
 
     <div class="form-card">
@@ -16,18 +16,18 @@
           <label for="q">Search name/type</label>
           <input type="text" id="q" name="q" value="<%= @query %>" placeholder="e.g. M101, elliptical">
         </p>
-        <p><input type="submit" value="Search"></p>
+        <p class="form-action-row"><%= submit_tag "Search", class: "galaxies-submit-button" %></p>
       <% end %>
     </div>
 
-    <div class="form-card">
-      <%= form_with url: import_galaxies_path, method: :post, multipart: true do %>
-        <p>
+    <div class="form-card import-form-card">
+      <%= form_with url: import_galaxies_path, method: :post, multipart: true, class: "import-galaxies-form" do %>
+        <p class="file-chooser-row">
           <label for="csv_file">Import CSV</label>
           <input type="file" id="csv_file" name="csv_file" accept=".csv,text/csv">
           <span class="form-help">Upsert by name, fallback by RA/Dec match.</span>
         </p>
-        <p><input type="submit" value="Import CSV"></p>
+        <p class="form-action-row import-action-row"><%= submit_tag "Import CSV", class: "galaxies-submit-button import-csv-button" %></p>
       <% end %>
     </div>
 
