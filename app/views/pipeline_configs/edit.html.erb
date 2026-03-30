@@ -74,6 +74,13 @@
                            options_for_select(PipelineConfig::SDSS_RELEASES, @settings["sdss_dataset_release"].to_s.upcase.presence || "DR19") %>
             </td>
           </tr>
+          <tr>
+            <td><%= f.label :mag_type, "Active magnitude type" %></td>
+            <td>
+              <%= f.select :mag_type,
+                           options_for_select(PipelineConfig::MAG_TYPES, @settings["mag_type"].to_s.downcase.presence || "petrosian") %>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>

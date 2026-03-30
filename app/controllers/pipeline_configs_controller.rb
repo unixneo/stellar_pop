@@ -41,6 +41,7 @@ class PipelineConfigsController < ApplicationController
       :synthesis_sdss_max_fetch_attempts,
       :synthesis_sdss_base_backoff_seconds,
       :sdss_dataset_release,
+      :mag_type,
       :grid_ages_gyr,
       :grid_metallicities_z,
       :grid_sfh_models,

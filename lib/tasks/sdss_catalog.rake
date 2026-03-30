@@ -98,6 +98,8 @@ namespace :sdss do
 
   desc "Fetch DR19 photometry for DR19 galaxies and store petro/model magnitudes"
   task fetch_dr19_photometry: :environment do
+    config = PipelineConfig.current
+    active_mag_type = config.mag_type
     galaxies = Galaxy.where(sdss_dr: "DR19").order(:id)
     if galaxies.empty?
       puts "No DR19 galaxies found."
@@ -122,6 +124,12 @@ namespace :sdss do
       end
 
       if result
+        selected_u = active_mag_type == "model" ? result[:model_u] : result[:petro_u]
+        selected_g = active_mag_type == "model" ? result[:model_g] : result[:petro_g]
+        selected_r = active_mag_type == "model" ? result[:model_r] : result[:petro_r]
+        selected_i = active_mag_type == "model" ? result[:model_i] : result[:petro_i]
+        selected_z = active_mag_type == "model" ? result[:model_z] : result[:petro_z]
+
         galaxy.update!(
           petro_u: result[:petro_u],
           petro_g: result[:petro_g],
@@ -133,12 +141,12 @@ namespace :sdss do
           model_r: result[:model_r],
           model_i: result[:model_i],
           model_z: result[:model_z],
-          mag_u: result[:petro_u],
-          mag_g: result[:petro_g],
-          mag_r: result[:petro_r],
-          mag_i: result[:petro_i],
-          mag_z: result[:petro_z],
-          mag_type: "petrosian",
+          mag_u: selected_u,
+          mag_g: selected_g,
+          mag_r: selected_r,
+          mag_i: selected_i,
+          mag_z: selected_z,
+          mag_type: active_mag_type,
           sdss_dr: "DR19"
         )
         puts "#{galaxy.name}: success via #{fetch_path} petro_r=#{result[:petro_r].inspect}"

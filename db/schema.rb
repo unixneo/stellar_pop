@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_30_100000) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_30_110000) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -103,6 +103,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_30_100000) do
     t.text "settings_json", default: "{}", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "mag_type", default: "petrosian", null: false
   end
 
   create_table "spectrum_results", force: :cascade do |t|
