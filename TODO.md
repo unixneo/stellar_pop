@@ -4,7 +4,6 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 
 ## Science/Physics
 
-- 🟦 Investigate NGC3379 age estimate — best fit 0.5 Gyr is too young for a known passive elliptical, likely related to photometry magnitude type
 - 🟦 Validate grid fit results against published SPS fits for M101 and NGC3379 from the literature
 - 🟨 Run `sdss:verify_photometry` rake task and update `sdss_dr` provenance for all catalog entries
 - 🟨 Add more galaxy targets to local SDSS catalog covering wider range of types and environments
@@ -15,6 +14,7 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 - 🟩 Store both Petrosian and model magnitudes in `galaxies` (`petro_*`, `model_*`) and keep active photometry provenance in `mag_type`
 - 🟩 Update `SdssClient` photometry query path to retrieve both `petroMag_*` and `modelMag_*` fields
 - 🟩 Add DR19 objid maintenance tasks (`sdss:verify_objids`, `sdss:fix_objids`) and objid-first photometry fetch for catalog refresh (`sdss:fetch_dr19_photometry`)
+- 🟩 Investigate NGC3379 age estimate — resolved by correcting DR19 objid-based photometry fetch (root cause was source-object selection, not magnitude type)
 - 🟩 Verify smoothed composite spectrum shape is physically reasonable
 - 🟩 Validate local-catalog elliptical target scenario (NGC3379) with lower chi-squared than quasar baseline
 - 🟩 Add BaSeL 3.1 spectral library parser (`BaselSpectra`) with Fortran-order indexing and flux sentinel filtering
