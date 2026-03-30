@@ -46,6 +46,7 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 - 🟩 Add local SDSS reference catalog CSV and nearest-object lookup
 - 🟩 Add local catalog metadata fields (`agn`, `sdss_dr`) and galaxy-only target selection
 - 🟩 Add configurable SDSS dataset release (`DR18`/`DR19`) in pipeline config UI and apply it to selectors/API-backed workflows
+- 🟩 Add configurable SDSS magnitude type preference (`petrosian`/`model`) in pipeline config and use it to populate active `mag_u..mag_z` during DR19 photometry refresh
 - 🟩 Migrate galaxy photometry to SQLite `galaxies` table and add `galaxy_id` foreign keys on `synthesis_runs`/`grid_fits`
 - 🟩 Switch synthesis/grid runtime lookup path from `SdssLocalCatalog` to `Galaxy` table (`find_by(name)` / `find_by_ra_dec`)
 - 🟩 Add `observations` table for academic benchmark data

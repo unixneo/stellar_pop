@@ -301,6 +301,7 @@ Then open `http://localhost:3000`.
 - `/synthesis_runs/seed_test` creates a randomized test run (unique name, randomized model parameters, random local SDSS target).
 - `/pipeline_config/edit` provides a centralized configuration page for runtime pipeline constants (sample sizes, age grids, SFH taus, wavelength defaults, retry/backoff, and benchmark fast-mode profiles).
 - `/pipeline_config/edit` also controls active SDSS dataset release (`DR18` or `DR19`), with `DR19` as default.
+- `/pipeline_config/edit` also controls active SDSS magnitude type (`petrosian` or `model`), which determines which `mag_u..mag_z` values feed chi-squared comparisons.
 - `/sidekiq` exposes Sidekiq Web UI.
 - Navbar includes a dynamic git-derived version badge (e.g., `v0.3.0-4-g<sha>`) and a Sidekiq status dot (green=online, red=offline).
 
@@ -394,7 +395,8 @@ phot = client.fetch_photometry(187.2779, 2.0523)
 - MIST isochrone grid v1.2 (Choi et al. 2016, ApJ 823, 102) — all 12 FSPS
   metallicity grids with nearest-[Fe/H] selection from `metallicity_z`
 - Local SDSS photometry records persisted in the SQLite `galaxies` table (30 entries loaded from `lib/data/sdss/photometry.csv`, including `agn` and `sdss_dr` provenance fields; current release labels are intentionally conservative and pending row-by-row verification)
-- SDSS SkyServer DR18 — observed photometry via public SQL API
+- Local SDSS records include both `petro_*` and `model_*` photometry per band, with active `mag_u..mag_z` populated from the configured pipeline `mag_type`.
+- SDSS SkyServer DR18/DR19 — observed photometry via public SQL API (release configurable in pipeline settings; default DR19)
 
 ## Citation
 
