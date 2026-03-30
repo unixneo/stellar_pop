@@ -459,6 +459,11 @@ table {
   text-overflow: ellipsis;
 }
 
+.synthesis-runs-table th.run-created-at-col,
+.synthesis-runs-table td.run-created-at-col {
+  text-align: right;
+}
+
 th,
 td {
   border: 1px solid rgba(79, 139, 255, 0.18);

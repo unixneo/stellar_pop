@@ -112,14 +112,24 @@
     </div>
   </div>
   <div class="cyberspace-panel-body">
-    <p><strong>Status:</strong> <%= status_label %></p>
-    <p><strong>Run mode:</strong> <%= run_mode_label %></p>
-    <% if @benchmark_run.runtime_seconds.present? %>
-      <p><strong>Runtime:</strong> <%= @benchmark_run.runtime_seconds %> seconds</p>
-    <% end %>
-    <% if @benchmark_run.error_message.present? %>
-      <p><strong>Error:</strong> <%= @benchmark_run.error_message %></p>
-    <% end %>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Status</td><td><%= status_label %></td></tr>
+        <tr><td>Run mode</td><td><%= run_mode_label %></td></tr>
+        <% if @benchmark_run.runtime_seconds.present? %>
+          <tr><td>Runtime</td><td><%= @benchmark_run.runtime_seconds %> seconds</td></tr>
+        <% end %>
+        <% if @benchmark_run.error_message.present? %>
+          <tr><td>Error</td><td><%= @benchmark_run.error_message %></td></tr>
+        <% end %>
+      </tbody>
+    </table>
   </div>
 </div>
 
@@ -137,13 +147,23 @@
   <div class="cyberspace-panel">
     <div class="card-header">
       <div>
-        <h2 class="card-title">Calibration Progress</h2>
+        <h2 class="card-title">Benchmark Progress</h2>
         <p class="card-subtitle">Live progress for benchmark sweep execution.</p>
       </div>
     </div>
     <div class="cyberspace-panel-body" style="font-family: monospace;">
-      <p><strong>Current step:</strong> <%= @benchmark_run.current_step.presence || "-" %></p>
-      <p><strong>Completed:</strong> <%= completed %> / <%= total %> (<%= format("%.1f", progress_percent) %>%)</p>
+      <table style="margin-bottom: 15px;">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Current step</td><td><%= @benchmark_run.current_step.presence || "-" %></td></tr>
+          <tr><td>Completed</td><td><%= completed %> / <%= total %> (<%= format("%.1f", progress_percent) %>%)</td></tr>
+        </tbody>
+      </table>
       <% if eta_seconds %>
         <p><strong>Estimated remaining:</strong> <%= eta_seconds %> seconds</p>
       <% elsif processing %>
@@ -164,8 +184,21 @@
       <div><h2 class="card-title">Summary</h2></div>
     </div>
     <div class="cyberspace-panel-body" style="font-family: monospace;">
-      <p>mode=<%= run_mode %></p>
-      <p>total=<%= summary["total"] %>, pass=<%= summary["pass"] %>, warn=<%= summary["warn"] %>, fail=<%= summary["fail"] %></p>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>mode</td><td><%= run_mode %></td></tr>
+          <tr><td>total</td><td><%= summary["total"] %></td></tr>
+          <tr><td>pass</td><td><%= summary["pass"] %></td></tr>
+          <tr><td>warn</td><td><%= summary["warn"] %></td></tr>
+          <tr><td>fail</td><td><%= summary["fail"] %></td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 

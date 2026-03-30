@@ -29,7 +29,7 @@
               <th>Age (Gyr)</th>
               <th>Metallicity (Z)</th>
               <th>SFH Model</th>
-              <th>Created At</th>
+              <th class="run-created-at-col">Created At</th>
             </tr>
           </thead>
           <tbody>
@@ -44,7 +44,7 @@
                 <td><%= run.age_gyr %></td>
                 <td><%= run.metallicity_z %></td>
                 <td><%= run.sfh_model %></td>
-                <td><%= run.created_at %></td>
+                <td class="run-created-at-col"><%= run.created_at %></td>
               </tr>
             <% end %>
           </tbody>
