@@ -14,7 +14,7 @@ Rails.application.routes.draw do
   get "/synthesis_runs/seed_test", to: "synthesis_runs#seed_test", as: :seed_test_synthesis_runs
   resources :synthesis_runs, only: %i[index show new create destroy]
   resources :grid_fits, only: %i[index show new create destroy]
-  resources :calibration_runs, only: %i[index show new create destroy]
+  resources :benchmark_runs, only: %i[index show new create destroy]
   resource :pipeline_config, only: %i[show edit update] do
     patch :reset
   end

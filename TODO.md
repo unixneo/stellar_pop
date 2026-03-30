@@ -33,7 +33,7 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 
 ## Data and Persistence
 
-- 🟨 Rename internal `CalibrationRun` model/routes/job naming to `BenchmarkRun` for terminology consistency
+- 🟩 Rename internal `CalibrationRun` model/routes/job naming to `BenchmarkRun` for terminology consistency
 - 🟨 Add more galaxy targets to local SDSS catalog
 - 🟨 Add side-by-side run comparison view
 - 🟨 Add spectrum data export as CSV

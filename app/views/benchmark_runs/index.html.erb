@@ -7,7 +7,7 @@
   </div>
   <div class="cyberspace-panel-body">
     <div class="action-links">
-      <%= link_to "New Benchmark Run", new_calibration_run_path %>
+      <%= link_to "New Benchmark Run", new_benchmark_run_path %>
     </div>
 
     <div class="table-wrap">
@@ -23,12 +23,12 @@
           </tr>
         </thead>
         <tbody>
-          <% @calibration_runs.each do |run| %>
+          <% @benchmark_runs.each do |run| %>
             <% parsed = JSON.parse(run.result_json || "{}") rescue {} %>
             <% summary = parsed["summary"] || {} %>
             <% run_mode = parsed["mode"].to_s.presence || "-" %>
             <tr>
-              <td><%= link_to(run.name, calibration_run_path(run)) %></td>
+              <td><%= link_to(run.name, benchmark_run_path(run)) %></td>
               <td><%= run.status %></td>
               <td><%= run_mode %></td>
               <td><%= run.runtime_seconds.present? ? run.runtime_seconds : "-" %></td>

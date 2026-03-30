@@ -1,14 +1,14 @@
-<% processing = %w[pending running].include?(@calibration_run.status.to_s) %>
-<% elapsed_start_seconds = [Time.current.to_i - @calibration_run.created_at.to_i, 0].max %>
+<% processing = %w[pending running].include?(@benchmark_run.status.to_s) %>
+<% elapsed_start_seconds = [Time.current.to_i - @benchmark_run.created_at.to_i, 0].max %>
 <% result_mode = @result.is_a?(Hash) ? @result["mode"].to_s : "" %>
 <%
   inferred_mode = nil
   if result_mode.blank? && processing
     config = PipelineConfig.current
-    total_steps = @calibration_run.progress_total.to_i
+    total_steps = @benchmark_run.progress_total.to_i
     benchmark_count =
       begin
-        step_text = @calibration_run.current_step.to_s
+        step_text = @benchmark_run.current_step.to_s
         if (match = step_text.match(/Benchmark\s+\d+\/(\d+):/))
           match[1].to_i
         elsif @result.is_a?(Hash) && @result["benchmarks"].is_a?(Array)
@@ -64,17 +64,17 @@
 %>
 <%
   status_label =
-    case @calibration_run.status.to_s
+    case @benchmark_run.status.to_s
     when "complete"
-      @calibration_run.runtime_seconds.present? ? "completed in #{@calibration_run.runtime_seconds} seconds" : "complete"
+      @benchmark_run.runtime_seconds.present? ? "completed in #{@benchmark_run.runtime_seconds} seconds" : "complete"
     when "failed"
-      @calibration_run.runtime_seconds.present? ? "failed after #{@calibration_run.runtime_seconds} seconds" : "failed"
+      @benchmark_run.runtime_seconds.present? ? "failed after #{@benchmark_run.runtime_seconds} seconds" : "failed"
     else
-      @calibration_run.status
+      @benchmark_run.status
     end
 %>
 <% if processing %>
-  <% singular_benchmark = @calibration_run.current_step.to_s.match?(/Benchmark\s+\d+\/1:/) %>
+  <% singular_benchmark = @benchmark_run.current_step.to_s.match?(/Benchmark\s+\d+\/1:/) %>
   <% banner_mode = result_mode.presence || inferred_mode.presence || "configured" %>
   <meta http-equiv="refresh" content="5">
   <div class="processing-banner" style="padding: 10px 14px; border: 1px solid #f59e0b; background: #2b1f07; color: #fde68a; border-radius: 6px; margin: 0 0 14px 0; font-weight: 600;">
@@ -107,27 +107,27 @@
 <div class="cyberspace-panel">
   <div class="card-header">
     <div>
-      <h1 class="card-title"><%= @calibration_run.name %></h1>
+      <h1 class="card-title"><%= @benchmark_run.name %></h1>
       <p class="card-subtitle">Benchmark run status and results.</p>
     </div>
   </div>
   <div class="cyberspace-panel-body">
     <p><strong>Status:</strong> <%= status_label %></p>
     <p><strong>Run mode:</strong> <%= run_mode_label %></p>
-    <% if @calibration_run.runtime_seconds.present? %>
-      <p><strong>Runtime:</strong> <%= @calibration_run.runtime_seconds %> seconds</p>
+    <% if @benchmark_run.runtime_seconds.present? %>
+      <p><strong>Runtime:</strong> <%= @benchmark_run.runtime_seconds %> seconds</p>
     <% end %>
-    <% if @calibration_run.error_message.present? %>
-      <p><strong>Error:</strong> <%= @calibration_run.error_message %></p>
+    <% if @benchmark_run.error_message.present? %>
+      <p><strong>Error:</strong> <%= @benchmark_run.error_message %></p>
     <% end %>
   </div>
 </div>
 
 <%
-  total = @calibration_run.progress_total.to_i
-  completed = [@calibration_run.progress_completed.to_i, total].min
+  total = @benchmark_run.progress_total.to_i
+  completed = [@benchmark_run.progress_completed.to_i, total].min
   progress_percent = total.positive? ? ((completed.to_f / total) * 100.0) : 0.0
-  elapsed_seconds = [Time.current.to_i - @calibration_run.created_at.to_i, 0].max
+  elapsed_seconds = [Time.current.to_i - @benchmark_run.created_at.to_i, 0].max
   eta_seconds =
     if processing && completed.positive? && total > completed
       ((elapsed_seconds.to_f / completed) * (total - completed)).round
@@ -142,7 +142,7 @@
       </div>
     </div>
     <div class="cyberspace-panel-body" style="font-family: monospace;">
-      <p><strong>Current step:</strong> <%= @calibration_run.current_step.presence || "-" %></p>
+      <p><strong>Current step:</strong> <%= @benchmark_run.current_step.presence || "-" %></p>
       <p><strong>Completed:</strong> <%= completed %> / <%= total %> (<%= format("%.1f", progress_percent) %>%)</p>
       <% if eta_seconds %>
         <p><strong>Estimated remaining:</strong> <%= eta_seconds %> seconds</p>
@@ -265,10 +265,10 @@
 
 <div class="run-show-actions">
   <div class="action-links">
-    <%= link_to "Back to Benchmark Runs", calibration_runs_path %>
+    <%= link_to "Back to Benchmark Runs", benchmark_runs_path %>
   </div>
   <%= button_to "Delete Benchmark Run",
-                calibration_run_path(@calibration_run),
+                benchmark_run_path(@benchmark_run),
                 method: :delete,
                 class: "danger-button",
                 form: { class: "danger-button-form" },

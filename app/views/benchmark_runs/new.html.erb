@@ -6,7 +6,7 @@
     </div>
   </div>
   <div class="cyberspace-panel-body">
-    <%= form_with model: @calibration_run do |f| %>
+    <%= form_with model: @benchmark_run do |f| %>
       <div class="form-card">
         <p>
           <%= f.label :name, "Benchmark run name" %>
@@ -52,5 +52,5 @@
 </div>
 
 <div class="action-links">
-  <%= link_to "Back to Benchmark Runs", calibration_runs_path %>
+  <%= link_to "Back to Benchmark Runs", benchmark_runs_path %>
 </div>
