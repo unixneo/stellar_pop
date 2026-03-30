@@ -16,10 +16,11 @@ class GalaxiesController < ApplicationController
   }.freeze
 
   def index
+    @active_sdss_release = PipelineConfig.current.sdss_dataset_release
     @query = params[:q].to_s.strip
     @sort = SORT_COLUMNS[params[:sort].to_s] || "name"
     @dir = params[:dir].to_s == "desc" ? "desc" : "asc"
-    scope = Galaxy.order(Arel.sql("#{@sort} #{@dir}"))
+    scope = Galaxy.where(sdss_dr: @active_sdss_release).order(Arel.sql("#{@sort} #{@dir}"))
     if @query.present?
       like = "%#{@query.downcase}%"
       scope = scope.where("lower(name) LIKE :q OR lower(galaxy_type) LIKE :q", q: like)

@@ -1,4 +1,6 @@
 class GridFitsController < ApplicationController
+  before_action :set_active_sdss_release
+
   def index
     @grid_fits = GridFit.order(created_at: :desc)
   end
@@ -10,7 +12,7 @@ class GridFitsController < ApplicationController
 
   def new
     @grid_fit = GridFit.new
-    @catalog_targets = Galaxy.where(agn: false).order(:name)
+    @catalog_targets = catalog_targets
     @config = PipelineConfig.current
     @grid_ages = @config.float_array("grid_ages_gyr")
     @grid_metallicities = @config.float_array("grid_metallicities_z")
@@ -30,14 +32,14 @@ class GridFitsController < ApplicationController
       @grid_fit.sdss_dec = selected_galaxy.dec
       @grid_fit.target_name = selected_galaxy.name
     elsif @grid_fit.sdss_ra.present? && @grid_fit.sdss_dec.present?
-      @grid_fit.galaxy_id = Galaxy.find_by_ra_dec(@grid_fit.sdss_ra, @grid_fit.sdss_dec)&.id
+      @grid_fit.galaxy_id = find_catalog_target_by_coordinates(@grid_fit.sdss_ra, @grid_fit.sdss_dec)&.id
     end
 
     if @grid_fit.save
       GridFitJob.perform_later(@grid_fit.id, sweep_params)
       redirect_to @grid_fit, notice: "Grid fit created."
     else
-      @catalog_targets = Galaxy.where(agn: false).order(:name)
+      @catalog_targets = catalog_targets
       @config = PipelineConfig.current
       @grid_ages = @config.float_array("grid_ages_gyr")
       @grid_metallicities = @config.float_array("grid_metallicities_z")
@@ -100,6 +102,26 @@ class GridFitsController < ApplicationController
     selected_name = params[:sdss_object_name].to_s.strip
     return nil if selected_name.empty?
 
-    Galaxy.find_by(name: selected_name)
+    catalog_targets.find_by(name: selected_name)
+  end
+
+  def catalog_targets
+    @catalog_targets ||= Galaxy.where(agn: false, sdss_dr: @active_sdss_release).order(:name)
+  end
+
+  def find_catalog_target_by_coordinates(ra, dec, tolerance: 0.01)
+    target_ra = ra.to_f
+    target_dec = dec.to_f
+    tol = tolerance.to_f
+    return nil unless tol.positive?
+
+    catalog_targets
+      .where(ra: (target_ra - tol)..(target_ra + tol), dec: (target_dec - tol)..(target_dec + tol))
+      .to_a
+      .min_by { |g| ((g.ra.to_f - target_ra)**2) + ((g.dec.to_f - target_dec)**2) }
+  end
+
+  def set_active_sdss_release
+    @active_sdss_release = PipelineConfig.current.sdss_dataset_release
   end
 end

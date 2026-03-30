@@ -3,6 +3,7 @@ class GridFitJob < ApplicationJob
 
   def perform(grid_fit_id, sweep_options = {})
     config = PipelineConfig.current
+    sdss_release = config.sdss_dataset_release
     ages_gyr = config.float_array("grid_ages_gyr")
     metallicities_z = config.float_array("grid_metallicities_z")
     sfh_models = config.string_array("grid_sfh_models")
@@ -19,13 +20,13 @@ class GridFitJob < ApplicationJob
     sdss_photometry, live_failure_reason = if sdss_target
       [build_photometry_hash(sdss_target), nil]
     else
-      fetch_sdss_photometry_with_retry(StellarPop::SdssClient.new, grid_fit.sdss_ra, grid_fit.sdss_dec, config)
+      fetch_sdss_photometry_with_retry(StellarPop::SdssClient.new(release: sdss_release), grid_fit.sdss_ra, grid_fit.sdss_dec, config)
     end
 
     unless sdss_photometry
       grid_fit.update!(
         status: "failed",
-        error_message: build_sdss_unavailable_note(live_failure_reason),
+        error_message: build_sdss_unavailable_note(live_failure_reason, sdss_release),
         runtime_seconds: elapsed_seconds(started_at)
       )
       return
@@ -240,18 +241,18 @@ class GridFitJob < ApplicationJob
     [(Time.current - started_at).round, 0].max
   end
 
-  def build_sdss_unavailable_note(reason)
+  def build_sdss_unavailable_note(reason, sdss_release)
     case reason
     when :no_object_found
-      "SDSS photometry unavailable: local catalog miss; live SDSS API reachable but no nearby object found."
+      "SDSS photometry unavailable: local catalog miss; live SDSS API (#{sdss_release}) reachable but no nearby object found."
     when :timeout
-      "SDSS photometry unavailable: local catalog miss; live SDSS API timed out."
+      "SDSS photometry unavailable: local catalog miss; live SDSS API (#{sdss_release}) timed out."
     when :api_unreachable
-      "SDSS photometry unavailable: local catalog miss; live SDSS API unreachable."
+      "SDSS photometry unavailable: local catalog miss; live SDSS API (#{sdss_release}) unreachable."
     when :invalid_response
-      "SDSS photometry unavailable: local catalog miss; live SDSS API returned invalid response."
+      "SDSS photometry unavailable: local catalog miss; live SDSS API (#{sdss_release}) returned invalid response."
     else
-      "SDSS photometry unavailable: local catalog miss; live SDSS API request failed."
+      "SDSS photometry unavailable: local catalog miss; live SDSS API (#{sdss_release}) request failed."
     end
   end
 

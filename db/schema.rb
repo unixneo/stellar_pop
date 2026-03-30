@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_30_093000) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_30_100000) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -53,6 +53,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_30_093000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "mag_type"
+    t.float "petro_u"
+    t.float "petro_g"
+    t.float "petro_r"
+    t.float "petro_i"
+    t.float "petro_z"
+    t.float "model_u"
+    t.float "model_g"
+    t.float "model_r"
+    t.float "model_i"
+    t.float "model_z"
   end
 
   create_table "grid_fits", force: :cascade do |t|

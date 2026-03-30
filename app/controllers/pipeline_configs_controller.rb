@@ -40,6 +40,7 @@ class PipelineConfigsController < ApplicationController
       :synthesis_permit_celestial_coordinate_searches,
       :synthesis_sdss_max_fetch_attempts,
       :synthesis_sdss_base_backoff_seconds,
+      :sdss_dataset_release,
       :grid_ages_gyr,
       :grid_metallicities_z,
       :grid_sfh_models,

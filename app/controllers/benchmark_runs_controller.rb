@@ -1,4 +1,6 @@
 class BenchmarkRunsController < ApplicationController
+  before_action :set_active_sdss_release
+
   def index
     @benchmark_runs = BenchmarkRun.order(created_at: :desc)
   end
@@ -10,7 +12,7 @@ class BenchmarkRunsController < ApplicationController
 
   def new
     @benchmark_run = BenchmarkRun.new
-    @benchmarks = StellarPop::Calibration::BenchmarkCatalog.all
+    @benchmarks = StellarPop::Calibration::BenchmarkCatalog.all(sdss_release: @active_sdss_release)
   end
 
   def create
@@ -26,7 +28,7 @@ class BenchmarkRunsController < ApplicationController
       )
       redirect_to @benchmark_run, notice: "Benchmark run created."
     else
-      @benchmarks = StellarPop::Calibration::BenchmarkCatalog.all
+      @benchmarks = StellarPop::Calibration::BenchmarkCatalog.all(sdss_release: @active_sdss_release)
       render :new, status: :unprocessable_entity
     end
   end
@@ -59,12 +61,16 @@ class BenchmarkRunsController < ApplicationController
   end
 
   def selected_benchmark_keys
-    all_keys = StellarPop::Calibration::BenchmarkCatalog.all.map { |benchmark| benchmark[:key].to_s }
+    all_keys = StellarPop::Calibration::BenchmarkCatalog.all(sdss_release: @active_sdss_release).map { |benchmark| benchmark[:key].to_s }
     selected = Array(params[:benchmark_keys]).map(&:to_s).select { |key| all_keys.include?(key) }.uniq
     selected.empty? ? all_keys : selected
   end
 
   def fast_mode_enabled?
     ActiveModel::Type::Boolean.new.cast(params[:fast_mode])
+  end
+
+  def set_active_sdss_release
+    @active_sdss_release = PipelineConfig.current.sdss_dataset_release
   end
 end

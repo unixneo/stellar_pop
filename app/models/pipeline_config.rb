@@ -1,4 +1,6 @@
 class PipelineConfig < ApplicationRecord
+  SDSS_RELEASES = %w[DR18 DR19].freeze
+
   DEFAULTS = {
     "synthesis_age_bins_gyr" => [0.1, 0.5, 1.0, 2.0, 4.0, 8.0, 12.0],
     "synthesis_imf_sample_size" => 1000,
@@ -11,6 +13,7 @@ class PipelineConfig < ApplicationRecord
     "synthesis_permit_celestial_coordinate_searches" => false,
     "synthesis_sdss_max_fetch_attempts" => 3,
     "synthesis_sdss_base_backoff_seconds" => 0.5,
+    "sdss_dataset_release" => "DR19",
     "grid_ages_gyr" => [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0],
     "grid_metallicities_z" => [0.0006, 0.0020, 0.0063, 0.0200, 0.0632],
     "grid_sfh_models" => %w[exponential delayed_exponential constant burst],
@@ -76,6 +79,8 @@ class PipelineConfig < ApplicationRecord
     assign_boolean(merged, "synthesis_permit_celestial_coordinate_searches", form_params[:synthesis_permit_celestial_coordinate_searches])
     assign_scalar(merged, "synthesis_sdss_max_fetch_attempts", form_params[:synthesis_sdss_max_fetch_attempts], :int)
     assign_scalar(merged, "synthesis_sdss_base_backoff_seconds", form_params[:synthesis_sdss_base_backoff_seconds], :float)
+    assign_scalar(merged, "sdss_dataset_release", form_params[:sdss_dataset_release], :string)
+    merged["sdss_dataset_release"] = normalized_sdss_release(merged["sdss_dataset_release"])
 
     assign_list(merged, "grid_ages_gyr", form_params[:grid_ages_gyr], :float)
     assign_list(merged, "grid_metallicities_z", form_params[:grid_metallicities_z], :float)
@@ -100,6 +105,10 @@ class PipelineConfig < ApplicationRecord
     assign_list(merged, "calibration_fast_burst_ages_gyr", form_params[:calibration_fast_burst_ages_gyr], :float)
 
     update!(settings_json: merged.to_json)
+  end
+
+  def sdss_dataset_release
+    normalized_sdss_release(fetch("sdss_dataset_release"))
   end
 
   private
@@ -145,5 +154,10 @@ class PipelineConfig < ApplicationRecord
     return if raw.nil?
 
     target[key] = ActiveModel::Type::Boolean.new.cast(raw)
+  end
+
+  def normalized_sdss_release(raw_value)
+    value = raw_value.to_s.upcase
+    SDSS_RELEASES.include?(value) ? value : "DR19"
   end
 end

@@ -67,6 +67,13 @@
             <td><%= f.label :synthesis_sdss_base_backoff_seconds, "SDSS backoff base seconds" %></td>
             <td><%= f.number_field :synthesis_sdss_base_backoff_seconds, value: @settings["synthesis_sdss_base_backoff_seconds"], step: 0.1 %></td>
           </tr>
+          <tr>
+            <td><%= f.label :sdss_dataset_release, "SDSS dataset release" %></td>
+            <td>
+              <%= f.select :sdss_dataset_release,
+                           options_for_select(PipelineConfig::SDSS_RELEASES, @settings["sdss_dataset_release"].to_s.upcase.presence || "DR19") %>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>

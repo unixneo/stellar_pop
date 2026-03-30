@@ -2,13 +2,20 @@ module StellarPop
   module Calibration
     class BenchmarkCatalog
       class << self
-        def all
-          new.benchmarks
+        def all(sdss_release: nil)
+          new(sdss_release: sdss_release).benchmarks
         end
       end
 
+      def initialize(sdss_release: nil)
+        @sdss_release = sdss_release.to_s.upcase.presence
+      end
+
       def benchmarks
-        Galaxy.includes(:observations).order(:name).filter_map do |galaxy|
+        scope = Galaxy.includes(:observations).order(:name)
+        scope = scope.where(sdss_dr: @sdss_release) if @sdss_release.present?
+
+        scope.filter_map do |galaxy|
           observations = galaxy.observations.to_a
           next if observations.empty?
 

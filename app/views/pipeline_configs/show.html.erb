@@ -26,6 +26,7 @@
           <tr><td>Default wavelength min (nm)</td><td><%= @settings["synthesis_default_wavelength_min_nm"] %></td></tr>
           <tr><td>Default wavelength max (nm)</td><td><%= @settings["synthesis_default_wavelength_max_nm"] %></td></tr>
           <tr><td>Permit Celestial Coordinate Searches</td><td><%= ActiveModel::Type::Boolean.new.cast(@settings["synthesis_permit_celestial_coordinate_searches"]) ? "true" : "false" %></td></tr>
+          <tr><td>SDSS dataset release</td><td><%= @pipeline_config.sdss_dataset_release %></td></tr>
           <tr><td>SDSS max fetch attempts</td><td><%= @settings["synthesis_sdss_max_fetch_attempts"] %></td></tr>
           <tr><td>SDSS backoff base seconds</td><td><%= @settings["synthesis_sdss_base_backoff_seconds"] %></td></tr>
         </tbody>

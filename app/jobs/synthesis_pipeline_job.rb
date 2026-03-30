@@ -3,6 +3,7 @@ class SynthesisPipelineJob < ApplicationJob
 
   def perform(synthesis_run_id)
     config = PipelineConfig.current
+    sdss_release = config.sdss_dataset_release
     age_bins_gyr = config.float_array("synthesis_age_bins_gyr")
     imf_sample_size = config.int_value("synthesis_imf_sample_size")
     synthesis_run = SynthesisRun.find(synthesis_run_id)
@@ -51,7 +52,7 @@ class SynthesisPipelineJob < ApplicationJob
         synthesis_run.galaxy_id ||= galaxy_target.id
         sdss_fetch_note = "SDSS photometry sourced from galaxies table"
       else
-        sdss_client = StellarPop::SdssClient.new
+        sdss_client = StellarPop::SdssClient.new(release: sdss_release)
         sdss_photometry, live_failure_reason = fetch_sdss_photometry_with_retry(
           sdss_client,
           synthesis_run.sdss_ra,

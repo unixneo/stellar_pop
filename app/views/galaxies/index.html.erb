@@ -9,6 +9,9 @@
     <div class="galaxies-index-actions">
       <%= link_to "New Galaxy", new_galaxy_path, class: "primary-action-button" %>
     </div>
+    <div class="form-card">
+      <p><strong>Active SDSS dataset:</strong> <code><%= @active_sdss_release %></code> (used for SDSS API lookups and verification updates)</p>
+    </div>
 
     <div class="form-card">
       <%= form_with url: galaxies_path, method: :get do %>

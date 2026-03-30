@@ -3,15 +3,30 @@ require "json"
 
 module StellarPop
   class SdssClient
-    API_URL = "https://skyserver.sdss.org/dr18/SkyServerWS/SearchTools/SqlSearch".freeze
+    VALID_RELEASES = %w[DR18 DR19].freeze
+    DEFAULT_RELEASE = "DR19".freeze
+    API_URL_TEMPLATE = "https://skyserver.sdss.org/%<release>s/SkyServerWS/SearchTools/SqlSearch".freeze
+    API_URL = "https://skyserver.sdss.org/dr19/SkyServerWS/SearchTools/SqlSearch".freeze
     TIMEOUT_SECONDS = 30
-    attr_reader :last_failure_reason
+    attr_reader :last_failure_reason, :release, :api_url
 
-    def initialize(connection: nil)
+    def initialize(connection: nil, release: DEFAULT_RELEASE)
+      @release = normalize_release(release)
+      @api_url = self.class.api_url_for(@release)
       @connection = connection || Faraday.new(
-        url: API_URL,
+        url: @api_url,
         request: { timeout: TIMEOUT_SECONDS, open_timeout: TIMEOUT_SECONDS }
       )
+    end
+
+    def self.api_url_for(release)
+      normalized = release.to_s.upcase
+      normalized = DEFAULT_RELEASE unless VALID_RELEASES.include?(normalized)
+      format(API_URL_TEMPLATE, release: normalized.downcase)
+    end
+
+    def release_label
+      @release
     end
 
     def fetch_photometry(ra, dec, radius_arcmin: 0.5)
@@ -25,13 +40,33 @@ module StellarPop
         return nil
       end
 
-      {
-        u: to_float_or_nil(row["u"] || row[:u]),
-        g: to_float_or_nil(row["g"] || row[:g]),
-        r: to_float_or_nil(row["r"] || row[:r]),
-        i: to_float_or_nil(row["i"] || row[:i]),
-        z: to_float_or_nil(row["z"] || row[:z])
-      }
+      build_photometry_hash(row)
+    rescue Faraday::TimeoutError
+      @last_failure_reason = :timeout
+      nil
+    rescue Faraday::ConnectionFailed
+      @last_failure_reason = :api_unreachable
+      nil
+    rescue JSON::ParserError
+      @last_failure_reason = :invalid_response
+      nil
+    rescue Faraday::Error
+      @last_failure_reason = :request_error
+      nil
+    end
+
+    def fetch_photometry_by_objid(objid)
+      @last_failure_reason = nil
+      sql = photometry_by_objid_query(objid)
+      response = @connection.get(nil, cmd: sql, format: "json")
+      payload = parse_json(response.body)
+      row = extract_first_row(payload)
+      unless row
+        @last_failure_reason = :no_object_found
+        return nil
+      end
+
+      build_photometry_hash(row)
     rescue Faraday::TimeoutError
       @last_failure_reason = :timeout
       nil
@@ -73,6 +108,7 @@ module StellarPop
       }
 
       {
+        objid: (row["objid"] || row[:objid]).to_s.presence,
         petrosian: petrosian,
         model: model
       }
@@ -92,14 +128,48 @@ module StellarPop
 
     private
 
+    def build_photometry_hash(row)
+      {
+        u: to_float_or_nil(row["petroMag_u"] || row[:petroMag_u] || row["u"] || row[:u]),
+        g: to_float_or_nil(row["petroMag_g"] || row[:petroMag_g] || row["g"] || row[:g]),
+        r: to_float_or_nil(row["petroMag_r"] || row[:petroMag_r] || row["r"] || row[:r]),
+        i: to_float_or_nil(row["petroMag_i"] || row[:petroMag_i] || row["i"] || row[:i]),
+        z: to_float_or_nil(row["petroMag_z"] || row[:petroMag_z] || row["z"] || row[:z]),
+        petro_u: to_float_or_nil(row["petroMag_u"] || row[:petroMag_u] || row["u"] || row[:u]),
+        petro_g: to_float_or_nil(row["petroMag_g"] || row[:petroMag_g] || row["g"] || row[:g]),
+        petro_r: to_float_or_nil(row["petroMag_r"] || row[:petroMag_r] || row["r"] || row[:r]),
+        petro_i: to_float_or_nil(row["petroMag_i"] || row[:petroMag_i] || row["i"] || row[:i]),
+        petro_z: to_float_or_nil(row["petroMag_z"] || row[:petroMag_z] || row["z"] || row[:z]),
+        model_u: to_float_or_nil(row["modelMag_u"] || row[:modelMag_u]),
+        model_g: to_float_or_nil(row["modelMag_g"] || row[:modelMag_g]),
+        model_r: to_float_or_nil(row["modelMag_r"] || row[:modelMag_r]),
+        model_i: to_float_or_nil(row["modelMag_i"] || row[:modelMag_i]),
+        model_z: to_float_or_nil(row["modelMag_z"] || row[:modelMag_z])
+      }
+    end
+
     def nearby_photometry_query(ra, dec, radius_arcmin)
       <<~SQL
-        SELECT TOP 1 objid, ra, dec, u, g, r, i, z
+        SELECT TOP 1 p.objid, p.ra, p.dec,
+        petroMag_u, petroMag_g, petroMag_r, petroMag_i, petroMag_z,
+        modelMag_u, modelMag_g, modelMag_r, modelMag_i, modelMag_z
+        FROM PhotoObj AS p
+        JOIN fGetNearbyObjEq(#{ra}, #{dec}, #{radius_arcmin}) AS n
+          ON n.objid = p.objid
+        WHERE p.type = 3
+        ORDER BY n.distance ASC
+      SQL
+        .gsub(/\s+/, " ")
+        .strip
+    end
+
+    def photometry_by_objid_query(objid)
+      <<~SQL
+        SELECT objid, ra, dec,
+        petroMag_u, petroMag_g, petroMag_r, petroMag_i, petroMag_z,
+        modelMag_u, modelMag_g, modelMag_r, modelMag_i, modelMag_z
         FROM PhotoObj
-        WHERE objid IN (
-          SELECT objid
-          FROM fGetNearbyObjEq(#{ra}, #{dec}, #{radius_arcmin})
-        )
+        WHERE objid = #{objid}
       SQL
         .gsub(/\s+/, " ")
         .strip
@@ -160,6 +230,11 @@ module StellarPop
       Float(value)
     rescue ArgumentError, TypeError
       nil
+    end
+
+    def normalize_release(raw_release)
+      value = raw_release.to_s.upcase
+      VALID_RELEASES.include?(value) ? value : DEFAULT_RELEASE
     end
   end
 end
