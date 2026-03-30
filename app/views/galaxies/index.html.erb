@@ -32,20 +32,25 @@
     </div>
 
     <div class="table-wrap">
+      <% sort_link = lambda do |label, key|
+           next_dir = (@sort == key && @dir == "asc") ? "desc" : "asc"
+           indicator = @sort == key ? (@dir == "asc" ? " ▲" : " ▼") : ""
+           link_to("#{label}#{indicator}", galaxies_path(q: @query, sort: key, dir: next_dir))
+         end %>
       <table>
         <thead>
           <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>RA</th>
-            <th>Dec</th>
-            <th>u</th>
-            <th>g</th>
-            <th>r</th>
-            <th>i</th>
-            <th>z</th>
-            <th>SDSS DR</th>
-            <th>Source</th>
+            <th><%= sort_link.call("Name", "name") %></th>
+            <th><%= sort_link.call("Type", "galaxy_type") %></th>
+            <th><%= sort_link.call("RA", "ra") %></th>
+            <th><%= sort_link.call("Dec", "dec") %></th>
+            <th><%= sort_link.call("u", "mag_u") %></th>
+            <th><%= sort_link.call("g", "mag_g") %></th>
+            <th><%= sort_link.call("r", "mag_r") %></th>
+            <th><%= sort_link.call("i", "mag_i") %></th>
+            <th><%= sort_link.call("z", "mag_z") %></th>
+            <th><%= sort_link.call("SDSS DR", "sdss_dr") %></th>
+            <th><%= sort_link.call("Source", "source_catalog") %></th>
             <th>Actions</th>
           </tr>
         </thead>

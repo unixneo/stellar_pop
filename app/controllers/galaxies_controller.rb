@@ -1,9 +1,25 @@
 require "csv"
 
 class GalaxiesController < ApplicationController
+  SORT_COLUMNS = {
+    "name" => "name",
+    "galaxy_type" => "galaxy_type",
+    "ra" => "ra",
+    "dec" => "dec",
+    "mag_u" => "mag_u",
+    "mag_g" => "mag_g",
+    "mag_r" => "mag_r",
+    "mag_i" => "mag_i",
+    "mag_z" => "mag_z",
+    "sdss_dr" => "sdss_dr",
+    "source_catalog" => "source_catalog"
+  }.freeze
+
   def index
     @query = params[:q].to_s.strip
-    scope = Galaxy.order(:name)
+    @sort = SORT_COLUMNS[params[:sort].to_s] || "name"
+    @dir = params[:dir].to_s == "desc" ? "desc" : "asc"
+    scope = Galaxy.order(Arel.sql("#{@sort} #{@dir}"))
     if @query.present?
       like = "%#{@query.downcase}%"
       scope = scope.where("lower(name) LIKE :q OR lower(galaxy_type) LIKE :q", q: like)

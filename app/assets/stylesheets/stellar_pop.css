@@ -464,6 +464,29 @@ table {
   text-align: right;
 }
 
+.galaxy-form-table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.galaxy-form-table th:first-child,
+.galaxy-form-table td:first-child {
+  width: 30%;
+}
+
+.galaxy-form-table th:nth-child(2),
+.galaxy-form-table td:nth-child(2) {
+  width: 70%;
+}
+
+#galaxy_notes {
+  width: calc(100% - 10px);
+  margin: 5px;
+  box-sizing: border-box;
+  background: #cbd5e1;
+  color: #0f172a;
+}
+
 th,
 td {
   border: 1px solid rgba(79, 139, 255, 0.18);
@@ -475,6 +498,10 @@ td {
 thead th {
   background: rgba(1, 8, 24, 0.85);
   color: #cfe4ff;
+}
+
+thead th a {
+  text-decoration: none;
 }
 
 tbody tr:nth-child(even) {
