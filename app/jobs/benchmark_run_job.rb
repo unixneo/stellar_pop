@@ -1,5 +1,5 @@
 class BenchmarkRunJob < ApplicationJob
-  queue_as :synthesis
+  queue_as :benchmark
 
   class CancelledError < StandardError; end
 

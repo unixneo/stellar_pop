@@ -104,7 +104,7 @@ class BenchmarkRunsController < ApplicationController
     require "sidekiq/api"
 
     removed = 0
-    sets = [Sidekiq::Queue.new("synthesis"), Sidekiq::ScheduledSet.new, Sidekiq::RetrySet.new]
+    sets = [Sidekiq::Queue.new("benchmark"), Sidekiq::Queue.new("synthesis"), Sidekiq::ScheduledSet.new, Sidekiq::RetrySet.new]
     sets.each do |set|
       set.each do |job|
         payload = job.args.first

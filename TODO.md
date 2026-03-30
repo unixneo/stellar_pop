@@ -7,6 +7,10 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 - 🟩 Store both Petrosian and model magnitudes in `galaxies` (`petro_*`, `model_*`) and keep active photometry provenance in `mag_type`
 - 🟩 Update `SdssClient` photometry query path to retrieve both `petroMag_*` and `modelMag_*` fields
 - 🟩 Add DR19 objid maintenance tasks (`sdss:verify_objids`, `sdss:fix_objids`) and objid-first photometry fetch for catalog refresh (`sdss:fetch_dr19_photometry`)
+- 🟨 Add photometric error columns to `galaxies` table: `petro_u_err`, `petro_g_err`, `petro_r_err`, `petro_i_err`, `petro_z_err`, `model_u_err`, `model_g_err`, `model_r_err`, `model_i_err`, `model_z_err` and fetch from SDSS `petroMagErr` and `modelMagErr` fields
+- 🟨 Add observation uncertainty columns to `observations` table: `age_err_plus`, `age_err_minus`, `metallicity_err_plus`, `metallicity_err_minus`, `method_note`
+- 🟨 Update chi-squared to weighted form: `sum((model-observed)^2 / sigma^2)` per band
+- 🟨 Use configurable per-band sigma floor when errors are missing, and flag reduced confidence
 - 🟦 Investigate NGC3379 age estimate — best fit 0.5 Gyr is too young for a known passive elliptical, likely related to photometry magnitude type
 - 🟦 Validate grid fit results against published SPS fits for M101 and NGC3379 from the literature
 - 🟨 Run `sdss:verify_photometry` rake task and update `sdss_dr` provenance for all catalog entries
