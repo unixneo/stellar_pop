@@ -2,7 +2,7 @@
 
 Legend: 🟩 Done, ⬜ Optional, 🟨 Pending, 🟦 Critical: SDSS Offline, 🟥 Critical Pending
 
-v0.3.2 doc sync:
+v0.3.3 doc sync:
 - 🟩 DR19 default + pipeline-config release selector documented
 - 🟩 Objid-first SDSS photometry fetch documented
 - 🟩 Petro/model dual photometry + `mag_type` control documented
@@ -13,9 +13,9 @@ v0.3.2 doc sync:
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution
 - 🟨 Add more galaxy targets to local SDSS catalog covering wider range of types and environments
-- 🟨 Add photometric error columns to `galaxies` table: `petro_u_err`, `petro_g_err`, `petro_r_err`, `petro_i_err`, `petro_z_err`, `model_u_err`, `model_g_err`, `model_r_err`, `model_i_err`, `model_z_err` and fetch from SDSS `petroMagErr` and `modelMagErr` fields (added to TODO in v0.3.2)
+- 🟨 Add photometric error columns to `galaxies` table: `petro_u_err`, `petro_g_err`, `petro_r_err`, `petro_i_err`, `petro_z_err`, `model_u_err`, `model_g_err`, `model_r_err`, `model_i_err`, `model_z_err` and fetch from SDSS `petroMagErr` and `modelMagErr` fields (added to TODO in v0.3.3)
 - 🟨 Add observation uncertainty columns to `observations` table: `age_err_plus`, `age_err_minus`, `metallicity_err_plus`, `metallicity_err_minus`, `method_note`
-- 🟨 Update chi-squared to weighted form: `sum((model-observed)^2 / sigma^2)` per band (added to TODO in v0.3.2)
+- 🟨 Update chi-squared to weighted form: `sum((model-observed)^2 / sigma^2)` per band (added to TODO in v0.3.3)
 - 🟨 Use configurable per-band sigma floor when errors are missing, and flag reduced confidence
 - 🟩 Store both Petrosian and model magnitudes in `galaxies` (`petro_*`, `model_*`) and keep active photometry provenance in `mag_type`
 - 🟩 Update `SdssClient` photometry query path to retrieve both `petroMag_*` and `modelMag_*` fields

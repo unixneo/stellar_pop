@@ -10,7 +10,7 @@ and SFH model). It runs an async pipeline, persists the resulting spectrum, and
 optionally compares synthetic output against SDSS `ugriz` photometry using a
 chi-squared metric.
 
-## v0.3.2 Updates
+## v0.3.3 Updates
 
 - SDSS `DR19` is now the default dataset release, configurable in `/pipeline_config/edit`.
 - Live SDSS photometry refresh now uses objid-based fetch as the primary path (`sdss_objid`), replacing coordinate-first lookup for runtime fetches.
