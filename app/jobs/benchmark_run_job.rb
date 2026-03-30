@@ -1,6 +1,8 @@
 class BenchmarkRunJob < ApplicationJob
   queue_as :synthesis
 
+  class CancelledError < StandardError; end
+
   def perform(benchmark_run_id, options = {})
     config = PipelineConfig.current
     progress_write_every = [config.int_value("calibration_progress_write_every"), 1].max
@@ -28,7 +30,7 @@ class BenchmarkRunJob < ApplicationJob
       step_label = "Benchmark #{bench_idx + 1}/#{benchmarks.size}: #{benchmark[:name]}"
       benchmark_run.update_columns(current_step: step_label)
 
-      ranked = run_grid_for_photometry(grid_job, photometry, bench_idx, profile, config) do
+      ranked = run_grid_for_photometry(benchmark_run_id, grid_job, photometry, bench_idx, profile, config) do
         completed_steps += 1
         if (completed_steps % progress_write_every).zero? || completed_steps == total_steps
           benchmark_run.update_columns(
@@ -81,6 +83,13 @@ class BenchmarkRunJob < ApplicationJob
       progress_total: total_steps,
       current_step: "Completed"
     )
+  rescue CancelledError
+    benchmark_run&.update!(
+      status: "failed",
+      error_message: "Cancelled by user",
+      runtime_seconds: elapsed_seconds(started_at),
+      current_step: "Cancelled by user"
+    )
   rescue StandardError => e
     benchmark_run&.update!(
       status: "failed",
@@ -102,7 +111,7 @@ class BenchmarkRunJob < ApplicationJob
     filtered
   end
 
-  def run_grid_for_photometry(grid_job, photometry, bench_idx, profile, config)
+  def run_grid_for_photometry(benchmark_run_id, grid_job, photometry, bench_idx, profile, config)
     results = []
     combination_index = 0
 
@@ -141,6 +150,7 @@ class BenchmarkRunJob < ApplicationJob
               }
 
               combination_index += 1
+              raise CancelledError if cancellation_requested?(benchmark_run_id)
               yield if block_given?
             end
           end
@@ -238,5 +248,9 @@ class BenchmarkRunJob < ApplicationJob
     return nil unless started_at
 
     [(Time.current - started_at).round, 0].max
+  end
+
+  def cancellation_requested?(benchmark_run_id)
+    BenchmarkRun.where(id: benchmark_run_id, status: "failed", error_message: "Cancelled by user").exists?
   end
 end

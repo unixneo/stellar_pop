@@ -116,6 +116,14 @@
       <h1 class="card-title"><%= @benchmark_run.name %></h1>
       <p class="card-subtitle">Benchmark run status and results.</p>
     </div>
+    <% if processing %>
+      <%= button_to "Cancel Benchmark Run",
+                    cancel_benchmark_run_path(@benchmark_run),
+                    method: :post,
+                    data: { turbo_confirm: "Cancel this benchmark run?" },
+                    class: "benchmark-cancel-button",
+                    form: { class: "benchmark-cancel-form" } %>
+    <% end %>
   </div>
   <div class="cyberspace-panel-body">
     <p><strong>Active SDSS dataset:</strong> <code><%= @active_sdss_release %></code></p>

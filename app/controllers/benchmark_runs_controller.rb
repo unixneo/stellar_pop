@@ -23,7 +23,7 @@ class BenchmarkRunsController < ApplicationController
 
     if selected_keys.empty?
       @benchmarks = StellarPop::Calibration::BenchmarkCatalog.all(sdss_release: @active_sdss_release)
-      flash.now[:alert] = "Select at least one benchmark target."
+      flash.now[:alert] = "Select exactly one benchmark target."
       render :new, status: :unprocessable_entity
       return
     end
@@ -52,6 +52,19 @@ class BenchmarkRunsController < ApplicationController
     redirect_to benchmark_runs_path, notice: "Benchmark run deleted."
   end
 
+  def cancel
+    benchmark_run = BenchmarkRun.find(params[:id])
+    removed_jobs = remove_enqueued_benchmark_jobs(benchmark_run.id)
+
+    benchmark_run.update!(
+      status: "failed",
+      current_step: "Cancelled by user",
+      error_message: "Cancelled by user"
+    )
+
+    redirect_to benchmark_run_path(benchmark_run), notice: "Benchmark run cancelled. Removed #{removed_jobs} queued job(s)."
+  end
+
   private
 
   def benchmark_run_params
@@ -74,7 +87,9 @@ class BenchmarkRunsController < ApplicationController
     return [selected] if all_keys.include?(selected)
 
     legacy = Array(params[:benchmark_keys]).map(&:to_s).select { |key| all_keys.include?(key) }.uniq
-    legacy.first ? [legacy.first] : []
+    return legacy if legacy.size == 1
+
+    []
   end
 
   def fast_mode_enabled?
@@ -83,5 +98,30 @@ class BenchmarkRunsController < ApplicationController
 
   def set_active_sdss_release
     @active_sdss_release = PipelineConfig.current.sdss_dataset_release
+  end
+
+  def remove_enqueued_benchmark_jobs(benchmark_run_id)
+    require "sidekiq/api"
+
+    removed = 0
+    sets = [Sidekiq::Queue.new("synthesis"), Sidekiq::ScheduledSet.new, Sidekiq::RetrySet.new]
+    sets.each do |set|
+      set.each do |job|
+        payload = job.args.first
+        next unless payload.is_a?(Hash)
+        next unless payload["job_class"].to_s == "BenchmarkRunJob"
+
+        args = payload["arguments"]
+        next unless args.is_a?(Array)
+        next unless args.first.to_i == benchmark_run_id.to_i
+
+        job.delete
+        removed += 1
+      end
+    end
+
+    removed
+  rescue StandardError
+    0
   end
 end

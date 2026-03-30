@@ -19,18 +19,12 @@
 
       <div class="form-card" style="font-family: monospace;">
         <p><strong>Benchmark target for this run:</strong></p>
-        <p class="form-help">Select one target from the active SDSS dataset release.</p>
-        <p>
-          <label for="benchmark_key">Benchmark target</label>
-          <%= select_tag :benchmark_key,
-                         options_for_select(@benchmarks.map { |benchmark| ["#{benchmark[:name]} (#{benchmark[:type]})", benchmark[:key]] }, params[:benchmark_key]),
-                         include_blank: "Select one benchmark target",
-                         id: "benchmark_key" %>
-        </p>
+        <p class="form-help">Select exactly one target from the active SDSS dataset release.</p>
 
         <table>
           <thead>
             <tr>
+              <th>Select</th>
               <th>Name</th>
               <th>Type</th>
               <th>Expected Age (Gyr)</th>
@@ -40,6 +34,13 @@
           <tbody>
             <% @benchmarks.each do |benchmark| %>
               <tr>
+                <td>
+                  <%= check_box_tag "benchmark_keys[]",
+                                    benchmark[:key],
+                                    Array(params[:benchmark_keys]).map(&:to_s).include?(benchmark[:key].to_s),
+                                    class: "single-benchmark-check",
+                                    id: "benchmark_key_#{benchmark[:key]}" %>
+                </td>
                 <td><%= benchmark[:name] %></td>
                 <td><%= benchmark[:type] %></td>
                 <td><%= benchmark.dig(:expected, :age_gyr_min) %>-<%= benchmark.dig(:expected, :age_gyr_max) %></td>
@@ -72,3 +73,17 @@
 <div class="action-links">
   <%= link_to "Back to Benchmark Runs", benchmark_runs_path %>
 </div>
+
+<script>
+  (function() {
+    const checks = document.querySelectorAll(".single-benchmark-check");
+    checks.forEach(function(check) {
+      check.addEventListener("change", function() {
+        if (!check.checked) return;
+        checks.forEach(function(other) {
+          if (other !== check) other.checked = false;
+        });
+      });
+    });
+  })();
+</script>
