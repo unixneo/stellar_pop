@@ -21,6 +21,7 @@
      else
        "Processing synthesis pipeline..."
      end %>
+<% target_name = @synthesis_run.galaxy&.name.presence || @synthesis_run.sdss_object_name.presence %>
 <% if processing %>
   <meta http-equiv="refresh" content="5">
 <% end %>
@@ -75,7 +76,9 @@
 <div class="cyberspace-panel">
   <div class="card-header">
     <div>
-      <h1 class="card-title"><%= @synthesis_run.name.presence || "Synthesis Run ##{@synthesis_run.id}" %></h1>
+      <h1 class="card-title">
+        <%= @synthesis_run.name.presence || "Synthesis Run ##{@synthesis_run.id}" %><%= target_name.present? ? " — #{target_name}" : "" %>
+      </h1>
       <p class="card-subtitle">Run parameters and current synthesis status.</p>
     </div>
   </div>
@@ -127,7 +130,7 @@
 <div class="cyberspace-panel">
   <div class="card-header">
     <div>
-      <h2 class="card-title">Pipeline Configuration</h2>
+      <h2 class="card-title">Pipeline Configuration<%= target_name.present? ? " — #{target_name}" : "" %></h2>
     </div>
   </div>
   <div class="cyberspace-panel-body" style="font-family: monospace;">
@@ -158,10 +161,39 @@
   <% fluxes = JSON.parse(@spectrum_result.flux_data || "[]") rescue [] %>
   <% sdss_photometry = JSON.parse(@spectrum_result.sdss_photometry || "{}") rescue {} %>
 
+  <% if sdss_photometry.present? %>
+    <div class="cyberspace-panel">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">SDSS Photometry<%= target_name.present? ? " — #{target_name}" : "" %></h2>
+        </div>
+      </div>
+      <div class="cyberspace-panel-body">
+        <table>
+          <thead>
+            <tr>
+              <th>Band</th>
+              <th>Magnitude</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% %w[u g r i z].each do |band| %>
+              <% next if sdss_photometry[band].nil? %>
+              <tr>
+                <td><%= band %></td>
+                <td><%= sdss_photometry[band] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  <% end %>
+
   <div class="cyberspace-panel">
     <div class="card-header">
       <div>
-        <h2 class="card-title">Composite Spectrum</h2>
+        <h2 class="card-title">Composite Spectrum<%= target_name.present? ? " — #{target_name}" : "" %></h2>
       </div>
     </div>
     <div class="cyberspace-panel-body">
@@ -246,7 +278,7 @@
     })();
   </script>
 
-  <details open>
+  <details>
     <summary>Composite Spectrum Data Table</summary>
     <table id="composite-spectrum-table">
       <thead>
@@ -268,34 +300,6 @@
     </div>
   </div>
 
-  <% if sdss_photometry.present? %>
-    <div class="cyberspace-panel">
-      <div class="card-header">
-        <div>
-          <h2 class="card-title">SDSS Photometry</h2>
-        </div>
-      </div>
-      <div class="cyberspace-panel-body">
-        <table>
-          <thead>
-            <tr>
-              <th>Band</th>
-              <th>Magnitude</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% %w[u g r i z].each do |band| %>
-              <% next if sdss_photometry[band].nil? %>
-              <tr>
-                <td><%= band %></td>
-                <td><%= sdss_photometry[band] %></td>
-              </tr>
-            <% end %>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  <% end %>
 <% else %>
   <p>No spectrum result yet.</p>
 <% end %>
