@@ -3,9 +3,7 @@
 Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offline, ⬜ Optional
 
 ## Science/Physics
-
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution
-- 🟩 Run `sdss:verify_photometry` rake task and update `sdss_dr` provenance for all catalog entries — provenance updated via DR19 objid-based fetch with both Petrosian and model magnitude storage
 - 🟨 Add more galaxy targets to local SDSS catalog covering wider range of types and environments
 - 🟨 Add photometric error columns to `galaxies` table: `petro_u_err`, `petro_g_err`, `petro_r_err`, `petro_i_err`, `petro_z_err`, `model_u_err`, `model_g_err`, `model_r_err`, `model_i_err`, `model_z_err` and fetch from SDSS `petroMagErr` and `modelMagErr` fields
 - 🟨 Add observation uncertainty columns to `observations` table: `age_err_plus`, `age_err_minus`, `metallicity_err_plus`, `metallicity_err_minus`, `method_note`
@@ -35,9 +33,10 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 - 🟩 Implement k-corrections for redshifted galaxies — correct observed ugriz magnitudes to rest-frame before chi-squared comparison; required for catalog objects at `z > 0.01`
 - 🟩 Add redshift (`z`) column to local SDSS catalog for each object
 - 🟩 Extend grid sweep to include `burst_age_gyr` variation
+- 🟩 Run `sdss:verify_photometry` rake task and update `sdss_dr` provenance for all catalog entries — provenance updated via DR19 objid-based fetch with both Petrosian and model magnitude storage
+
 
 ## Data and Persistence
-
 - 🟨 Backfill `sdss_objid` for all galaxies via SDSS query and persist in `galaxies` table
 - 🟨 Add side-by-side run comparison view
 - 🟨 Add GSWLC-specific importer/profile mapping (column normalization + validation presets)
@@ -59,14 +58,14 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 - 🟩 Add parameter grid sweep fitting (GridFit) with ranked chi-squared results
 - 🟩 Add benchmark calibration workflow (`CalibrationRun`) with pass/warn/fail summary and ranked benchmark fits
 
-## Infrastructure
 
+## Infrastructure
 - ⬜ Add production environment configuration
 - 🟩 Review fail2ban setup for static asset and app endpoints
 - 🟩 Add health check endpoint
 
-## Testing
 
+## Testing
 - ⬜ Add CI configuration (workflow file push requires PAT with `workflow` scope)
 - 🟩 Add tests for `SynthesisPipelineJob` success/failure paths
 - 🟩 Add tests for `StellarPop::SdssClient` response parsing and nil/error handling
@@ -75,8 +74,8 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 - 🟩 Add unit tests for `ImfSampler`, `StellarSpectra`, `Isochrone`, `SfhModel`
 - 🟩 Add integration tests for full pipeline
 
-## UI/UX
 
+## UI/UX
 - 🟨 Add confidence intervals or chi-squared contour plots for grid fit results
 - 🟨 Document deployment and runbook updates
 - ⬜ Improve CSS polish across index/new/show views
@@ -92,3 +91,4 @@ Legend: 🟩 Done, 🟨 Pending, 🟥 Critical Pending, 🟦 Critical: SDSS Offl
 - 🟩 Make SDSS fetch optional/toggleable in UI
 - 🟩 Make SynthesisRun form usable by default with catalog target selector + RA/Dec autofill
 - 🟩 Add deterministic plain-language interpretation panel on Grid Fit show page
+
