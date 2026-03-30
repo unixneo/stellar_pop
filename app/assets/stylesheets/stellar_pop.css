@@ -194,6 +194,22 @@ main > h2 {
   color: #ffffff;
 }
 
+.benchmark-new-button {
+  display: inline-block;
+  background: rgba(22, 101, 52, 0.95);
+  color: #dcfce7;
+  border: 1px solid rgba(74, 222, 128, 0.6);
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.benchmark-new-button:hover {
+  background: rgba(21, 128, 61, 0.95);
+  color: #f0fdf4;
+}
+
 .run-show-actions {
   display: flex;
   justify-content: space-between;

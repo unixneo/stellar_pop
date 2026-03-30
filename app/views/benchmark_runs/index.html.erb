@@ -4,12 +4,12 @@
       <h1 class="card-title">Benchmark Runs</h1>
       <p class="card-subtitle">Science benchmark checks against reference galaxies.</p>
     </div>
+    <div>
+      <%= link_to "New Benchmark Run", new_benchmark_run_path, class: "benchmark-new-button" %>
+    </div>
   </div>
   <div class="cyberspace-panel-body">
     <p><strong>Active SDSS dataset:</strong> <code><%= @active_sdss_release %></code></p>
-    <div class="action-links">
-      <%= link_to "New Benchmark Run", new_benchmark_run_path %>
-    </div>
 
     <div class="table-wrap">
       <table>
