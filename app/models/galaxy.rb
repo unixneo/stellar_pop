@@ -1,4 +1,6 @@
 class Galaxy < ApplicationRecord
+  MAG_TYPES = %w[petrosian model unknown].freeze
+
   has_many :synthesis_runs, dependent: :nullify
   has_many :grid_fits, dependent: :nullify
   has_many :observations, dependent: :destroy
@@ -6,6 +8,7 @@ class Galaxy < ApplicationRecord
   validates :name, presence: true
   validates :ra, presence: true
   validates :dec, presence: true
+  validates :mag_type, inclusion: { in: MAG_TYPES }, allow_nil: true
 
   def self.find_by_ra_dec(ra, dec, tolerance: 0.01)
     target_ra = ra.to_f

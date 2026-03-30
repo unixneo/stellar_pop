@@ -46,11 +46,70 @@ module StellarPop
       nil
     end
 
+    def fetch_photometry_profiles(ra, dec, radius_arcmin: 0.5)
+      @last_failure_reason = nil
+      sql = nearby_photometry_profiles_query(ra.to_f, dec.to_f, radius_arcmin.to_f)
+      response = @connection.get(nil, cmd: sql, format: "json")
+      payload = parse_json(response.body)
+      row = extract_first_row(payload)
+      unless row
+        @last_failure_reason = :no_object_found
+        return nil
+      end
+
+      petrosian = {
+        u: to_float_or_nil(row["petroMag_u"] || row[:petroMag_u]),
+        g: to_float_or_nil(row["petroMag_g"] || row[:petroMag_g]),
+        r: to_float_or_nil(row["petroMag_r"] || row[:petroMag_r]),
+        i: to_float_or_nil(row["petroMag_i"] || row[:petroMag_i]),
+        z: to_float_or_nil(row["petroMag_z"] || row[:petroMag_z])
+      }
+      model = {
+        u: to_float_or_nil(row["modelMag_u"] || row[:modelMag_u]),
+        g: to_float_or_nil(row["modelMag_g"] || row[:modelMag_g]),
+        r: to_float_or_nil(row["modelMag_r"] || row[:modelMag_r]),
+        i: to_float_or_nil(row["modelMag_i"] || row[:modelMag_i]),
+        z: to_float_or_nil(row["modelMag_z"] || row[:modelMag_z])
+      }
+
+      {
+        petrosian: petrosian,
+        model: model
+      }
+    rescue Faraday::TimeoutError
+      @last_failure_reason = :timeout
+      nil
+    rescue Faraday::ConnectionFailed
+      @last_failure_reason = :api_unreachable
+      nil
+    rescue JSON::ParserError
+      @last_failure_reason = :invalid_response
+      nil
+    rescue Faraday::Error
+      @last_failure_reason = :request_error
+      nil
+    end
+
     private
 
     def nearby_photometry_query(ra, dec, radius_arcmin)
       <<~SQL
         SELECT TOP 1 objid, ra, dec, u, g, r, i, z
+        FROM PhotoObj
+        WHERE objid IN (
+          SELECT objid
+          FROM fGetNearbyObjEq(#{ra}, #{dec}, #{radius_arcmin})
+        )
+      SQL
+        .gsub(/\s+/, " ")
+        .strip
+    end
+
+    def nearby_photometry_profiles_query(ra, dec, radius_arcmin)
+      <<~SQL
+        SELECT TOP 1 objid, ra, dec,
+        petroMag_u, petroMag_g, petroMag_r, petroMag_i, petroMag_z,
+        modelMag_u, modelMag_g, modelMag_r, modelMag_i, modelMag_z
         FROM PhotoObj
         WHERE objid IN (
           SELECT objid

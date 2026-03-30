@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_29_204112) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_30_093000) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -52,6 +52,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_29_204112) do
     t.string "source_catalog", default: "local", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "mag_type"
   end
 
   create_table "grid_fits", force: :cascade do |t|
