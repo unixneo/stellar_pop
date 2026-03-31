@@ -310,7 +310,39 @@
           </table>
         </div>
         <% checks = benchmark["checks"] || {} %>
-        <p style="font-family: monospace;">checks: age_ok=<%= checks["age_ok"] %>, metallicity_ok=<%= checks["metallicity_ok"] %>, sfh_ok=<%= checks["sfh_ok"] %></p>
+        <p style="font-family: monospace;">checks: age_ok=<%= checks["age_ok"] %>, metallicity_ok=<%= checks["metallicity_ok"] %>, sfh_ok=<%= checks["sfh_ok"] %>, chi_squared_ok=<%= checks["chi_squared_ok"] %></p>
+        <% diagnostics = benchmark["photometric_diagnostics"] || {} %>
+        <% colors = diagnostics["colors"] || {} %>
+        <% if colors.present? %>
+          <div class="form-card">
+            <h3 style="margin: 0 0 8px;">Photometric Diagnostics (Best Fit)</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Color</th>
+                  <th>Observed</th>
+                  <th>Synthetic</th>
+                  <th>Delta (syn-obs)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% colors.each do |label, values| %>
+                  <tr>
+                    <td><%= label %></td>
+                    <td><%= format("%.4f", values["observed"].to_f) %></td>
+                    <td><%= format("%.4f", values["synthetic"].to_f) %></td>
+                    <td><%= format("%.4f", values["delta"].to_f) %></td>
+                  </tr>
+                <% end %>
+                <tr>
+                  <td>chi_squared</td>
+                  <td colspan="2">threshold ≤ <%= format("%.3f", diagnostics["chi_squared_pass_max"].to_f) %></td>
+                  <td><%= format("%.6f", diagnostics["chi_squared"].to_f) %></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        <% end %>
         <% if references.any? %>
           <p><strong>References:</strong></p>
           <ul>

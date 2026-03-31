@@ -2,6 +2,7 @@ class BenchmarkRunJob < ApplicationJob
   queue_as :benchmark
 
   class CancelledError < StandardError; end
+  CHI_SQUARED_PASS_MAX = 0.20
 
   def perform(benchmark_run_id, options = {})
     config = PipelineConfig.current
@@ -42,6 +43,7 @@ class BenchmarkRunJob < ApplicationJob
       end
       best = ranked.first || {}
       evaluation = evaluate_best_fit(best, benchmark)
+      photometric_diagnostics = build_photometric_diagnostics(best, photometry, grid_job, bench_idx, config)
       stellar_mass_comparison = compare_stellar_mass(best, benchmark, photometry)
 
       {
@@ -56,6 +58,7 @@ class BenchmarkRunJob < ApplicationJob
         expected: benchmark[:expected],
         photometry: photometry,
         best_fit: best,
+        photometric_diagnostics: photometric_diagnostics,
         stellar_mass_comparison: stellar_mass_comparison,
         verdict: evaluation[:verdict],
         checks: evaluation[:checks],
@@ -77,9 +80,11 @@ class BenchmarkRunJob < ApplicationJob
       benchmarks: benchmark_results
     }
 
+    validation_failed = summary[:fail].to_i.positive?
     benchmark_run.update!(
-      status: "complete",
+      status: validation_failed ? "failed" : "complete",
       result_json: result_payload.to_json,
+      error_message: validation_failed ? "Validation gate failed: one or more benchmarks are outside accepted limits." : nil,
       runtime_seconds: elapsed_seconds(started_at),
       progress_completed: total_steps,
       progress_total: total_steps,
@@ -222,28 +227,102 @@ class BenchmarkRunJob < ApplicationJob
     age = best[:age_gyr].to_f
     z = best[:metallicity_z].to_f
     sfh = best[:sfh_model].to_s
+    chi_squared = best[:chi_squared].to_f
 
     age_ok = age >= expected.fetch(:age_gyr_min, age) && age <= expected.fetch(:age_gyr_max, age)
     metallicity_ok = z >= expected.fetch(:metallicity_z_min, z) && z <= expected.fetch(:metallicity_z_max, z)
     allowed_sfh = Array(expected[:sfh_models]).map(&:to_s)
     sfh_ok = allowed_sfh.empty? || allowed_sfh.include?(sfh)
+    chi_squared_ok = chi_squared.finite? && chi_squared >= 0.0 && chi_squared <= CHI_SQUARED_PASS_MAX
 
     checks = {
       age_ok: age_ok,
       metallicity_ok: metallicity_ok,
-      sfh_ok: sfh_ok
+      sfh_ok: sfh_ok,
+      chi_squared_ok: chi_squared_ok
     }
 
-    score = checks.values.count(true)
-    verdict = if score == checks.size
+    verdict = if checks.values.all?
       "pass"
-    elsif score.zero?
+    elsif !chi_squared_ok || checks.values.count(false) >= 2
       "fail"
     else
       "warn"
     end
 
     { verdict: verdict, checks: checks }
+  end
+
+  def build_photometric_diagnostics(best, photometry, grid_job, bench_idx, config)
+    return {} unless best.is_a?(Hash)
+    return {} if photometry.blank?
+
+    blackboard = grid_job.send(
+      :build_blackboard,
+      age_gyr: best[:age_gyr] || best["age_gyr"],
+      metallicity_z: best[:metallicity_z] || best["metallicity_z"],
+      sfh_model: best[:sfh_model] || best["sfh_model"],
+      imf_type: best[:imf_type] || best["imf_type"],
+      burst_age_gyr: best[:burst_age_gyr] || best["burst_age_gyr"],
+      seed: (bench_idx + 1) * 9_000_000 + 7,
+      config: config
+    )
+
+    StellarPop::Integrator::SpectralIntegrator.new(
+      blackboard,
+      spectra_source: StellarPop::KnowledgeSources::BaselSpectra.new
+    ).run
+    composite = blackboard.read(:composite_spectrum) || {}
+    return {} if composite.empty?
+
+    convolver = StellarPop::SdssFilterConvolver.new
+    synthetic_fluxes = convolver.synthetic_magnitudes(composite)
+    synthetic_mags = to_magnitudes(synthetic_fluxes)
+
+    observed_input = {
+      u: photometry[:u] || photometry["u"],
+      g: photometry[:g] || photometry["g"],
+      r: photometry[:r] || photometry["r"],
+      i: photometry[:i] || photometry["i"],
+      z: photometry[:z] || photometry["z"]
+    }
+    corrected_observed = StellarPop::KCorrection.correct(
+      observed_input,
+      photometry[:redshift_z] || photometry["redshift_z"]
+    )
+
+    color_pairs = {
+      "u-r" => %i[u r],
+      "g-r" => %i[g r],
+      "i-r" => %i[i r],
+      "z-r" => %i[z r]
+    }
+
+    colors = {}
+    color_pairs.each do |label, (num, den)|
+      observed = corrected_observed[num].to_f - corrected_observed[den].to_f
+      synthetic = synthetic_mags[num].to_f - synthetic_mags[den].to_f
+      colors[label] = {
+        observed: observed,
+        synthetic: synthetic,
+        delta: synthetic - observed
+      }
+    end
+
+    {
+      chi_squared: compute_chi_squared(composite, photometry),
+      chi_squared_pass_max: CHI_SQUARED_PASS_MAX,
+      colors: colors
+    }
+  rescue StandardError
+    {}
+  end
+
+  def to_magnitudes(fluxes)
+    fluxes.transform_values do |value|
+      flux = value.to_f
+      flux.positive? ? (-2.5 * Math.log10(flux)) : 999.0
+    end
   end
 
   def compare_stellar_mass(best, benchmark, photometry)
