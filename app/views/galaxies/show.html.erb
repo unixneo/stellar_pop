@@ -6,6 +6,19 @@
     </div>
   </div>
   <div class="cyberspace-panel-body">
+    <% if @galaxy.sdss_status == "confirmed" %>
+      <div style="background-color: #d9fdd3; color: #1a7a1a; border: 1px solid #1a7a1a; padding: 10px; margin-bottom: 12px;">
+        SDSS DR19 photometry confirmed
+      </div>
+    <% elsif @galaxy.sdss_status == "bad_photometry" %>
+      <div style="background-color: #ffe0e0; color: #8b0000; border: 1px solid #8b0000; padding: 10px; margin-bottom: 12px;">
+        SDSS DR19 photometry unusable - bad photometry
+      </div>
+    <% elsif @galaxy.sdss_status.nil? %>
+      <div style="background-color: #fff9c4; color: #7a5a00; border: 1px solid #7a5a00; padding: 10px; margin-bottom: 12px;">
+        SDSS DR19 photometry unconfirmed
+      </div>
+    <% end %>
     <table>
       <thead>
         <tr>

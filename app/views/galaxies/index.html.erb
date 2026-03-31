@@ -62,8 +62,8 @@
             <tr>
               <td><%= link_to galaxy.name, galaxy_path(galaxy) %></td>
               <td><%= galaxy.galaxy_type %></td>
-              <td><%= galaxy.ra %></td>
-              <td><%= galaxy.dec %></td>
+              <td style="color: <%= galaxy.sdss_status == 'confirmed' ? '#1a7a1a' : '#8b0000' %>;"><%= number_with_precision(galaxy.ra, precision: 4) %></td>
+              <td style="color: <%= galaxy.sdss_status == 'confirmed' ? '#1a7a1a' : '#8b0000' %>;"><%= number_with_precision(galaxy.dec, precision: 4) %></td>
               <td><%= galaxy.mag_u %></td>
               <td><%= galaxy.mag_g %></td>
               <td><%= galaxy.mag_r %></td>
