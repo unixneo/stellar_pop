@@ -126,6 +126,104 @@ module StellarPop
       nil
     end
 
+    def fetch_redshift(ra, dec, radius_arcmin: 0.5)
+      @last_failure_reason = nil
+      sql = nearby_redshift_query(ra.to_f, dec.to_f, radius_arcmin.to_f)
+      response = @connection.get(nil, cmd: sql, format: "json")
+      payload = parse_json(response.body)
+      row = extract_first_row(payload)
+      if row.nil?
+        fallback_sql = nearby_spec_redshift_query(ra.to_f, dec.to_f, radius_arcmin.to_f)
+        fallback_response = @connection.get(nil, cmd: fallback_sql, format: "json")
+        fallback_payload = parse_json(fallback_response.body)
+        row = extract_first_row(fallback_payload)
+      end
+      unless row
+        @last_failure_reason = :no_object_found
+        return nil
+      end
+
+      {
+        redshift_z: to_float_or_nil(row["z"] || row[:z]),
+        redshift_err: to_float_or_nil(row["zErr"] || row[:zErr] || row["zerr"] || row[:zerr]),
+        objid: (row["objid"] || row[:objid]).to_s.presence
+      }
+    rescue Faraday::TimeoutError
+      @last_failure_reason = :timeout
+      nil
+    rescue Faraday::ConnectionFailed
+      @last_failure_reason = :api_unreachable
+      nil
+    rescue JSON::ParserError
+      @last_failure_reason = :invalid_response
+      nil
+    rescue Faraday::Error
+      @last_failure_reason = :request_error
+      nil
+    end
+
+    def fetch_redshift_by_objid(objid)
+      @last_failure_reason = nil
+      sql = redshift_by_objid_query(objid)
+      response = @connection.get(nil, cmd: sql, format: "json")
+      payload = parse_json(response.body)
+      row = extract_first_row(payload)
+      unless row
+        @last_failure_reason = :no_object_found
+        return nil
+      end
+
+      {
+        redshift_z: to_float_or_nil(row["z"] || row[:z]),
+        redshift_err: to_float_or_nil(row["zErr"] || row[:zErr] || row["zerr"] || row[:zerr]),
+        objid: objid.to_s.presence
+      }
+    rescue Faraday::TimeoutError
+      @last_failure_reason = :timeout
+      nil
+    rescue Faraday::ConnectionFailed
+      @last_failure_reason = :api_unreachable
+      nil
+    rescue JSON::ParserError
+      @last_failure_reason = :invalid_response
+      nil
+    rescue Faraday::Error
+      @last_failure_reason = :request_error
+      nil
+    end
+
+    def fetch_nearest_spec_match(ra, dec, radius_arcmin: 2.0)
+      @last_failure_reason = nil
+      sql = nearest_spec_match_query(ra.to_f, dec.to_f, radius_arcmin.to_f)
+      response = @connection.get(nil, cmd: sql, format: "json")
+      payload = parse_json(response.body)
+      row = extract_first_row(payload)
+      unless row
+        @last_failure_reason = :no_object_found
+        return nil
+      end
+
+      {
+        objid: (row["objid"] || row[:objid]).to_s.presence,
+        spec_objid: (row["specObjID"] || row[:specObjID] || row["specobjid"] || row[:specobjid]).to_s.presence,
+        redshift_z: to_float_or_nil(row["z"] || row[:z]),
+        redshift_err: to_float_or_nil(row["zErr"] || row[:zErr] || row["zerr"] || row[:zerr]),
+        distance_arcmin: to_float_or_nil(row["distance"] || row[:distance])
+      }
+    rescue Faraday::TimeoutError
+      @last_failure_reason = :timeout
+      nil
+    rescue Faraday::ConnectionFailed
+      @last_failure_reason = :api_unreachable
+      nil
+    rescue JSON::ParserError
+      @last_failure_reason = :invalid_response
+      nil
+    rescue Faraday::Error
+      @last_failure_reason = :request_error
+      nil
+    end
+
     private
 
     def build_photometry_hash(row)
@@ -185,6 +283,54 @@ module StellarPop
           SELECT objid
           FROM fGetNearbyObjEq(#{ra}, #{dec}, #{radius_arcmin})
         )
+      SQL
+        .gsub(/\s+/, " ")
+        .strip
+    end
+
+    def nearby_redshift_query(ra, dec, radius_arcmin)
+      <<~SQL
+        SELECT TOP 1 p.objid, s.z, s.zErr
+        FROM PhotoObj AS p
+        JOIN fGetNearbyObjEq(#{ra}, #{dec}, #{radius_arcmin}) AS n
+          ON n.objid = p.objid
+        JOIN SpecObj AS s
+          ON s.bestObjID = p.objid
+        ORDER BY n.distance ASC
+      SQL
+        .gsub(/\s+/, " ")
+        .strip
+    end
+
+    def redshift_by_objid_query(objid)
+      <<~SQL
+        SELECT TOP 1 z, zErr
+        FROM SpecObj
+        WHERE bestObjID = #{objid}
+      SQL
+        .gsub(/\s+/, " ")
+        .strip
+    end
+
+    def nearby_spec_redshift_query(ra, dec, radius_arcmin)
+      <<~SQL
+        SELECT TOP 1 s.bestObjID AS objid, s.z, s.zErr
+        FROM SpecObj AS s
+        JOIN fGetNearbySpecObjEq(#{ra}, #{dec}, #{radius_arcmin}) AS n
+          ON n.specObjID = s.specObjID
+        ORDER BY n.distance ASC
+      SQL
+        .gsub(/\s+/, " ")
+        .strip
+    end
+
+    def nearest_spec_match_query(ra, dec, radius_arcmin)
+      <<~SQL
+        SELECT TOP 1 s.bestObjID AS objid, s.specObjID, s.z, s.zErr, n.distance
+        FROM fGetNearbySpecObjEq(#{ra}, #{dec}, #{radius_arcmin}) AS n
+        JOIN SpecObj AS s
+          ON s.specObjID = n.specObjID
+        ORDER BY n.distance ASC
       SQL
         .gsub(/\s+/, " ")
         .strip

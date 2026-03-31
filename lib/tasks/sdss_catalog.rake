@@ -96,6 +96,69 @@ namespace :sdss do
     end
   end
 
+  desc "Backfill galaxies.redshift_z from live SDSS (objid first, coordinate fallback). WRITE=true to persist."
+  task backfill_redshifts: :environment do
+    config = PipelineConfig.current
+    sdss_release = config.sdss_dataset_release
+    write_enabled = ActiveModel::Type::Boolean.new.cast(ENV["WRITE"])
+    radius_arcmin = ENV.fetch("RADIUS_ARCMIN", "2.0").to_f
+    max_match_distance_arcmin = ENV.fetch("MAX_MATCH_ARCMIN", "0.5").to_f
+    scope = Galaxy.where("redshift_z IS NULL OR redshift_z = 0").order(:id)
+    total = scope.count
+
+    if scope.empty?
+      puts "No galaxies with missing/zero redshift_z."
+      next
+    end
+
+    client = StellarPop::SdssClient.new(release: sdss_release)
+    updated = 0
+    unresolved = 0
+
+    scope.each do |galaxy|
+      result = nil
+      source = nil
+
+      if galaxy.sdss_objid.present?
+        result = client.fetch_redshift_by_objid(galaxy.sdss_objid)
+        source = "objid"
+      else
+        result = client.fetch_redshift(galaxy.ra, galaxy.dec, radius_arcmin: radius_arcmin)
+        source = "coords"
+      end
+
+      if result.nil?
+        nearest = client.fetch_nearest_spec_match(galaxy.ra, galaxy.dec, radius_arcmin: radius_arcmin)
+        distance = nearest && nearest[:distance_arcmin].to_f
+        if nearest && distance.finite? && distance <= max_match_distance_arcmin
+          result = nearest
+          source = "nearest_spec"
+        elsif nearest
+          puts "#{galaxy.name}: nearest_spec rejected distance=#{format('%.4f', distance)} arcmin"
+        end
+      end
+
+      z = result && result[:redshift_z].to_f
+      if result && z.finite? && !z.zero?
+        if write_enabled
+          attrs = { redshift_z: z, sdss_dr: sdss_release }
+          objid = result[:objid].to_s.strip
+          attrs[:sdss_objid] = objid if objid.match?(/\A[1-9]\d*\z/) && galaxy.sdss_objid.blank?
+          galaxy.update!(attrs)
+        end
+        updated += 1
+        puts "#{galaxy.name}: z=#{format('%.6f', z)} via #{source}"
+      else
+        unresolved += 1
+        puts "#{galaxy.name}: unresolved (reason=#{client.last_failure_reason || 'no_redshift'})"
+      end
+
+      sleep(0.3)
+    end
+
+    puts "Backfill summary: total=#{total}, updated=#{updated}, unresolved=#{unresolved}, write=#{write_enabled}"
+  end
+
   desc "Fetch DR19 photometry for DR19 galaxies and store petro/model magnitudes"
   task fetch_dr19_photometry: :environment do
     config = PipelineConfig.current

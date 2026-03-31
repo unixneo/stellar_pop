@@ -290,8 +290,16 @@
               <tr>
                 <td>SFH model</td>
                 <td><%= best["sfh_model"] %></td>
-                <td><%= expected_sfh.join(", ") %></td>
-                <td><%= expected_sfh.include?(best["sfh_model"].to_s) ? "within expected range" : "outside expected range" %></td>
+                <td><%= expected_sfh.any? ? expected_sfh.join(", ") : "any (not constrained)" %></td>
+                <td>
+                  <%= if expected_sfh.empty?
+                        "not constrained by benchmark"
+                      elsif expected_sfh.include?(best["sfh_model"].to_s)
+                        "within expected range"
+                      else
+                        "outside expected range"
+                      end %>
+                </td>
               </tr>
               <tr>
                 <td>Stellar mass (M☉)</td>
