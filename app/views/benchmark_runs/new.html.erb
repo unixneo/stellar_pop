@@ -9,7 +9,7 @@
     <div class="form-card">
       <p><strong>Active SDSS dataset:</strong> <code><%= @active_sdss_release %></code></p>
     </div>
-    <%= form_with model: @benchmark_run do |f| %>
+    <%= form_with model: @benchmark_run, local: true, data: { turbo: false } do |f| %>
       <div class="form-card">
         <p>
           <%= f.label :name, "Benchmark run name" %>

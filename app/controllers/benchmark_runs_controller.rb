@@ -1,5 +1,6 @@
 class BenchmarkRunsController < ApplicationController
   before_action :set_active_sdss_release
+  rescue_from ActionController::InvalidAuthenticityToken, with: :handle_invalid_authenticity_token
 
   def index
     @benchmark_runs = BenchmarkRun.order(created_at: :desc)
@@ -164,5 +165,14 @@ class BenchmarkRunsController < ApplicationController
     removed
   rescue StandardError
     0
+  end
+
+  def handle_invalid_authenticity_token(exception)
+    if action_name == "create"
+      redirect_to new_benchmark_run_path, alert: "Your form session expired. Please reload and try again."
+      return
+    end
+
+    raise exception
   end
 end
