@@ -12,7 +12,7 @@ class BenchmarkRunsController < ApplicationController
 
   def new
     @benchmark_run = BenchmarkRun.new
-    @benchmarks = StellarPop::Calibration::BenchmarkCatalog.all(sdss_release: @active_sdss_release)
+    load_benchmarks
   end
 
   def create
@@ -22,7 +22,7 @@ class BenchmarkRunsController < ApplicationController
     selected_keys = selected_benchmark_keys
 
     if selected_keys.empty?
-      @benchmarks = StellarPop::Calibration::BenchmarkCatalog.all(sdss_release: @active_sdss_release)
+      load_benchmarks
       flash.now[:alert] = "Select exactly one benchmark target."
       render :new, status: :unprocessable_entity
       return
@@ -36,7 +36,7 @@ class BenchmarkRunsController < ApplicationController
       )
       redirect_to @benchmark_run, notice: "Benchmark run created."
     else
-      @benchmarks = StellarPop::Calibration::BenchmarkCatalog.all(sdss_release: @active_sdss_release)
+      load_benchmarks
       render :new, status: :unprocessable_entity
     end
   end
@@ -90,6 +90,47 @@ class BenchmarkRunsController < ApplicationController
     return legacy if legacy.size == 1
 
     []
+  end
+
+  def load_benchmarks
+    @sort = params[:sort].to_s.presence || "name"
+    @dir = params[:dir].to_s.downcase == "desc" ? "desc" : "asc"
+    rows = StellarPop::Calibration::BenchmarkCatalog.all(sdss_release: @active_sdss_release)
+    @benchmarks = rows.sort_by { |row| benchmark_sort_value(row, @sort) }
+    @benchmarks.reverse! if @dir == "desc"
+  end
+
+  def benchmark_sort_value(row, sort_key)
+    dq = row[:data_quality] || {}
+    expected = row[:expected] || {}
+    case sort_key
+    when "select"
+      Array(params[:benchmark_keys]).map(&:to_s).include?(row[:key].to_s) ? 1 : 0
+    when "name"
+      row[:name].to_s.downcase
+    when "type"
+      row[:type].to_s.downcase
+    when "oid_match"
+      case dq[:id_match_quality].to_s
+      when "exact_objid" then 3
+      when "coord_validated" then 2
+      else 1
+      end
+    when "data_quality"
+      if dq[:benchmark_eligible]
+        3
+      elsif dq[:id_match_quality].to_s == "exact_objid"
+        2
+      else
+        1
+      end
+    when "age"
+      expected[:age_gyr_min].to_f
+    when "metallicity"
+      expected[:metallicity_z_min].to_f
+    else
+      row[:name].to_s.downcase
+    end
   end
 
   def fast_mode_enabled?

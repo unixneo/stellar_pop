@@ -15,9 +15,10 @@ v0.3.3 doc sync:
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution
 - 🟨 Add more galaxy targets to local SDSS catalog covering wider range of types and environments
 - 🟨 Stellar mass estimator needs calibration -- current M/L ratios produce systematic underestimates; validate against NGC3379 and NGC4472 published masses and recalibrate SFH_BASE_MASS_TO_LIGHT and age_scale formula
-- 🟨 Add photometric error columns to `galaxies` table: `petro_u_err`, `petro_g_err`, `petro_r_err`, `petro_i_err`, `petro_z_err`, `model_u_err`, `model_g_err`, `model_r_err`, `model_i_err`, `model_z_err` and fetch from SDSS `petroMagErr` and `modelMagErr` fields (added to TODO in v0.3.3)
+- 🟨 Reconcile DR19 `sdss_objid` values where `SpecObj.bestObjID` lookup fails and restore high-confidence redshift coverage for benchmark targets
+- 🟨 Add strict redshift sanity checks (target-type-aware z bounds) to block implausible spectroscopic matches from ever being persisted
+- 🟨 Add weighted chi-squared in benchmark and grid jobs using stored `err_*` columns (`sum((model-observed)^2 / sigma^2)`)
 - 🟨 Add observation uncertainty columns to `observations` table: `age_err_plus`, `age_err_minus`, `metallicity_err_plus`, `metallicity_err_minus`, `method_note`
-- 🟨 Update chi-squared to weighted form: `sum((model-observed)^2 / sigma^2)` per band (added to TODO in v0.3.3)
 - 🟨 Use configurable per-band sigma floor when errors are missing, and flag reduced confidence
 - 🟩 Store both Petrosian and model magnitudes in `galaxies` (`petro_*`, `model_*`) and keep active photometry provenance in `mag_type`
 - 🟩 Update `SdssClient` photometry query path to retrieve both `petroMag_*` and `modelMag_*` fields
@@ -45,6 +46,9 @@ v0.3.3 doc sync:
 - 🟩 Extend grid sweep to include `burst_age_gyr` variation
 - 🟩 Add stellar mass estimation to synthesis pipeline and persist to `synthesis_runs.stellar_mass` (derived from SFH, IMF, observed `r` magnitude, and redshift-based luminosity distance)
 - 🟩 Run `sdss:verify_photometry` rake task and update `sdss_dr` provenance for all catalog entries — provenance updated via DR19 objid-based fetch with both Petrosian and model magnitude storage
+- 🟩 Add SDSS uncertainty/quality ingestion for DR19 galaxies (`petro_err_*`, `model_err_*`, `err_*`, `extinction_*`, `sdss_clean`, `z_err`, `z_warning`)
+- 🟩 Add galaxy-level benchmark confidence fields (`id_match_quality`, `id_match_distance_arcsec`, `redshift_source`, `redshift_confidence`, `redshift_checked_at`)
+- 🟩 Add benchmark data-quality gate and UI visibility (`data_quality_ok`, benchmark eligibility reasons)
 
 
 ## Data and Persistence

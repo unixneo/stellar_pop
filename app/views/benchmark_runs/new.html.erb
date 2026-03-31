@@ -20,31 +20,56 @@
       <div class="form-card" style="font-family: monospace;">
         <p><strong>Benchmark target for this run:</strong></p>
         <p class="form-help">Select exactly one target from the active SDSS dataset release.</p>
+        <p class="form-help" style="margin-top: 4px;">Color legend: green = high, yellow = medium, red = low.</p>
 
-        <table>
+        <table id="benchmark-targets-table">
           <thead>
             <tr>
-              <th>Select</th>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Expected Age (Gyr)</th>
-              <th>Expected Metallicity (Z)</th>
+              <th><%= link_to "Select", new_benchmark_run_path(request.query_parameters.merge(sort: "select", dir: (@sort == "select" && @dir == "asc") ? "desc" : "asc")) %></th>
+              <th><%= link_to "Name", new_benchmark_run_path(request.query_parameters.merge(sort: "name", dir: (@sort == "name" && @dir == "asc") ? "desc" : "asc")) %></th>
+              <th><%= link_to "Type", new_benchmark_run_path(request.query_parameters.merge(sort: "type", dir: (@sort == "type" && @dir == "asc") ? "desc" : "asc")) %></th>
+              <th><%= link_to "OID Match", new_benchmark_run_path(request.query_parameters.merge(sort: "oid_match", dir: (@sort == "oid_match" && @dir == "asc") ? "desc" : "asc")) %></th>
+              <th><%= link_to "Data Quality", new_benchmark_run_path(request.query_parameters.merge(sort: "data_quality", dir: (@sort == "data_quality" && @dir == "asc") ? "desc" : "asc")) %></th>
+              <th><%= link_to "Expected Age (Gyr)", new_benchmark_run_path(request.query_parameters.merge(sort: "age", dir: (@sort == "age" && @dir == "asc") ? "desc" : "asc")) %></th>
+              <th><%= link_to "Expected Metallicity (Z)", new_benchmark_run_path(request.query_parameters.merge(sort: "metallicity", dir: (@sort == "metallicity" && @dir == "asc") ? "desc" : "asc")) %></th>
             </tr>
           </thead>
           <tbody>
             <% @benchmarks.each do |benchmark| %>
+              <% dq = benchmark[:data_quality] || {} %>
+              <% id_quality = dq[:id_match_quality].to_s %>
+              <% redshift_conf = dq[:redshift_confidence].to_s %>
+              <% eligible = !!dq[:benchmark_eligible] %>
+              <% id_quality_class =
+                   if id_quality == "exact_objid"
+                     "quality-high"
+                   elsif id_quality == "coord_validated"
+                     "quality-medium"
+                   else
+                     "quality-low"
+                   end %>
+              <% data_quality_class =
+                   if eligible
+                     "quality-high"
+                   elsif id_quality == "exact_objid"
+                     "quality-medium"
+                   else
+                     "quality-low"
+                   end %>
               <tr>
-                <td>
+                <td data-sort="<%= Array(params[:benchmark_keys]).map(&:to_s).include?(benchmark[:key].to_s) ? 1 : 0 %>">
                   <%= check_box_tag "benchmark_keys[]",
                                     benchmark[:key],
                                     Array(params[:benchmark_keys]).map(&:to_s).include?(benchmark[:key].to_s),
                                     class: "single-benchmark-check",
                                     id: "benchmark_key_#{benchmark[:key]}" %>
                 </td>
-                <td><%= benchmark[:name] %></td>
-                <td><%= benchmark[:type] %></td>
-                <td><%= benchmark.dig(:expected, :age_gyr_min) %>-<%= benchmark.dig(:expected, :age_gyr_max) %></td>
-                <td><%= benchmark.dig(:expected, :metallicity_z_min) %>-<%= benchmark.dig(:expected, :metallicity_z_max) %></td>
+                <td data-sort="<%= benchmark[:name].to_s.downcase %>"><%= benchmark[:name] %></td>
+                <td data-sort="<%= benchmark[:type].to_s.downcase %>"><%= benchmark[:type] %></td>
+                <td class="quality-cell <%= id_quality_class %>" data-sort="<%= id_quality == "exact_objid" ? 3 : (id_quality == "coord_validated" ? 2 : 1) %>"></td>
+                <td class="quality-cell <%= data_quality_class %>" data-sort="<%= eligible ? 3 : (id_quality == "exact_objid" ? 2 : 1) %>"></td>
+                <td data-sort="<%= benchmark.dig(:expected, :age_gyr_min).to_f %>"><%= benchmark.dig(:expected, :age_gyr_min) %>-<%= benchmark.dig(:expected, :age_gyr_max) %></td>
+                <td data-sort="<%= benchmark.dig(:expected, :metallicity_z_min).to_f %>"><%= benchmark.dig(:expected, :metallicity_z_min) %>-<%= benchmark.dig(:expected, :metallicity_z_max) %></td>
               </tr>
             <% end %>
           </tbody>
@@ -75,9 +100,11 @@
 </div>
 
 <script>
-  (function() {
+  function initBenchmarkRunForm() {
     const checks = document.querySelectorAll(".single-benchmark-check");
     checks.forEach(function(check) {
+      if (check.dataset.singleBound === "1") return;
+      check.dataset.singleBound = "1";
       check.addEventListener("change", function() {
         if (!check.checked) return;
         checks.forEach(function(other) {
@@ -85,5 +112,9 @@
         });
       });
     });
-  })();
+
+  }
+
+  document.addEventListener("turbo:load", initBenchmarkRunForm);
+  document.addEventListener("DOMContentLoaded", initBenchmarkRunForm);
 </script>

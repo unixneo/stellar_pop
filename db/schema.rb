@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_30_123000) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_31_114500) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -63,6 +63,25 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_30_123000) do
     t.float "model_r"
     t.float "model_i"
     t.float "model_z"
+    t.float "petro_err_u"
+    t.float "petro_err_g"
+    t.float "petro_err_r"
+    t.float "petro_err_i"
+    t.float "petro_err_z"
+    t.float "model_err_u"
+    t.float "model_err_g"
+    t.float "model_err_r"
+    t.float "model_err_i"
+    t.float "model_err_z"
+    t.float "z_err"
+    t.integer "z_warning"
+    t.boolean "sdss_clean"
+    t.string "id_match_quality", default: "unverified", null: false
+    t.float "id_match_distance_arcsec"
+    t.text "id_match_note"
+    t.string "redshift_source", default: "legacy", null: false
+    t.string "redshift_confidence", default: "low", null: false
+    t.datetime "redshift_checked_at"
   end
 
   create_table "grid_fits", force: :cascade do |t|

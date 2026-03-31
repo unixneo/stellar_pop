@@ -1,5 +1,7 @@
 class Galaxy < ApplicationRecord
   MAG_TYPES = %w[petrosian model unknown].freeze
+  ID_MATCH_QUALITIES = %w[exact_objid coord_validated unverified].freeze
+  REDSHIFT_CONFIDENCES = %w[high medium low].freeze
 
   has_many :synthesis_runs, dependent: :nullify
   has_many :grid_fits, dependent: :nullify
@@ -9,6 +11,8 @@ class Galaxy < ApplicationRecord
   validates :ra, presence: true
   validates :dec, presence: true
   validates :mag_type, inclusion: { in: MAG_TYPES }, allow_nil: true
+  validates :id_match_quality, inclusion: { in: ID_MATCH_QUALITIES }, allow_nil: false
+  validates :redshift_confidence, inclusion: { in: REDSHIFT_CONFIDENCES }, allow_nil: false
 
   def self.find_by_ra_dec(ra, dec, tolerance: 0.01)
     target_ra = ra.to_f

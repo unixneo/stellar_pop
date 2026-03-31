@@ -40,14 +40,22 @@ class SdssClientTest < ActiveSupport::TestCase
 
     phot = client.fetch_photometry(187.2779, 2.0523)
 
-    assert_equal(
-      {
-        u: 18.12, g: 17.45, r: 16.8, i: 16.41, z: 16.12,
-        petro_u: 18.12, petro_g: 17.45, petro_r: 16.8, petro_i: 16.41, petro_z: 16.12,
-        model_u: nil, model_g: nil, model_r: nil, model_i: nil, model_z: nil
-      },
-      phot
-    )
+    assert_equal 18.12, phot[:u]
+    assert_equal 17.45, phot[:g]
+    assert_equal 16.8, phot[:r]
+    assert_equal 16.41, phot[:i]
+    assert_equal 16.12, phot[:z]
+    assert_equal 18.12, phot[:petro_u]
+    assert_equal 17.45, phot[:petro_g]
+    assert_equal 16.8, phot[:petro_r]
+    assert_equal 16.41, phot[:petro_i]
+    assert_equal 16.12, phot[:petro_z]
+    assert_nil phot[:model_u]
+    assert_nil phot[:model_g]
+    assert_nil phot[:model_r]
+    assert_nil phot[:model_i]
+    assert_nil phot[:model_z]
+    assert_nil phot[:redshift_z]
     assert_includes connection.last_params[:cmd], "fGetNearbyObjEq(187.2779, 2.0523, 0.5)"
     assert_equal "json", connection.last_params[:format]
   end

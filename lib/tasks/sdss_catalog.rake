@@ -96,7 +96,7 @@ namespace :sdss do
     end
   end
 
-  desc "Backfill galaxies.redshift_z from live SDSS (objid first, coordinate fallback). WRITE=true to persist."
+  desc "Backfill galaxies.redshift_z from live SDSS (objid-strict for writes). WRITE=true to persist."
   task backfill_redshifts: :environment do
     config = PipelineConfig.current
     sdss_release = config.sdss_dataset_release
@@ -140,8 +140,23 @@ namespace :sdss do
 
       z = result && result[:redshift_z].to_f
       if result && z.finite? && !z.zero?
+        if write_enabled && source != "objid"
+          unresolved += 1
+          puts "#{galaxy.name}: skipped write (non-objid source=#{source})"
+          sleep(0.3)
+          next
+        end
+
         if write_enabled
-          attrs = { redshift_z: z, sdss_dr: sdss_release }
+          attrs = {
+            redshift_z: z,
+            z_err: result[:redshift_err],
+            z_warning: result[:redshift_warning],
+            redshift_source: "specobj_bestobjid",
+            redshift_confidence: "high",
+            redshift_checked_at: Time.current,
+            sdss_dr: sdss_release
+          }
           objid = result[:objid].to_s.strip
           attrs[:sdss_objid] = objid if objid.match?(/\A[1-9]\d*\z/) && galaxy.sdss_objid.blank?
           galaxy.update!(attrs)
@@ -192,6 +207,11 @@ namespace :sdss do
         selected_r = active_mag_type == "model" ? result[:model_r] : result[:petro_r]
         selected_i = active_mag_type == "model" ? result[:model_i] : result[:petro_i]
         selected_z = active_mag_type == "model" ? result[:model_z] : result[:petro_z]
+        selected_err_u = active_mag_type == "model" ? result[:model_err_u] : result[:petro_err_u]
+        selected_err_g = active_mag_type == "model" ? result[:model_err_g] : result[:petro_err_g]
+        selected_err_r = active_mag_type == "model" ? result[:model_err_r] : result[:petro_err_r]
+        selected_err_i = active_mag_type == "model" ? result[:model_err_i] : result[:petro_err_i]
+        selected_err_z = active_mag_type == "model" ? result[:model_err_z] : result[:petro_err_z]
 
         galaxy.update!(
           petro_u: result[:petro_u],
@@ -199,16 +219,43 @@ namespace :sdss do
           petro_r: result[:petro_r],
           petro_i: result[:petro_i],
           petro_z: result[:petro_z],
+          petro_err_u: result[:petro_err_u],
+          petro_err_g: result[:petro_err_g],
+          petro_err_r: result[:petro_err_r],
+          petro_err_i: result[:petro_err_i],
+          petro_err_z: result[:petro_err_z],
           model_u: result[:model_u],
           model_g: result[:model_g],
           model_r: result[:model_r],
           model_i: result[:model_i],
           model_z: result[:model_z],
+          model_err_u: result[:model_err_u],
+          model_err_g: result[:model_err_g],
+          model_err_r: result[:model_err_r],
+          model_err_i: result[:model_err_i],
+          model_err_z: result[:model_err_z],
           mag_u: selected_u,
           mag_g: selected_g,
           mag_r: selected_r,
           mag_i: selected_i,
           mag_z: selected_z,
+          err_u: selected_err_u,
+          err_g: selected_err_g,
+          err_r: selected_err_r,
+          err_i: selected_err_i,
+          err_z: selected_err_z,
+          extinction_u: result[:extinction_u],
+          extinction_g: result[:extinction_g],
+          extinction_r: result[:extinction_r],
+          extinction_i: result[:extinction_i],
+          extinction_z: result[:extinction_z],
+          redshift_z: result[:redshift_z] || galaxy.redshift_z,
+          z_err: result[:z_err],
+          z_warning: result[:z_warning],
+          sdss_clean: result[:sdss_clean],
+          id_match_quality: (fetch_path == "objid" ? "exact_objid" : "coord_validated"),
+          id_match_distance_arcsec: (fetch_path == "objid" ? 0.0 : nil),
+          id_match_note: "DR19 photometry fetch via #{fetch_path}",
           mag_type: active_mag_type,
           sdss_dr: "DR19"
         )
@@ -219,6 +266,58 @@ namespace :sdss do
 
       sleep(0.5)
     end
+  end
+
+  desc "Refresh DR19 spectroscopy quality fields (objid-strict; redshift_z, z_err, z_warning) for DR19 galaxies"
+  task refresh_dr19_spectroscopy: :environment do
+    galaxies = Galaxy.where(sdss_dr: "DR19").order(:id)
+    if galaxies.empty?
+      puts "No DR19 galaxies found."
+      next
+    end
+
+    client = StellarPop::SdssClient.new(release: "DR19")
+    updated = 0
+    unresolved = 0
+
+    galaxies.each do |galaxy|
+      result = nil
+      source = "objid"
+      if galaxy.sdss_objid.present?
+        result = client.fetch_redshift_by_objid(galaxy.sdss_objid)
+      end
+
+      z = result && result[:redshift_z].to_f
+      if result && z.finite? && !z.zero?
+        z_warning = result[:redshift_warning]
+        confidence = (z_warning.to_i == 0) ? "high" : "medium"
+        galaxy.update!(
+          redshift_z: z,
+          z_err: result[:redshift_err],
+          z_warning: z_warning,
+          redshift_source: "specobj_bestobjid",
+          redshift_confidence: confidence,
+          redshift_checked_at: Time.current,
+          sdss_dr: "DR19"
+        )
+        updated += 1
+        puts "#{galaxy.name}: z=#{format('%.6f', z)} z_err=#{result[:redshift_err].inspect} z_warning=#{result[:redshift_warning].inspect} via #{source}"
+      else
+        galaxy.update!(
+          z_err: nil,
+          z_warning: nil,
+          redshift_source: "unresolved",
+          redshift_confidence: "low",
+          redshift_checked_at: Time.current
+        )
+        unresolved += 1
+        puts "#{galaxy.name}: unresolved (objid=#{galaxy.sdss_objid.presence || 'nil'} reason=#{client.last_failure_reason || 'no_redshift'})"
+      end
+
+      sleep(0.2)
+    end
+
+    puts "Spectroscopy refresh summary: total=#{galaxies.count}, updated=#{updated}, unresolved=#{unresolved}"
   end
 
   desc "Verify stored DR19 galaxy objids against nearest large type=3 SDSS DR19 match (report only)"

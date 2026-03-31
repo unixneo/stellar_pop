@@ -23,6 +23,27 @@ chi-squared metric.
 - Updated literature-backed observations for 16 galaxies with published sources.
 - Corrected NGC3379 best-fit age interpretation from `0.5` Gyr to `8-10` Gyr.
 
+## v0.3.4 Data-Quality and Benchmark Reliability Updates
+
+- Added SDSS uncertainty and quality ingestion for DR19 galaxies:
+  - per-band photometric errors (`err_*`, `petro_err_*`, `model_err_*`)
+  - per-band extinction (`extinction_*`)
+  - SDSS clean flag (`sdss_clean`)
+  - spectroscopy quality fields (`z_err`, `z_warning`)
+- Added galaxy-level identity and redshift provenance fields:
+  - `id_match_quality`, `id_match_distance_arcsec`, `id_match_note`
+  - `redshift_source`, `redshift_confidence`, `redshift_checked_at`
+- Benchmarks now include a hard data-quality gate:
+  - only benchmark-eligible targets (exact object-ID match + required quality fields)
+    are treated as valid scientific comparisons
+  - ineligible targets are explicitly flagged in benchmark output with reasons
+- Benchmark UI now exposes per-target data quality directly:
+  - color-coded OID match and data-quality columns on `/benchmark_runs/new`
+  - per-run benchmark result cards include a Data Quality table and `data_quality_ok` check
+- SDSS ingestion was hardened to prevent redshift field collisions:
+  - spectroscopic redshift aliases (`spec_z`, `spec_zErr`, `spec_zWarning`) are
+    separated from photometric `z` band in parsing
+
 ## Why This App Exists
 
 The goal is to show that a practical stellar population synthesis workflow can be

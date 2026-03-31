@@ -22,7 +22,8 @@ class BenchmarkRunJob < ApplicationJob
 
     grid_job = GridFitJob.new
     profile = grid_profile(options, config)
-    total_steps = benchmarks.size * combinations_per_benchmark(profile)
+    sweep_steps = combinations_per_benchmark(profile)
+    total_steps = benchmarks.sum { |benchmark| benchmark_eligible?(benchmark) ? sweep_steps : 1 }
     completed_steps = 0
     benchmark_run.update!(progress_total: total_steps, current_step: "Starting benchmark sweep")
 
@@ -31,17 +32,29 @@ class BenchmarkRunJob < ApplicationJob
       step_label = "Benchmark #{bench_idx + 1}/#{benchmarks.size}: #{benchmark[:name]}"
       benchmark_run.update_columns(current_step: step_label)
 
-      ranked = run_grid_for_photometry(benchmark_run_id, grid_job, photometry, bench_idx, profile, config) do
-        completed_steps += 1
-        if (completed_steps % progress_write_every).zero? || completed_steps == total_steps
-          benchmark_run.update_columns(
-            progress_completed: completed_steps,
-            current_step: step_label,
-            updated_at: Time.current
-          )
+      if benchmark_eligible?(benchmark)
+        ranked = run_grid_for_photometry(benchmark_run_id, grid_job, photometry, bench_idx, profile, config) do
+          completed_steps += 1
+          if (completed_steps % progress_write_every).zero? || completed_steps == total_steps
+            benchmark_run.update_columns(
+              progress_completed: completed_steps,
+              current_step: step_label,
+              updated_at: Time.current
+            )
+          end
         end
+        best = ranked.first || {}
+      else
+        completed_steps += 1
+        benchmark_run.update_columns(
+          progress_completed: completed_steps,
+          current_step: "#{step_label} (skipped: low data quality)",
+          updated_at: Time.current
+        )
+        ranked = []
+        best = {}
       end
-      best = ranked.first || {}
+
       evaluation = evaluate_best_fit(best, benchmark)
       photometric_diagnostics = build_photometric_diagnostics(best, photometry, grid_job, bench_idx, config)
       stellar_mass_comparison = compare_stellar_mass(best, benchmark, photometry)
@@ -55,6 +68,7 @@ class BenchmarkRunJob < ApplicationJob
         dec: benchmark[:dec],
         references: Array(benchmark[:references]),
         notes: benchmark[:notes],
+        data_quality: benchmark[:data_quality],
         expected: benchmark[:expected],
         photometry: photometry,
         best_fit: best,
@@ -178,6 +192,11 @@ class BenchmarkRunJob < ApplicationJob
       sfh_effective
   end
 
+  def benchmark_eligible?(benchmark)
+    quality = benchmark[:data_quality] || benchmark["data_quality"] || {}
+    !!(quality[:benchmark_eligible] || quality["benchmark_eligible"])
+  end
+
   def burst_ages_for_model(sfh_model, profile)
     return profile[:burst_ages] if sfh_model.to_s == "burst"
 
@@ -223,6 +242,7 @@ class BenchmarkRunJob < ApplicationJob
 
   def evaluate_best_fit(best, benchmark)
     expected = benchmark[:expected] || {}
+    data_quality = benchmark[:data_quality] || {}
 
     age = best[:age_gyr].to_f
     z = best[:metallicity_z].to_f
@@ -234,17 +254,19 @@ class BenchmarkRunJob < ApplicationJob
     allowed_sfh = Array(expected[:sfh_models]).map(&:to_s)
     sfh_ok = allowed_sfh.empty? || allowed_sfh.include?(sfh)
     chi_squared_ok = chi_squared.finite? && chi_squared >= 0.0 && chi_squared <= CHI_SQUARED_PASS_MAX
+    data_quality_ok = !!(data_quality[:benchmark_eligible] || data_quality["benchmark_eligible"])
 
     checks = {
       age_ok: age_ok,
       metallicity_ok: metallicity_ok,
       sfh_ok: sfh_ok,
-      chi_squared_ok: chi_squared_ok
+      chi_squared_ok: chi_squared_ok,
+      data_quality_ok: data_quality_ok
     }
 
     verdict = if checks.values.all?
       "pass"
-    elsif !chi_squared_ok || checks.values.count(false) >= 2
+    elsif !data_quality_ok || !chi_squared_ok || checks.values.count(false) >= 2
       "fail"
     else
       "warn"

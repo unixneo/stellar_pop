@@ -587,6 +587,29 @@ tbody tr:hover {
   color: #fecaca;
 }
 
+.quality-pill {
+  display: none;
+}
+
+.quality-high {
+  background: rgba(20, 83, 45, 0.85);
+  color: #bbf7d0;
+}
+
+.quality-medium {
+  background: rgba(146, 64, 14, 0.85);
+  color: #fed7aa;
+}
+
+.quality-low {
+  background: rgba(127, 29, 29, 0.85);
+  color: #fecaca;
+}
+
+.quality-cell {
+  font-weight: 700;
+}
+
 .gray a,
 .yellow a,
 .green a,

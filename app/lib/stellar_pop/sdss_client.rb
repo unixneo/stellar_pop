@@ -146,6 +146,7 @@ module StellarPop
       {
         redshift_z: to_float_or_nil(row["z"] || row[:z]),
         redshift_err: to_float_or_nil(row["zErr"] || row[:zErr] || row["zerr"] || row[:zerr]),
+        redshift_warning: to_int_or_nil(row["zWarning"] || row[:zWarning] || row["zwarning"] || row[:zwarning]),
         objid: (row["objid"] || row[:objid]).to_s.presence
       }
     rescue Faraday::TimeoutError
@@ -176,6 +177,7 @@ module StellarPop
       {
         redshift_z: to_float_or_nil(row["z"] || row[:z]),
         redshift_err: to_float_or_nil(row["zErr"] || row[:zErr] || row["zerr"] || row[:zerr]),
+        redshift_warning: to_int_or_nil(row["zWarning"] || row[:zWarning] || row["zwarning"] || row[:zwarning]),
         objid: objid.to_s.presence
       }
     rescue Faraday::TimeoutError
@@ -208,6 +210,7 @@ module StellarPop
         spec_objid: (row["specObjID"] || row[:specObjID] || row["specobjid"] || row[:specobjid]).to_s.presence,
         redshift_z: to_float_or_nil(row["z"] || row[:z]),
         redshift_err: to_float_or_nil(row["zErr"] || row[:zErr] || row["zerr"] || row[:zerr]),
+        redshift_warning: to_int_or_nil(row["zWarning"] || row[:zWarning] || row["zwarning"] || row[:zwarning]),
         distance_arcmin: to_float_or_nil(row["distance"] || row[:distance])
       }
     rescue Faraday::TimeoutError
@@ -227,33 +230,65 @@ module StellarPop
     private
 
     def build_photometry_hash(row)
+      petro_u = to_float_or_nil(row["petroMag_u"] || row[:petroMag_u] || row["u"] || row[:u])
+      petro_g = to_float_or_nil(row["petroMag_g"] || row[:petroMag_g] || row["g"] || row[:g])
+      petro_r = to_float_or_nil(row["petroMag_r"] || row[:petroMag_r] || row["r"] || row[:r])
+      petro_i = to_float_or_nil(row["petroMag_i"] || row[:petroMag_i] || row["i"] || row[:i])
+      petro_z = to_float_or_nil(row["petroMag_z"] || row[:petroMag_z] || row["z"] || row[:z])
+
       {
-        u: to_float_or_nil(row["petroMag_u"] || row[:petroMag_u] || row["u"] || row[:u]),
-        g: to_float_or_nil(row["petroMag_g"] || row[:petroMag_g] || row["g"] || row[:g]),
-        r: to_float_or_nil(row["petroMag_r"] || row[:petroMag_r] || row["r"] || row[:r]),
-        i: to_float_or_nil(row["petroMag_i"] || row[:petroMag_i] || row["i"] || row[:i]),
-        z: to_float_or_nil(row["petroMag_z"] || row[:petroMag_z] || row["z"] || row[:z]),
-        petro_u: to_float_or_nil(row["petroMag_u"] || row[:petroMag_u] || row["u"] || row[:u]),
-        petro_g: to_float_or_nil(row["petroMag_g"] || row[:petroMag_g] || row["g"] || row[:g]),
-        petro_r: to_float_or_nil(row["petroMag_r"] || row[:petroMag_r] || row["r"] || row[:r]),
-        petro_i: to_float_or_nil(row["petroMag_i"] || row[:petroMag_i] || row["i"] || row[:i]),
-        petro_z: to_float_or_nil(row["petroMag_z"] || row[:petroMag_z] || row["z"] || row[:z]),
+        u: petro_u,
+        g: petro_g,
+        r: petro_r,
+        i: petro_i,
+        z: petro_z,
+        petro_u: petro_u,
+        petro_g: petro_g,
+        petro_r: petro_r,
+        petro_i: petro_i,
+        petro_z: petro_z,
+        petro_err_u: to_float_or_nil(row["petroMagErr_u"] || row[:petroMagErr_u]),
+        petro_err_g: to_float_or_nil(row["petroMagErr_g"] || row[:petroMagErr_g]),
+        petro_err_r: to_float_or_nil(row["petroMagErr_r"] || row[:petroMagErr_r]),
+        petro_err_i: to_float_or_nil(row["petroMagErr_i"] || row[:petroMagErr_i]),
+        petro_err_z: to_float_or_nil(row["petroMagErr_z"] || row[:petroMagErr_z]),
         model_u: to_float_or_nil(row["modelMag_u"] || row[:modelMag_u]),
         model_g: to_float_or_nil(row["modelMag_g"] || row[:modelMag_g]),
         model_r: to_float_or_nil(row["modelMag_r"] || row[:modelMag_r]),
         model_i: to_float_or_nil(row["modelMag_i"] || row[:modelMag_i]),
-        model_z: to_float_or_nil(row["modelMag_z"] || row[:modelMag_z])
+        model_z: to_float_or_nil(row["modelMag_z"] || row[:modelMag_z]),
+        model_err_u: to_float_or_nil(row["modelMagErr_u"] || row[:modelMagErr_u]),
+        model_err_g: to_float_or_nil(row["modelMagErr_g"] || row[:modelMagErr_g]),
+        model_err_r: to_float_or_nil(row["modelMagErr_r"] || row[:modelMagErr_r]),
+        model_err_i: to_float_or_nil(row["modelMagErr_i"] || row[:modelMagErr_i]),
+        model_err_z: to_float_or_nil(row["modelMagErr_z"] || row[:modelMagErr_z]),
+        extinction_u: to_float_or_nil(row["extinction_u"] || row[:extinction_u]),
+        extinction_g: to_float_or_nil(row["extinction_g"] || row[:extinction_g]),
+        extinction_r: to_float_or_nil(row["extinction_r"] || row[:extinction_r]),
+        extinction_i: to_float_or_nil(row["extinction_i"] || row[:extinction_i]),
+        extinction_z: to_float_or_nil(row["extinction_z"] || row[:extinction_z]),
+        redshift_z: to_float_or_nil(row["spec_z"] || row[:spec_z]),
+        z_err: to_float_or_nil(row["spec_zErr"] || row[:spec_zErr] || row["spec_zerr"] || row[:spec_zerr]),
+        z_warning: to_int_or_nil(row["spec_zWarning"] || row[:spec_zWarning] || row["spec_zwarning"] || row[:spec_zwarning]),
+        sdss_clean: to_bool_or_nil(row["clean"] || row[:clean])
       }
     end
 
     def nearby_photometry_query(ra, dec, radius_arcmin)
       <<~SQL
         SELECT TOP 1 p.objid, p.ra, p.dec,
-        petroMag_u, petroMag_g, petroMag_r, petroMag_i, petroMag_z,
-        modelMag_u, modelMag_g, modelMag_r, modelMag_i, modelMag_z
+        p.petroMag_u, p.petroMag_g, p.petroMag_r, p.petroMag_i, p.petroMag_z,
+        p.petroMagErr_u, p.petroMagErr_g, p.petroMagErr_r, p.petroMagErr_i, p.petroMagErr_z,
+        p.modelMag_u, p.modelMag_g, p.modelMag_r, p.modelMag_i, p.modelMag_z,
+        p.modelMagErr_u, p.modelMagErr_g, p.modelMagErr_r, p.modelMagErr_i, p.modelMagErr_z,
+        p.extinction_u, p.extinction_g, p.extinction_r, p.extinction_i, p.extinction_z,
+        p.clean,
+        s.z AS spec_z, s.zErr AS spec_zErr, s.zWarning AS spec_zWarning
         FROM PhotoObj AS p
         JOIN fGetNearbyObjEq(#{ra}, #{dec}, #{radius_arcmin}) AS n
           ON n.objid = p.objid
+        LEFT JOIN SpecObj AS s
+          ON s.bestObjID = p.objid
         WHERE p.type = 3
         ORDER BY n.distance ASC
       SQL
@@ -263,11 +298,18 @@ module StellarPop
 
     def photometry_by_objid_query(objid)
       <<~SQL
-        SELECT objid, ra, dec,
-        petroMag_u, petroMag_g, petroMag_r, petroMag_i, petroMag_z,
-        modelMag_u, modelMag_g, modelMag_r, modelMag_i, modelMag_z
-        FROM PhotoObj
-        WHERE objid = #{objid}
+        SELECT p.objid, p.ra, p.dec,
+        p.petroMag_u, p.petroMag_g, p.petroMag_r, p.petroMag_i, p.petroMag_z,
+        p.petroMagErr_u, p.petroMagErr_g, p.petroMagErr_r, p.petroMagErr_i, p.petroMagErr_z,
+        p.modelMag_u, p.modelMag_g, p.modelMag_r, p.modelMag_i, p.modelMag_z,
+        p.modelMagErr_u, p.modelMagErr_g, p.modelMagErr_r, p.modelMagErr_i, p.modelMagErr_z,
+        p.extinction_u, p.extinction_g, p.extinction_r, p.extinction_i, p.extinction_z,
+        p.clean,
+        s.z AS spec_z, s.zErr AS spec_zErr, s.zWarning AS spec_zWarning
+        FROM PhotoObj AS p
+        LEFT JOIN SpecObj AS s
+          ON s.bestObjID = p.objid
+        WHERE p.objid = #{objid}
       SQL
         .gsub(/\s+/, " ")
         .strip
@@ -275,14 +317,21 @@ module StellarPop
 
     def nearby_photometry_profiles_query(ra, dec, radius_arcmin)
       <<~SQL
-        SELECT TOP 1 objid, ra, dec,
-        petroMag_u, petroMag_g, petroMag_r, petroMag_i, petroMag_z,
-        modelMag_u, modelMag_g, modelMag_r, modelMag_i, modelMag_z
-        FROM PhotoObj
-        WHERE objid IN (
-          SELECT objid
-          FROM fGetNearbyObjEq(#{ra}, #{dec}, #{radius_arcmin})
-        )
+        SELECT TOP 1 p.objid, p.ra, p.dec,
+        p.petroMag_u, p.petroMag_g, p.petroMag_r, p.petroMag_i, p.petroMag_z,
+        p.petroMagErr_u, p.petroMagErr_g, p.petroMagErr_r, p.petroMagErr_i, p.petroMagErr_z,
+        p.modelMag_u, p.modelMag_g, p.modelMag_r, p.modelMag_i, p.modelMag_z,
+        p.modelMagErr_u, p.modelMagErr_g, p.modelMagErr_r, p.modelMagErr_i, p.modelMagErr_z,
+        p.extinction_u, p.extinction_g, p.extinction_r, p.extinction_i, p.extinction_z,
+        p.clean,
+        s.z AS spec_z, s.zErr AS spec_zErr, s.zWarning AS spec_zWarning
+        FROM PhotoObj AS p
+        JOIN fGetNearbyObjEq(#{ra}, #{dec}, #{radius_arcmin}) AS n
+          ON n.objid = p.objid
+        LEFT JOIN SpecObj AS s
+          ON s.bestObjID = p.objid
+        WHERE p.type = 3
+        ORDER BY n.distance ASC
       SQL
         .gsub(/\s+/, " ")
         .strip
@@ -304,7 +353,7 @@ module StellarPop
 
     def redshift_by_objid_query(objid)
       <<~SQL
-        SELECT TOP 1 z, zErr
+        SELECT TOP 1 z, zErr, zWarning
         FROM SpecObj
         WHERE bestObjID = #{objid}
       SQL
@@ -314,7 +363,7 @@ module StellarPop
 
     def nearby_spec_redshift_query(ra, dec, radius_arcmin)
       <<~SQL
-        SELECT TOP 1 s.bestObjID AS objid, s.z, s.zErr
+        SELECT TOP 1 s.bestObjID AS objid, s.z, s.zErr, s.zWarning
         FROM SpecObj AS s
         JOIN fGetNearbySpecObjEq(#{ra}, #{dec}, #{radius_arcmin}) AS n
           ON n.specObjID = s.specObjID
@@ -326,7 +375,7 @@ module StellarPop
 
     def nearest_spec_match_query(ra, dec, radius_arcmin)
       <<~SQL
-        SELECT TOP 1 s.bestObjID AS objid, s.specObjID, s.z, s.zErr, n.distance
+        SELECT TOP 1 s.bestObjID AS objid, s.specObjID, s.z, s.zErr, s.zWarning, n.distance
         FROM fGetNearbySpecObjEq(#{ra}, #{dec}, #{radius_arcmin}) AS n
         JOIN SpecObj AS s
           ON s.specObjID = n.specObjID
@@ -376,6 +425,27 @@ module StellarPop
       Float(value)
     rescue ArgumentError, TypeError
       nil
+    end
+
+    def to_int_or_nil(value)
+      return nil if value.nil?
+
+      Integer(value)
+    rescue ArgumentError, TypeError
+      nil
+    end
+
+    def to_bool_or_nil(value)
+      return nil if value.nil?
+
+      case value
+      when true, "true", "TRUE", 1, "1"
+        true
+      when false, "false", "FALSE", 0, "0"
+        false
+      else
+        nil
+      end
     end
 
     def normalize_release(raw_release)

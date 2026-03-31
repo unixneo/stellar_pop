@@ -262,6 +262,28 @@
         <% if benchmark_notes.present? %>
           <p><strong>Notes:</strong> <%= benchmark_notes %></p>
         <% end %>
+        <% dq = benchmark["data_quality"] || {} %>
+        <div class="form-card">
+          <h3 style="margin: 0 0 8px;">Data Quality</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>ID match quality</td><td><%= dq["id_match_quality"] || "-" %></td></tr>
+              <tr><td>ID match distance (arcsec)</td><td><%= dq["id_match_distance_arcsec"] || "-" %></td></tr>
+              <tr><td>Redshift source</td><td><%= dq["redshift_source"] || "-" %></td></tr>
+              <tr><td>Redshift confidence</td><td><%= dq["redshift_confidence"] || "-" %></td></tr>
+              <tr><td>Band errors present</td><td><%= dq["has_band_errors"] %></td></tr>
+              <tr><td>Redshift error present</td><td><%= dq["has_redshift_error"] %></td></tr>
+              <tr><td>Benchmark eligible</td><td><%= dq["benchmark_eligible"] %></td></tr>
+              <tr><td>Eligibility notes</td><td><%= Array(dq["reasons"]).join(", ").presence || "-" %></td></tr>
+            </tbody>
+          </table>
+        </div>
 
         <div class="form-card">
           <h3 style="margin: 0 0 8px;">Measured vs Observational</h3>
@@ -318,7 +340,7 @@
           </table>
         </div>
         <% checks = benchmark["checks"] || {} %>
-        <p style="font-family: monospace;">checks: age_ok=<%= checks["age_ok"] %>, metallicity_ok=<%= checks["metallicity_ok"] %>, sfh_ok=<%= checks["sfh_ok"] %>, chi_squared_ok=<%= checks["chi_squared_ok"] %></p>
+        <p style="font-family: monospace;">checks: age_ok=<%= checks["age_ok"] %>, metallicity_ok=<%= checks["metallicity_ok"] %>, sfh_ok=<%= checks["sfh_ok"] %>, chi_squared_ok=<%= checks["chi_squared_ok"] %>, data_quality_ok=<%= checks["data_quality_ok"] %></p>
         <% diagnostics = benchmark["photometric_diagnostics"] || {} %>
         <% colors = diagnostics["colors"] || {} %>
         <% if colors.present? %>
