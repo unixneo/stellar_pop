@@ -8,6 +8,7 @@ require "json"
 INPUT_PATH = "/var/stellar_pop/GALAXY.md"
 SDSS_SQL_URL = "https://skyserver.sdss.org/dr19/SkyServerWS/SearchTools/SqlSearch"
 SLEEP_SECONDS = 1.0
+MAX_DISTANCE_ARCSEC = 1.0
 
 def build_sql(ra, dec)
   ra_min = ra - 0.15
@@ -46,6 +47,13 @@ def fetch_sdss_row(sql)
   rows.first
 end
 
+def within_one_arcsec?(input_ra, input_dec, row)
+  result_ra = Float(row["ra"])
+  result_dec = Float(row["dec"])
+  distance_arcsec = 3600.0 * Math.sqrt((result_ra - input_ra)**2 + (result_dec - input_dec)**2)
+  distance_arcsec <= MAX_DISTANCE_ARCSEC
+end
+
 unless File.exist?(INPUT_PATH)
   warn "Input file not found: #{INPUT_PATH}"
   exit 1
@@ -67,7 +75,7 @@ lines.each_with_index do |line, idx|
     sql = build_sql(ra, dec)
     row = fetch_sdss_row(sql)
 
-    if row
+    if row && within_one_arcsec?(ra, dec, row)
       objid = row["objid"]
       puts "#{name}\t#{objid}"
     else
