@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_31_131000) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_31_132000) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -82,6 +82,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_31_131000) do
     t.string "redshift_source", default: "legacy", null: false
     t.string "redshift_confidence", default: "low", null: false
     t.datetime "redshift_checked_at"
+    t.string "sdss_status"
   end
 
   create_table "grid_fits", force: :cascade do |t|
