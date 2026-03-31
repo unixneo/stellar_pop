@@ -6,6 +6,7 @@ class Galaxy < ApplicationRecord
   has_many :synthesis_runs, dependent: :nullify
   has_many :grid_fits, dependent: :nullify
   has_many :observations, dependent: :destroy
+  before_update :prevent_identity_coordinate_changes_for_dr19
 
   validates :name, presence: true
   validates :ra, presence: true
@@ -34,5 +35,15 @@ class Galaxy < ApplicationRecord
       z: mag_z,
       redshift_z: redshift_z
     }
+  end
+
+  private
+
+  def prevent_identity_coordinate_changes_for_dr19
+    return unless sdss_dr == "DR19"
+    return unless will_save_change_to_name? || will_save_change_to_ra? || will_save_change_to_dec?
+
+    errors.add(:base, "name, ra, dec are immutable for DR19 galaxies")
+    throw :abort
   end
 end
