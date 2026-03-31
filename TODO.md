@@ -49,6 +49,7 @@ v0.3.3 doc sync:
 - 🟩 Add SDSS uncertainty/quality ingestion for DR19 galaxies (`petro_err_*`, `model_err_*`, `err_*`, `extinction_*`, `sdss_clean`, `z_err`, `z_warning`)
 - 🟩 Add galaxy-level benchmark confidence fields (`id_match_quality`, `id_match_distance_arcsec`, `redshift_source`, `redshift_confidence`, `redshift_checked_at`)
 - 🟩 Add benchmark data-quality gate and UI visibility (`data_quality_ok`, benchmark eligibility reasons)
+- 🟩 Decouple benchmark classification from run-level validation gating (gate off no longer forces `pass`; checks still classify `pass/warn/fail`)
 
 
 ## Data and Persistence
@@ -60,7 +61,7 @@ v0.3.3 doc sync:
 - 🟩 Build galaxy import tool to load new galaxies from CSV
 - 🟩 Rename internal `CalibrationRun` model/routes/job naming to `BenchmarkRun` for terminology consistency
 - 🟩 Add run deletion from the UI
-- 🟩 Update `sdss:verify_photometry` rake task to read from `galaxies` table instead of `lib/data/sdss/photometry.csv` (then `photometry.csv` becomes archival only)
+- 🟩 Keep `sdss:verify_photometry` DB-only against the `galaxies` table
 - 🟩 Retire `SdssLocalCatalog` after all tests/docs are migrated to `Galaxy` model lookups
 - 🟩 Add local SDSS reference catalog CSV and nearest-object lookup
 - 🟩 Add local catalog metadata fields (`agn`, `sdss_dr`) and galaxy-only target selection

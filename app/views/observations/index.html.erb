@@ -1,0 +1,52 @@
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title">Observations</h1>
+      <p class="card-subtitle">Literature-backed observable values by galaxy.</p>
+    </div>
+    <div>
+      <%= link_to "New Observation", new_observation_path, class: "benchmark-new-button" %>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <% next_dir = ->(key) { (@sort == key && @dir == "asc") ? "desc" : "asc" } %>
+    <% if @observations.any? %>
+      <table>
+        <thead>
+          <tr>
+            <th><%= link_to "ID", observations_path(sort: "id", dir: next_dir.call("id")) %></th>
+            <th><%= link_to "Galaxy", observations_path(sort: "galaxy", dir: next_dir.call("galaxy")) %></th>
+            <th><%= link_to "SDSS ObjID", observations_path(sort: "sdss_objid", dir: next_dir.call("sdss_objid")) %></th>
+            <th><%= link_to "Source Paper", observations_path(sort: "source_paper", dir: next_dir.call("source_paper")) %></th>
+            <th><%= link_to "Age", observations_path(sort: "age_gyr", dir: next_dir.call("age_gyr")) %></th>
+            <th><%= link_to "Z", observations_path(sort: "metallicity_z", dir: next_dir.call("metallicity_z")) %></th>
+            <th><%= link_to "Stellar Mass", observations_path(sort: "stellar_mass", dir: next_dir.call("stellar_mass")) %></th>
+            <th><%= link_to "SFR", observations_path(sort: "sfr", dir: next_dir.call("sfr")) %></th>
+            <th><%= link_to "Method", observations_path(sort: "method_used", dir: next_dir.call("method_used")) %></th>
+            <th><%= link_to "Created", observations_path(sort: "created_at", dir: next_dir.call("created_at")) %></th>
+            <th><%= link_to "Updated", observations_path(sort: "updated_at", dir: next_dir.call("updated_at")) %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @observations.each do |observation| %>
+            <tr>
+              <td><%= observation.id %></td>
+              <td><%= link_to(observation.galaxy&.name, observation_path(observation)) %></td>
+              <td><%= observation.sdss_objid %></td>
+              <td><%= observation.source_paper %></td>
+              <td><%= observation.age_gyr %></td>
+              <td><%= observation.metallicity_z.present? ? format("%.3f", observation.metallicity_z) : "-" %></td>
+              <td><%= observation.stellar_mass.present? ? format("%.3e", observation.stellar_mass) : "-" %></td>
+              <td><%= observation.sfr %></td>
+              <td><%= observation.method_used %></td>
+              <td><%= observation.created_at %></td>
+              <td><%= observation.updated_at %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p>No observations found.</p>
+    <% end %>
+  </div>
+</div>

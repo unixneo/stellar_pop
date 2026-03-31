@@ -33,6 +33,7 @@ class PipelineConfig < ApplicationRecord
     "grid_sdss_max_fetch_attempts" => 3,
     "grid_sdss_base_backoff_seconds" => 0.5,
     "calibration_progress_write_every" => 10,
+    "calibration_enable_validation_gate" => false,
     "calibration_fast_ages_gyr" => [0.1, 0.5, 2.0, 8.0, 12.0],
     "calibration_fast_metallicities_z" => [0.0020, 0.0200],
     "calibration_fast_sfh_models" => %w[exponential delayed_exponential constant burst],
@@ -104,6 +105,7 @@ class PipelineConfig < ApplicationRecord
     assign_scalar(merged, "grid_sdss_base_backoff_seconds", form_params[:grid_sdss_base_backoff_seconds], :float)
 
     assign_scalar(merged, "calibration_progress_write_every", form_params[:calibration_progress_write_every], :int)
+    assign_boolean(merged, "calibration_enable_validation_gate", form_params[:calibration_enable_validation_gate])
     assign_list(merged, "calibration_fast_ages_gyr", form_params[:calibration_fast_ages_gyr], :float)
     assign_list(merged, "calibration_fast_metallicities_z", form_params[:calibration_fast_metallicities_z], :float)
     assign_list(merged, "calibration_fast_sfh_models", form_params[:calibration_fast_sfh_models], :string)

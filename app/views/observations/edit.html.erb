@@ -1,0 +1,18 @@
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title">Edit Observation #<%= @observation.id %></h1>
+      <p class="card-subtitle">Update literature-backed observation values.</p>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <%= render "form", observation: @observation %>
+  </div>
+</div>
+
+<div class="run-show-actions">
+  <div class="action-links">
+    <%= link_to "Back to Observation", observation_path(@observation) %>
+    <%= link_to "Back to Observations", observations_path %>
+  </div>
+</div>

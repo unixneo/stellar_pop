@@ -3,7 +3,7 @@
 ## Done Today
 
 - `galaxies` table created and seeded with 30 galaxies
-- `observations` table created and seeded from `benchmarks.yml`
+- `observations` table is DB-only (literature-entered rows; no YAML seeding)
 - `BenchmarkCatalog` wired to DB
 - `SdssLocalCatalog` retired and deleted
 - All `synthesis_runs` and `grid_fits` back-filled with `galaxy_id`

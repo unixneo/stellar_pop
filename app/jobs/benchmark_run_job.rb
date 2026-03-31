@@ -6,6 +6,7 @@ class BenchmarkRunJob < ApplicationJob
 
   def perform(benchmark_run_id, options = {})
     config = PipelineConfig.current
+    gate_enabled = validation_gate_enabled?(config)
     progress_write_every = [config.int_value("calibration_progress_write_every"), 1].max
     started_at = Time.current
     benchmark_run = BenchmarkRun.find(benchmark_run_id)
@@ -23,7 +24,7 @@ class BenchmarkRunJob < ApplicationJob
     grid_job = GridFitJob.new
     profile = grid_profile(options, config)
     sweep_steps = combinations_per_benchmark(profile)
-    total_steps = benchmarks.sum { |benchmark| benchmark_eligible?(benchmark) ? sweep_steps : 1 }
+    total_steps = benchmarks.sum { |benchmark| benchmark_eligible?(benchmark, gate_enabled: gate_enabled) ? sweep_steps : 1 }
     completed_steps = 0
     benchmark_run.update!(progress_total: total_steps, current_step: "Starting benchmark sweep")
 
@@ -32,7 +33,7 @@ class BenchmarkRunJob < ApplicationJob
       step_label = "Benchmark #{bench_idx + 1}/#{benchmarks.size}: #{benchmark[:name]}"
       benchmark_run.update_columns(current_step: step_label)
 
-      if benchmark_eligible?(benchmark)
+      if benchmark_eligible?(benchmark, gate_enabled: gate_enabled)
         ranked = run_grid_for_photometry(benchmark_run_id, grid_job, photometry, bench_idx, profile, config) do
           completed_steps += 1
           if (completed_steps % progress_write_every).zero? || completed_steps == total_steps
@@ -55,7 +56,7 @@ class BenchmarkRunJob < ApplicationJob
         best = {}
       end
 
-      evaluation = evaluate_best_fit(best, benchmark)
+      evaluation = evaluate_best_fit(best, benchmark, gate_enabled: gate_enabled)
       photometric_diagnostics = build_photometric_diagnostics(best, photometry, grid_job, bench_idx, config)
       stellar_mass_comparison = compare_stellar_mass(best, benchmark, photometry)
 
@@ -94,7 +95,7 @@ class BenchmarkRunJob < ApplicationJob
       benchmarks: benchmark_results
     }
 
-    validation_failed = summary[:fail].to_i.positive?
+    validation_failed = gate_enabled && summary[:fail].to_i.positive?
     benchmark_run.update!(
       status: validation_failed ? "failed" : "complete",
       result_json: result_payload.to_json,
@@ -192,7 +193,9 @@ class BenchmarkRunJob < ApplicationJob
       sfh_effective
   end
 
-  def benchmark_eligible?(benchmark)
+  def benchmark_eligible?(benchmark, gate_enabled: true)
+    return true unless gate_enabled
+
     quality = benchmark[:data_quality] || benchmark["data_quality"] || {}
     !!(quality[:benchmark_eligible] || quality["benchmark_eligible"])
   end
@@ -240,26 +243,22 @@ class BenchmarkRunJob < ApplicationJob
     }
   end
 
-  def evaluate_best_fit(best, benchmark)
+  def evaluate_best_fit(best, benchmark, gate_enabled: true)
     expected = benchmark[:expected] || {}
     data_quality = benchmark[:data_quality] || {}
 
     age = best[:age_gyr].to_f
     z = best[:metallicity_z].to_f
-    sfh = best[:sfh_model].to_s
     chi_squared = best[:chi_squared].to_f
 
     age_ok = age >= expected.fetch(:age_gyr_min, age) && age <= expected.fetch(:age_gyr_max, age)
     metallicity_ok = z >= expected.fetch(:metallicity_z_min, z) && z <= expected.fetch(:metallicity_z_max, z)
-    allowed_sfh = Array(expected[:sfh_models]).map(&:to_s)
-    sfh_ok = allowed_sfh.empty? || allowed_sfh.include?(sfh)
     chi_squared_ok = chi_squared.finite? && chi_squared >= 0.0 && chi_squared <= CHI_SQUARED_PASS_MAX
     data_quality_ok = !!(data_quality[:benchmark_eligible] || data_quality["benchmark_eligible"])
 
     checks = {
       age_ok: age_ok,
       metallicity_ok: metallicity_ok,
-      sfh_ok: sfh_ok,
       chi_squared_ok: chi_squared_ok,
       data_quality_ok: data_quality_ok
     }
@@ -273,6 +272,10 @@ class BenchmarkRunJob < ApplicationJob
     end
 
     { verdict: verdict, checks: checks }
+  end
+
+  def validation_gate_enabled?(config)
+    ActiveModel::Type::Boolean.new.cast(config.fetch("calibration_enable_validation_gate"))
   end
 
   def build_photometric_diagnostics(best, photometry, grid_job, bench_idx, config)

@@ -69,7 +69,7 @@
                 <td class="quality-cell <%= id_quality_class %>" data-sort="<%= id_quality == "exact_objid" ? 3 : (id_quality == "coord_validated" ? 2 : 1) %>"></td>
                 <td class="quality-cell <%= data_quality_class %>" data-sort="<%= eligible ? 3 : (id_quality == "exact_objid" ? 2 : 1) %>"></td>
                 <td data-sort="<%= benchmark.dig(:expected, :age_gyr_min).to_f %>"><%= benchmark.dig(:expected, :age_gyr_min) %>-<%= benchmark.dig(:expected, :age_gyr_max) %></td>
-                <td data-sort="<%= benchmark.dig(:expected, :metallicity_z_min).to_f %>"><%= benchmark.dig(:expected, :metallicity_z_min) %>-<%= benchmark.dig(:expected, :metallicity_z_max) %></td>
+                <td data-sort="<%= benchmark.dig(:expected, :metallicity_z_min).to_f %>"><%= benchmark.dig(:expected, :metallicity_z_min).nil? ? "-" : format("%.3f", benchmark.dig(:expected, :metallicity_z_min).to_f) %>-<%= benchmark.dig(:expected, :metallicity_z_max).nil? ? "-" : format("%.3f", benchmark.dig(:expected, :metallicity_z_max).to_f) %></td>
               </tr>
             <% end %>
           </tbody>

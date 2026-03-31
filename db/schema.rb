@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_31_114500) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_31_131000) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -105,6 +105,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_31_114500) do
   end
 
   create_table "observations", force: :cascade do |t|
+    t.string "sdss_objid", null: false
     t.integer "galaxy_id", null: false
     t.string "source_paper"
     t.float "age_gyr"
@@ -116,6 +117,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_31_114500) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["galaxy_id"], name: "index_observations_on_galaxy_id"
+    t.index ["sdss_objid"], name: "index_observations_on_sdss_objid"
   end
 
   create_table "pipeline_configs", force: :cascade do |t|

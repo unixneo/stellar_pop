@@ -271,7 +271,7 @@ StellarPop follows a **blackboard pattern**:
 4. The integrator writes `:composite_spectrum` to the blackboard.
 5. The job saves a `SpectrumResult` (wavelength/flux JSON).
 6. If SDSS target metadata is present, the job resolves `ugriz` photometry using local-first lookup:
-   - first `galaxies` table records in SQLite (30 galaxies loaded from `lib/data/sdss/photometry.csv`)
+   - first `galaxies` table records in SQLite
    - fallback to live SDSS API (`SdssClient`) if local DB lookup misses
    - live fetch is objid-first (`fetch_photometry_by_objid`) for runtime/catalog refresh; coordinate fallback is retained for maintenance utilities
    Then applies redshift k-corrections to observed magnitudes and computes chi-squared via SDSS filter convolution, and stores:
@@ -432,7 +432,7 @@ phot = client.fetch_photometry(187.2779, 2.0523)
   from the FSPS repository (Conroy et al.)
 - MIST isochrone grid v1.2 (Choi et al. 2016, ApJ 823, 102) — all 12 FSPS
   metallicity grids with nearest-[Fe/H] selection from `metallicity_z`
-- Local SDSS photometry records persisted in the SQLite `galaxies` table (30 entries loaded from `lib/data/sdss/photometry.csv`, including `agn` and `sdss_dr` provenance fields; current release labels are intentionally conservative and pending row-by-row verification)
+- Local SDSS photometry records persisted in the SQLite `galaxies` table (DB-backed source of truth for this app)
 - Local SDSS records include both `petro_*` and `model_*` photometry per band, with active `mag_u..mag_z` populated from the configured pipeline `mag_type`.
 - SDSS SkyServer DR18/DR19 — observed photometry via public SQL API (release configurable in pipeline settings; default DR19)
 

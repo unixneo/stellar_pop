@@ -1,0 +1,44 @@
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title">Observation #<%= @observation.id %></h1>
+      <p class="card-subtitle">Literature observation details.</p>
+    </div>
+    <div>
+      <%= link_to "Edit Observation", edit_observation_path(@observation), class: "benchmark-new-button" %>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Galaxy</td><td><%= @observation.galaxy&.name %></td></tr>
+        <tr><td>SDSS ObjID</td><td><%= @observation.sdss_objid %></td></tr>
+        <tr><td>Source paper</td><td><%= @observation.source_paper %></td></tr>
+        <tr><td>Age (Gyr)</td><td><%= @observation.age_gyr %></td></tr>
+        <tr><td>Metallicity (Z)</td><td><%= @observation.metallicity_z %></td></tr>
+        <tr><td>Stellar mass (M☉)</td><td><%= @observation.stellar_mass.present? ? format("%.3e", @observation.stellar_mass) : "-" %></td></tr>
+        <tr><td>SFR</td><td><%= @observation.sfr %></td></tr>
+        <tr><td>Method used</td><td><%= @observation.method_used %></td></tr>
+        <tr><td>Notes</td><td><%= @observation.notes %></td></tr>
+        <tr><td>Created at</td><td><%= @observation.created_at %></td></tr>
+        <tr><td>Updated at</td><td><%= @observation.updated_at %></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="run-show-actions">
+  <div class="action-links">
+    <%= link_to "Back to Observations", observations_path %>
+    <%= link_to "View Galaxy", galaxy_path(@observation.galaxy) if @observation.galaxy.present? %>
+  </div>
+  <%= button_to "Delete Observation",
+                observation_path(@observation),
+                method: :delete,
+                class: "danger-button",
+                form: { class: "danger-button-form" },
+                data: { turbo_confirm: "Delete this observation permanently?" } %>
+</div>

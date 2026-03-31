@@ -21,7 +21,9 @@ Rails.application.routes.draw do
     collection do
       post :import
     end
+    resources :observations, only: %i[new]
   end
+  resources :observations
   resource :pipeline_config, only: %i[show edit update] do
     patch :reset
   end

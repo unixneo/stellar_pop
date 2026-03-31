@@ -1,0 +1,56 @@
+<%= form_with model: observation do |f| %>
+  <% if observation.errors.any? %>
+    <div class="flash-banner flash-alert">
+      <strong><%= pluralize(observation.errors.count, "error") %> prevented saving:</strong>
+      <ul>
+        <% observation.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-card">
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Value</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><%= f.label :galaxy_id, "Galaxy" %></td>
+          <td><%= f.select :galaxy_id, options_for_select(@galaxy_options, observation.galaxy_id), include_blank: "Select galaxy" %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :source_paper, "Source paper" %></td>
+          <td><%= f.text_field :source_paper %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :age_gyr, "Age (Gyr)" %></td>
+          <td><%= f.number_field :age_gyr, step: 0.001 %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :metallicity_z, "Metallicity (Z)" %></td>
+          <td><%= f.number_field :metallicity_z, step: 0.0001 %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :stellar_mass, "Stellar mass (M☉)" %></td>
+          <td><%= f.number_field :stellar_mass, step: 1 %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :sfr, "SFR" %></td>
+          <td><%= f.number_field :sfr, step: 0.0001 %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :method_used, "Method used" %></td>
+          <td><%= f.text_field :method_used %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :notes, "Notes" %></td>
+          <td><%= f.text_area :notes, rows: 5 %></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><%= f.submit %></p>
+<% end %>

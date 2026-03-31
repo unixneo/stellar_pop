@@ -73,6 +73,17 @@
       @benchmark_run.status
     end
 %>
+<%
+  gate_enabled = ActiveModel::Type::Boolean.new.cast(PipelineConfig.current.fetch("calibration_enable_validation_gate"))
+  result_benchmarks = @result.is_a?(Hash) ? Array(@result["benchmarks"]) : []
+  skipped_benchmarks =
+    result_benchmarks.select do |row|
+      dq = row["data_quality"] || {}
+      eligible = ActiveModel::Type::Boolean.new.cast(dq["benchmark_eligible"])
+      top_results = Array(row["top_results"])
+      !eligible && top_results.empty?
+    end
+%>
 <% if processing %>
   <% singular_benchmark = @benchmark_run.current_step.to_s.match?(/Benchmark\s+\d+\/1:/) %>
   <% banner_mode = result_mode.presence || inferred_mode.presence || "configured" %>
@@ -192,6 +203,21 @@
 <% end %>
 
 <% if @result.present? %>
+  <% if skipped_benchmarks.any? %>
+    <div style="padding: 12px 14px; border: 1px solid #ef4444; background: #2d0a0a; color: #fecaca; border-radius: 6px; margin: 0 0 14px 0;">
+      <strong>Warning:</strong>
+      <%= skipped_benchmarks.size %> benchmark(s) were marked ineligible and effectively skipped by data-quality gates (no ranked-fit sweep was executed).
+      <br>
+      <span style="font-family: monospace;">
+        affected: <%= skipped_benchmarks.map { |row| row["name"] }.join(", ") %>
+      </span>
+    </div>
+  <% elsif !gate_enabled && result_benchmarks.any? %>
+    <div style="padding: 12px 14px; border: 1px solid #f59e0b; background: #2b1f07; color: #fde68a; border-radius: 6px; margin: 0 0 14px 0;">
+      <strong>Validation gates disabled:</strong> benchmark eligibility and failure gates are turned off in configuration.
+    </div>
+  <% end %>
+
   <% summary = @result["summary"] || {} %>
   <% run_mode = @result["mode"].to_s.presence || "full" %>
   <div class="cyberspace-panel">
@@ -238,7 +264,8 @@
         <% age_max = expected["age_gyr_max"].to_f %>
         <% z_min = expected["metallicity_z_min"].to_f %>
         <% z_max = expected["metallicity_z_max"].to_f %>
-        <% expected_sfh = Array(expected["sfh_models"]) %>
+        <% obs_counts = expected["observation_counts"] || {} %>
+        <% agg_note = expected["aggregation_note"].to_s %>
         <% age_comparison =
              if best_age < age_min
                "too young"
@@ -310,20 +337,6 @@
                 <td><%= z_comparison %></td>
               </tr>
               <tr>
-                <td>SFH model</td>
-                <td><%= best["sfh_model"] %></td>
-                <td><%= expected_sfh.any? ? expected_sfh.join(", ") : "any (not constrained)" %></td>
-                <td>
-                  <%= if expected_sfh.empty?
-                        "not constrained by benchmark"
-                      elsif expected_sfh.include?(best["sfh_model"].to_s)
-                        "within expected range"
-                      else
-                        "outside expected range"
-                      end %>
-                </td>
-              </tr>
-              <tr>
                 <td>Stellar mass (M☉)</td>
                 <% if mass_cmp["sps_stellar_mass"] && mass_cmp["observed_stellar_mass"] %>
                   <td><%= format("%.3e", mass_cmp["sps_stellar_mass"].to_f) %></td>
@@ -336,11 +349,34 @@
                   <td>unavailable</td>
                 <% end %>
               </tr>
+              <tr>
+                <td>Observational source counts</td>
+                <td>-</td>
+                <td>
+                  age=<%= obs_counts["age_gyr"] || 0 %>,
+                  metallicity=<%= obs_counts["metallicity_z"] || 0 %>,
+                  stellar_mass=<%= obs_counts["stellar_mass"] || 0 %>
+                </td>
+                <td>by SDSS ObjID</td>
+              </tr>
+              <tr>
+                <td>Aggregation method</td>
+                <td>-</td>
+                <td><%= agg_note.presence || "-" %></td>
+                <td>-</td>
+              </tr>
             </tbody>
           </table>
         </div>
         <% checks = benchmark["checks"] || {} %>
-        <p style="font-family: monospace;">checks: age_ok=<%= checks["age_ok"] %>, metallicity_ok=<%= checks["metallicity_ok"] %>, sfh_ok=<%= checks["sfh_ok"] %>, chi_squared_ok=<%= checks["chi_squared_ok"] %>, data_quality_ok=<%= checks["data_quality_ok"] %></p>
+        <% ineligible = !ActiveModel::Type::Boolean.new.cast(dq["benchmark_eligible"]) %>
+        <% no_ranked_fits = Array(benchmark["top_results"]).empty? %>
+        <% if ineligible && no_ranked_fits %>
+          <div style="padding: 10px 12px; border: 1px solid #ef4444; background: #2d0a0a; color: #fecaca; border-radius: 6px; margin: 0 0 12px 0; font-weight: 600;">
+            Benchmark fit sweep was skipped due to failed data-quality eligibility.
+          </div>
+        <% end %>
+        <p style="font-family: monospace;">checks: age_ok=<%= checks["age_ok"] %>, metallicity_ok=<%= checks["metallicity_ok"] %>, chi_squared_ok=<%= checks["chi_squared_ok"] %>, data_quality_ok=<%= checks["data_quality_ok"] %></p>
         <% diagnostics = benchmark["photometric_diagnostics"] || {} %>
         <% colors = diagnostics["colors"] || {} %>
         <% if colors.present? %>

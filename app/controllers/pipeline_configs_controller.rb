@@ -57,6 +57,7 @@ class PipelineConfigsController < ApplicationController
       :grid_sdss_max_fetch_attempts,
       :grid_sdss_base_backoff_seconds,
       :calibration_progress_write_every,
+      :calibration_enable_validation_gate,
       :calibration_fast_ages_gyr,
       :calibration_fast_metallicities_z,
       :calibration_fast_sfh_models,

@@ -355,11 +355,19 @@ namespace :sdss do
 
       client = StellarPop::SdssClient.new(release: "DR19")
       validated_objid = nil
+      stored_validated_objid = nil
       if correct_objid.present?
         validated_objid, _photometry, _reason = validated_objid_fetch(client, correct_objid)
       end
+      if stored_objid.present?
+        stored_validated_objid, _stored_photometry, _stored_reason = validated_objid_fetch(client, stored_objid)
+      end
 
-      if validated_objid != stored_objid
+      # Avoid false positives for large/extended galaxies where nearest type=3 search
+      # returns no candidate inside the radius but the stored ObjID is still valid.
+      if validated_objid.nil? && stored_validated_objid == stored_objid
+        puts "#{galaxy.name}: unverifiable_within_radius stored_valid=#{stored_objid}"
+      elsif validated_objid != stored_objid
         puts "#{galaxy.name}: stored=#{stored_objid || 'nil'} correct=#{validated_objid || 'nil'}"
       end
     rescue StandardError => e

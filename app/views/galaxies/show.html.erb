@@ -73,6 +73,7 @@
 <div class="cyberspace-panel">
   <div class="card-header">
     <div><h2 class="card-title">Observations</h2></div>
+    <div><%= link_to "Add Observation", new_galaxy_observation_path(@galaxy), class: "benchmark-new-button" %></div>
   </div>
   <div class="cyberspace-panel-body">
     <% observations = @galaxy.observations.order(:id) %>
@@ -88,6 +89,7 @@
             <th>SFR</th>
             <th>Method</th>
             <th>Notes</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -101,6 +103,10 @@
               <td><%= observation.sfr %></td>
               <td><%= observation.method_used %></td>
               <td><%= observation.notes %></td>
+              <td>
+                <%= link_to "Show", observation_path(observation) %> |
+                <%= link_to "Edit", edit_observation_path(observation) %>
+              </td>
             </tr>
           <% end %>
         </tbody>
