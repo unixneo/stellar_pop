@@ -1,0 +1,89 @@
+{
+  "source_pdfs": "/var/stellar_pop/lib/data/fit/dr19_gal_info_stellar_mass_pdfs.json",
+  "dry_run": false,
+  "entries_total": 3,
+  "entries_with_observations": 3,
+  "entries_without_observations": 0,
+  "within_p16_p84": 0,
+  "within_p2p5_p97p5": 2,
+  "comparisons": [
+    {
+      "galaxy_id": 4,
+      "name": "NGC4889",
+      "fit_index": 782072,
+      "separation_arcsec": 0.30532397644933473,
+      "observation_count": 1,
+      "observed_stellar_mass_msun_avg": 500000000000.0,
+      "observed_log_mstar": 11.698970004336019,
+      "pdf_median_log_mstar": 11.49787425994873,
+      "pdf_mode_log_mstar": 11.50666618347168,
+      "pdf_avg_log_mstar": 11.520570755004883,
+      "delta_obs_minus_pdf_median_dex": 0.20109574438728828,
+      "delta_obs_minus_pdf_mode_dex": 0.19230382086433906,
+      "delta_obs_minus_pdf_avg_dex": 0.17839924933113593,
+      "within_p16_p84": false,
+      "within_p2p5_p97p5": true,
+      "pdf_log_mstar": {
+        "MEDIAN": 11.49787425994873,
+        "P16": 11.406558990478516,
+        "P84": 11.60604190826416,
+        "P2P5": 11.333409309387207,
+        "P97P5": 11.761710166931152,
+        "MODE": 11.50666618347168,
+        "AVG": 11.520570755004883
+      }
+    },
+    {
+      "galaxy_id": 30,
+      "name": "NGC4874",
+      "fit_index": 781556,
+      "separation_arcsec": 0.480765093264456,
+      "observation_count": 1,
+      "observed_stellar_mass_msun_avg": 400000000000.0,
+      "observed_log_mstar": 11.602059991327963,
+      "pdf_median_log_mstar": 11.485058784484863,
+      "pdf_mode_log_mstar": 11.530000686645508,
+      "pdf_avg_log_mstar": 11.491867065429688,
+      "delta_obs_minus_pdf_median_dex": 0.11700120684309923,
+      "delta_obs_minus_pdf_mode_dex": 0.0720593046824547,
+      "delta_obs_minus_pdf_avg_dex": 0.11019292589827501,
+      "within_p16_p84": false,
+      "within_p2p5_p97p5": true,
+      "pdf_log_mstar": {
+        "MEDIAN": 11.485058784484863,
+        "P16": 11.394670486450195,
+        "P84": 11.560236930847168,
+        "P2P5": 11.318744659423828,
+        "P97P5": 11.627121925354004,
+        "MODE": 11.530000686645508,
+        "AVG": 11.491867065429688
+      }
+    },
+    {
+      "galaxy_id": 38,
+      "name": "NGC4387",
+      "fit_index": 547067,
+      "separation_arcsec": 0.09246511354869459,
+      "observation_count": 1,
+      "observed_stellar_mass_msun_avg": 12589254117.941662,
+      "observed_log_mstar": 10.1,
+      "pdf_median_log_mstar": 9.097975730895996,
+      "pdf_mode_log_mstar": 9.079999923706055,
+      "pdf_avg_log_mstar": 9.112719535827637,
+      "delta_obs_minus_pdf_median_dex": 1.0020242691040036,
+      "delta_obs_minus_pdf_mode_dex": 1.020000076293945,
+      "delta_obs_minus_pdf_avg_dex": 0.9872804641723629,
+      "within_p16_p84": false,
+      "within_p2p5_p97p5": false,
+      "pdf_log_mstar": {
+        "MEDIAN": 9.097975730895996,
+        "P16": 9.010519027709961,
+        "P84": 9.19068717956543,
+        "P2P5": 8.939835548400879,
+        "P97P5": 9.289969444274902,
+        "MODE": 9.079999923706055,
+        "AVG": 9.112719535827637
+      }
+    }
+  ]
+}

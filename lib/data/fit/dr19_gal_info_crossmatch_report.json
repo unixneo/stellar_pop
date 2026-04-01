@@ -1,0 +1,208 @@
+{
+  "file": "/var/stellar_pop/lib/data/fit/gal_info_dr7_v5_2.fit",
+  "tolerance_arcsec": 1.0,
+  "dry_run": true,
+  "galaxies_checked": 26,
+  "matched": 3,
+  "unmatched": 23,
+  "updated": 0,
+  "details": [
+    {
+      "galaxy_id": 2,
+      "name": "M87",
+      "ra": 187.7059,
+      "dec": 12.3911,
+      "matched": false
+    },
+    {
+      "galaxy_id": 3,
+      "name": "NGC1068",
+      "ra": 40.6696,
+      "dec": -0.0133,
+      "matched": false
+    },
+    {
+      "galaxy_id": 4,
+      "name": "NGC4889",
+      "ra": 195.0338,
+      "dec": 27.9769,
+      "matched": true,
+      "separation_arcsec": 0.30532397644933473,
+      "fit_index": 782072,
+      "plateid": 2241,
+      "mjd": 54169,
+      "fiberid": 542
+    },
+    {
+      "galaxy_id": 5,
+      "name": "NGC4261",
+      "ra": 184.8467,
+      "dec": 5.8246,
+      "matched": false
+    },
+    {
+      "galaxy_id": 6,
+      "name": "NGC4472",
+      "ra": 187.4449,
+      "dec": 8.0044,
+      "matched": false
+    },
+    {
+      "galaxy_id": 7,
+      "name": "NGC4579",
+      "ra": 189.4314,
+      "dec": 11.8181,
+      "matched": false
+    },
+    {
+      "galaxy_id": 8,
+      "name": "NGC4552",
+      "ra": 188.9162,
+      "dec": 12.5564,
+      "matched": false
+    },
+    {
+      "galaxy_id": 10,
+      "name": "NGC3379",
+      "ra": 161.957,
+      "dec": 12.5847,
+      "matched": false
+    },
+    {
+      "galaxy_id": 15,
+      "name": "NGC4621",
+      "ra": 190.5088,
+      "dec": 11.6472,
+      "matched": false
+    },
+    {
+      "galaxy_id": 16,
+      "name": "NGC4564",
+      "ra": 189.11244563020998,
+      "dec": 11.43922346468,
+      "matched": false
+    },
+    {
+      "galaxy_id": 17,
+      "name": "NGC4339",
+      "ra": 185.89558253857996,
+      "dec": 6.08179640105,
+      "matched": false
+    },
+    {
+      "galaxy_id": 18,
+      "name": "NGC4570",
+      "ra": 189.22242843072,
+      "dec": 7.24658254857,
+      "matched": false
+    },
+    {
+      "galaxy_id": 19,
+      "name": "NGC4459",
+      "ra": 187.25013746058997,
+      "dec": 13.97856294537,
+      "matched": false
+    },
+    {
+      "galaxy_id": 22,
+      "name": "NGC4194",
+      "ra": 183.5421,
+      "dec": 54.5258,
+      "matched": false
+    },
+    {
+      "galaxy_id": 23,
+      "name": "NGC3690",
+      "ra": 172.1342,
+      "dec": 58.5614,
+      "matched": false
+    },
+    {
+      "galaxy_id": 26,
+      "name": "NGC4051",
+      "ra": 180.79,
+      "dec": 44.5313,
+      "matched": false
+    },
+    {
+      "galaxy_id": 27,
+      "name": "NGC4151",
+      "ra": 182.6358,
+      "dec": 39.4057,
+      "matched": false
+    },
+    {
+      "galaxy_id": 28,
+      "name": "NGC4594",
+      "ra": 189.9976,
+      "dec": -11.6231,
+      "matched": false
+    },
+    {
+      "galaxy_id": 30,
+      "name": "NGC4874",
+      "ra": 194.8988,
+      "dec": 27.9594,
+      "matched": true,
+      "separation_arcsec": 0.480765093264456,
+      "fit_index": 781556,
+      "plateid": 2240,
+      "mjd": 53823,
+      "fiberid": 585
+    },
+    {
+      "galaxy_id": 31,
+      "name": "NGC4365",
+      "ra": 186.1175,
+      "dec": 7.3194,
+      "matched": false
+    },
+    {
+      "galaxy_id": 32,
+      "name": "NGC4660",
+      "ra": 191.1332558422,
+      "dec": 11.19048308527,
+      "matched": false
+    },
+    {
+      "galaxy_id": 33,
+      "name": "NGC3184",
+      "ra": 154.5706,
+      "dec": 41.4242,
+      "matched": false
+    },
+    {
+      "galaxy_id": 34,
+      "name": "NGC4321",
+      "ra": 185.7288,
+      "dec": 15.8223,
+      "matched": false
+    },
+    {
+      "galaxy_id": 36,
+      "name": "NGC4350",
+      "ra": 185.9908916666666,
+      "dec": 16.69335555555556,
+      "matched": false
+    },
+    {
+      "galaxy_id": 37,
+      "name": "NGC4262",
+      "ra": 184.8773,
+      "dec": 14.877,
+      "matched": false
+    },
+    {
+      "galaxy_id": 38,
+      "name": "NGC4387",
+      "ra": 186.42365353511,
+      "dec": 12.810501282210002,
+      "matched": true,
+      "separation_arcsec": 0.09246511354869459,
+      "fit_index": 547067,
+      "plateid": 1614,
+      "mjd": 53120,
+      "fiberid": 554
+    }
+  ]
+}

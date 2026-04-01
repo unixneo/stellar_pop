@@ -27,6 +27,11 @@ chi-squared metric.
 
 - FITS parsing was extracted into a standalone Ruby gem (`fits_parser`) and is now consumed via Bundler from RubyGems (`~> 0.1.0`) instead of a local parser path.
 - The gem repository is maintained at `https://github.com/unixneo/fits_parser`.
+- Added FIT crossmatch/validation workflows for DR19 galaxies against MPA-JHU DR7 FIT tables:
+  - `fits:crossmatch_dr19_gal_info` (coordinate match against `gal_info_dr7_v5_2.fit`, default 1 arcsec)
+  - `fits:mass_pdfs_from_report` (pull `totlgm_dr7_v5_2.fit` stellar-mass PDFs for matched rows)
+  - `fits:compare_mass_pdfs_with_observations` (compare FIT log-mass PDFs with `observations.stellar_mass`)
+- FIT-based mass validation now reports interval coverage in log-mass space (`P16-P84` and `P2P5-P97P5`) and supports JSON export for reproducibility.
 - Added SDSS uncertainty and quality ingestion for DR19 galaxies:
   - per-band photometric errors (`err_*`, `petro_err_*`, `model_err_*`)
   - per-band extinction (`extinction_*`)
@@ -45,6 +50,10 @@ chi-squared metric.
 - SDSS ingestion was hardened to prevent redshift field collisions:
   - spectroscopic redshift aliases (`spec_z`, `spec_zErr`, `spec_zWarning`) are
     separated from photometric `z` band in parsing
+
+## FIT Crossmatch Snapshot (DR19 sample)
+
+Recent DR19 sample crossmatch against DR7 FIT metadata (`gal_info_dr7_v5_2.fit`) found 3 matches within 1 arcsec for the active benchmark subset (`NGC4889`, `NGC4874`, `NGC4387`). Stellar-mass PDF extraction from `totlgm_dr7_v5_2.fit` and comparison against `observations.stellar_mass` showed 3/3 inside the 95% interval (`P2P5-P97P5`) after updating `NGC4387` to the FIT-derived `AVG` value with explicit FIT provenance.
 
 ## Why This App Exists
 

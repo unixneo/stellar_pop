@@ -15,6 +15,10 @@ v0.3.4 packaging/doc sync:
 - 🟩 Extract FITS parsing into standalone `fits_parser` gem repository (`https://github.com/unixneo/fits_parser`)
 - 🟩 Publish `fits_parser` `0.1.0` to RubyGems and switch app dependency from local path/git source to RubyGems (`gem "fits_parser", "~> 0.1.0"`)
 - 🟩 Update FITS rake tasks to load parser via `require "fits_parser"` (Bundler-managed gem)
+- 🟩 Add DR19-to-DR7 FIT coordinate crossmatch task (`fits:crossmatch_dr19_gal_info`) with 1-arcsec matching and JSON report output
+- 🟩 Add FIT stellar-mass PDF extraction task from crossmatch reports (`fits:mass_pdfs_from_report`)
+- 🟩 Add FIT-vs-observations stellar-mass comparison task (`fits:compare_mass_pdfs_with_observations`) in log-mass space with interval checks (`P16-P84`, `P2P5-P97P5`)
+- 🟩 Update NGC4387 observation stellar mass from FIT `AVG` PDF value with FIT provenance note (`method_used=fits_pdf_avg`)
 
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution

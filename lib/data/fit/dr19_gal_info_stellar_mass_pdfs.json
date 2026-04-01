@@ -1,0 +1,70 @@
+{
+  "source_report": "/var/stellar_pop/lib/data/fit/dr19_gal_info_crossmatch_report.json",
+  "source_mass_fit": "/var/stellar_pop/lib/data/fit/totlgm_dr7_v5_2.fit",
+  "dry_run": false,
+  "galaxies_in_report": 26,
+  "matched_in_report": 3,
+  "pdfs_resolved": 3,
+  "entries": [
+    {
+      "galaxy_id": 4,
+      "name": "NGC4889",
+      "ra": 195.0338,
+      "dec": 27.9769,
+      "fit_index": 782072,
+      "separation_arcsec": 0.30532397644933473,
+      "plateid": 2241,
+      "mjd": 54169,
+      "fiberid": 542,
+      "pdf_log_mstar": {
+        "MEDIAN": 11.49787425994873,
+        "P16": 11.406558990478516,
+        "P84": 11.60604190826416,
+        "P2P5": 11.333409309387207,
+        "P97P5": 11.761710166931152,
+        "MODE": 11.50666618347168,
+        "AVG": 11.520570755004883
+      }
+    },
+    {
+      "galaxy_id": 30,
+      "name": "NGC4874",
+      "ra": 194.8988,
+      "dec": 27.9594,
+      "fit_index": 781556,
+      "separation_arcsec": 0.480765093264456,
+      "plateid": 2240,
+      "mjd": 53823,
+      "fiberid": 585,
+      "pdf_log_mstar": {
+        "MEDIAN": 11.485058784484863,
+        "P16": 11.394670486450195,
+        "P84": 11.560236930847168,
+        "P2P5": 11.318744659423828,
+        "P97P5": 11.627121925354004,
+        "MODE": 11.530000686645508,
+        "AVG": 11.491867065429688
+      }
+    },
+    {
+      "galaxy_id": 38,
+      "name": "NGC4387",
+      "ra": 186.42365353511,
+      "dec": 12.810501282210002,
+      "fit_index": 547067,
+      "separation_arcsec": 0.09246511354869459,
+      "plateid": 1614,
+      "mjd": 53120,
+      "fiberid": 554,
+      "pdf_log_mstar": {
+        "MEDIAN": 9.097975730895996,
+        "P16": 9.010519027709961,
+        "P84": 9.19068717956543,
+        "P2P5": 8.939835548400879,
+        "P97P5": 9.289969444274902,
+        "MODE": 9.079999923706055,
+        "AVG": 9.112719535827637
+      }
+    }
+  ]
+}
