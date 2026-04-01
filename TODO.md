@@ -23,6 +23,7 @@ v0.3.4 packaging/doc sync:
 - 🟩 Add DR2 Gallazzi importer task (`gallazzi:import_dr2`) and ingest both catalogs (`261054` rows each)
 - 🟩 Move Gallazzi catalogs off main app DB into dedicated development SQLite files (`storage/gallazzi_*_development.sqlite3`) and drop Gallazzi tables from `storage/development.sqlite3`
 - 🟩 Reclaim SQLite file space after Gallazzi table removal (`VACUUM`), reducing main DB from ~84MB to ~1.1MB
+- 🟩 Add Gallazzi age-to-main-galaxy comparison task (`gallazzi:compare_ages_to_galaxies`) with SDSS object-id-first matching and RA/DEC fallback; current run reports `0` overlap with local `galaxies`
 
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution

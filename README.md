@@ -40,6 +40,12 @@ chi-squared metric.
     (`storage/gallazzi_stellar_metallicities_development.sqlite3`,
     `storage/gallazzi_rband_weighted_ages_development.sqlite3`) via model-specific
     external DB connections, not the main `storage/development.sqlite3`
+  - crossmatch task: `bin/rails "gallazzi:compare_ages_to_galaxies[1,lib/data/fit/gallazzi_age_vs_main_galaxies.json,0]"`
+    resolves DR2 age rows through `gal_info_dr7_v5_2.fit` and compares against
+    main `galaxies` by SDSS object identity (`PHOTOID -> sdss_objid`) with RA/DEC fallback
+  - current result on this dataset state: `0` matches at `1.0` arcsec
+    (`261,054` age rows scanned; `258,381` with resolvable coordinates; `0` overlap
+    with the current 35-galaxy local table)
 - Added SDSS uncertainty and quality ingestion for DR19 galaxies:
   - per-band photometric errors (`err_*`, `petro_err_*`, `model_err_*`)
   - per-band extinction (`extinction_*`)

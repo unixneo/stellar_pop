@@ -1,0 +1,16 @@
+{
+  "source": {
+    "gallazzi_age_rows_scanned": 5000,
+    "gallazzi_age_limit": 5000,
+    "gal_info_fit": "/var/stellar_pop/lib/data/fit/gal_info_dr7_v5_2.fit"
+  },
+  "tolerance_arcsec": 1.0,
+  "galaxies_in_main_db": 35,
+  "resolved_coords": 4963,
+  "unresolved_coords": 37,
+  "matched": 0,
+  "matched_by_objid": 0,
+  "matched_by_radec": 0,
+  "unmatched": 4963,
+  "matches": []
+}
