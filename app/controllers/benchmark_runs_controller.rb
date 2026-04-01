@@ -24,7 +24,7 @@ class BenchmarkRunsController < ApplicationController
 
     if selected_keys.empty?
       load_benchmarks
-      flash.now[:alert] = "Select exactly one benchmark target."
+      flash.now[:alert] = benchmark_selection_error_message
       render :new, status: :unprocessable_entity
       return
     end
@@ -84,11 +84,13 @@ class BenchmarkRunsController < ApplicationController
 
   def selected_benchmark_keys
     all_keys = StellarPop::Calibration::BenchmarkCatalog.all(sdss_release: @active_sdss_release).map { |benchmark| benchmark[:key].to_s }
-    selected = params[:benchmark_key].to_s
-    return [selected] if all_keys.include?(selected)
+    selected = Array(params[:benchmark_keys]).map(&:to_s).select { |key| all_keys.include?(key) }.uniq
+    legacy_single = params[:benchmark_key].to_s
+    selected << legacy_single if selected.empty? && all_keys.include?(legacy_single)
+    return [] if selected.empty?
 
-    legacy = Array(params[:benchmark_keys]).map(&:to_s).select { |key| all_keys.include?(key) }.uniq
-    return legacy if legacy.size == 1
+    return selected if allow_multi_benchmark_targets?
+    return selected if selected.size == 1
 
     []
   end
@@ -96,6 +98,7 @@ class BenchmarkRunsController < ApplicationController
   def load_benchmarks
     @sort = params[:sort].to_s.presence || "name"
     @dir = params[:dir].to_s.downcase == "desc" ? "desc" : "asc"
+    @allow_multi_benchmark_targets = allow_multi_benchmark_targets?
     rows = StellarPop::Calibration::BenchmarkCatalog.all(sdss_release: @active_sdss_release)
     @benchmarks = rows.sort_by { |row| benchmark_sort_value(row, @sort) }
     @benchmarks.reverse! if @dir == "desc"
@@ -129,6 +132,8 @@ class BenchmarkRunsController < ApplicationController
       expected[:age_gyr_min].to_f
     when "metallicity"
       expected[:metallicity_z_min].to_f
+    when "stellar_mass"
+      expected[:stellar_mass_min].to_f
     else
       row[:name].to_s.downcase
     end
@@ -136,6 +141,16 @@ class BenchmarkRunsController < ApplicationController
 
   def fast_mode_enabled?
     ActiveModel::Type::Boolean.new.cast(params[:fast_mode])
+  end
+
+  def allow_multi_benchmark_targets?
+    ActiveModel::Type::Boolean.new.cast(PipelineConfig.current.fetch("calibration_allow_multi_benchmark_targets"))
+  end
+
+  def benchmark_selection_error_message
+    return "Select at least one benchmark target." if allow_multi_benchmark_targets?
+
+    "Select exactly one benchmark target."
   end
 
   def set_active_sdss_release

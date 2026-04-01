@@ -34,3 +34,5 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+/lib/data/fit/gal_info_dr7_v5_2.fit
+/lib/data/fit/totlgm_dr7_v5_2.json

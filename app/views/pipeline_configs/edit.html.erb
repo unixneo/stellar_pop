@@ -177,6 +177,19 @@
             </td>
           </tr>
           <tr>
+            <td>Allow Multiple Benchmark Targets Per Run</td>
+            <td>
+              <label for="pipeline_config_calibration_allow_multi_benchmark_targets">
+                <%= hidden_field_tag "pipeline_config[calibration_allow_multi_benchmark_targets]", "0" %>
+                <%= check_box_tag "pipeline_config[calibration_allow_multi_benchmark_targets]",
+                                  "1",
+                                  ActiveModel::Type::Boolean.new.cast(@settings["calibration_allow_multi_benchmark_targets"]),
+                                  id: "pipeline_config_calibration_allow_multi_benchmark_targets" %>
+                enabled
+              </label>
+            </td>
+          </tr>
+          <tr>
             <td><%= f.label :calibration_fast_ages_gyr, "Fast mode ages (Gyr, comma-separated)" %></td>
             <td><%= f.text_field :calibration_fast_ages_gyr, value: Array(@settings["calibration_fast_ages_gyr"]).join(", ") %></td>
           </tr>

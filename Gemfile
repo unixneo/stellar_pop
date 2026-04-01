@@ -17,6 +17,9 @@ gem "sidekiq"
 # HTTP client for SDSS SkyServer API
 gem "faraday"
 
+# FITS parsing gem
+gem "fits_parser", "~> 0.1.0"
+
 # Real-time push to spectrum viewer
 gem "actioncable"   # already in Rails, just ensure it's not commented out
 

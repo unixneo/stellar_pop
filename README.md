@@ -25,6 +25,8 @@ chi-squared metric.
 
 ## v0.3.4 Data-Quality and Benchmark Reliability Updates
 
+- FITS parsing was extracted into a standalone Ruby gem (`fits_parser`) and is now consumed via Bundler from RubyGems (`~> 0.1.0`) instead of a local parser path.
+- The gem repository is maintained at `https://github.com/unixneo/fits_parser`.
 - Added SDSS uncertainty and quality ingestion for DR19 galaxies:
   - per-band photometric errors (`err_*`, `petro_err_*`, `model_err_*`)
   - per-band extinction (`extinction_*`)
@@ -248,6 +250,7 @@ StellarPop follows a **blackboard pattern**:
 
 ### Core Modules
 
+- External gem: `fits_parser` (FITS HDU/BINTABLE parsing used by `fits:*` rake workflows)
 - `StellarPop::KnowledgeSources::ImfSampler`
 - `StellarPop::KnowledgeSources::StellarSpectra`
 - `StellarPop::KnowledgeSources::Isochrone`
