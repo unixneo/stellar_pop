@@ -1,0 +1,12 @@
+{
+  "source_fit": "/var/stellar_pop/lib/data/fit/sdss_firefly-26.fits",
+  "tolerance_arcsec": 1.0,
+  "rows_scanned": 200000,
+  "max_rows": 200000,
+  "galaxies_checked": 35,
+  "matched": 0,
+  "matched_by_objid": 0,
+  "matched_by_radec": 0,
+  "unmatched": 35,
+  "matches": []
+}

@@ -1,0 +1,47 @@
+{
+  "source_fit": "/var/stellar_pop/lib/data/fit/manga-firefly-globalprop-v3_1_1-miles.fits",
+  "tolerance_arcsec": 1.0,
+  "galaxies_checked": 35,
+  "matched": 2,
+  "unmatched": 33,
+  "matches": [
+    {
+      "galaxy_id": 4,
+      "galaxy_name": "NGC4889",
+      "galaxy_sdss_objid": "1237667444048723983",
+      "galaxy_ra": 195.0338,
+      "galaxy_dec": 27.9769,
+      "separation_arcsec": 0.21941388869380268,
+      "firefly_index": 9547,
+      "firefly_mangaid": "1-456627",
+      "firefly_plateifu": "9877-12704",
+      "firefly_ra": 195.03382873535156,
+      "firefly_dec": 27.97695541381836,
+      "firefly_redshift": 0.02163516916334629,
+      "firefly_photometric_mass": 11.519981384277344,
+      "firefly_lw_age_1re": 0.8862971663475037,
+      "firefly_mw_age_1re": 1.0021518468856812,
+      "firefly_lw_z_1re": 0.30231040716171265,
+      "firefly_mw_z_1re": 0.3050353229045868
+    },
+    {
+      "galaxy_id": 30,
+      "galaxy_name": "NGC4874",
+      "galaxy_sdss_objid": "1237667444048658532",
+      "galaxy_ra": 194.8988,
+      "galaxy_dec": 27.9594,
+      "separation_arcsec": 0.480765093264456,
+      "firefly_index": 779,
+      "firefly_mangaid": "50-2",
+      "firefly_plateifu": "8479-12705",
+      "firefly_ra": 194.89877319335938,
+      "firefly_dec": 27.95926856994629,
+      "firefly_redshift": 0.024018311873078346,
+      "firefly_photometric_mass": -9999.0,
+      "firefly_lw_age_1re": 0.9440168738365173,
+      "firefly_mw_age_1re": 1.0208710432052612,
+      "firefly_lw_z_1re": 0.33941373229026794,
+      "firefly_mw_z_1re": 0.3446801006793976
+    }
+  ]
+}

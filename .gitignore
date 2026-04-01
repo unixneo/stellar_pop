@@ -38,3 +38,7 @@
 /config/master.key
 /lib/data/fit/gal_info_dr7_v5_2.fit
 /lib/data/fit/totlgm_dr7_v5_2.json
+/lib/data/fit/SDSS17Pipe3D_v3_1_1.fits
+/lib/data/fit/manga-firefly-globalprop-v3_1_1-mastar.fits
+/lib/data/fit/manga-firefly-globalprop-v3_1_1-miles.fits
+/lib/data/fit/sdss_firefly-26.fits

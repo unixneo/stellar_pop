@@ -4,6 +4,27 @@ require "fits_parser"
 require "json"
 require "csv"
 
+module FitsParserTformAliasCompat
+  private
+
+  def parse_tform_value(buf, offset, form)
+    super(buf, offset, normalize_tform_alias(form))
+  end
+
+  def normalize_tform_alias(form)
+    case form.to_s.upcase
+    when "INT16" then "I"
+    when "INT32" then "J"
+    when "INT64" then "K"
+    when "FLOAT32" then "E"
+    when "FLOAT64" then "D"
+    else form
+    end
+  end
+end
+
+FitsParser.prepend(FitsParserTformAliasCompat)
+
 namespace :fits do
   desc "Test fits_parser gem against a FITS file: bin/rails 'fits:test[/path/file.fit,/tmp/out.json,json]'"
   task :test, [:path, :out, :format] do |_task, args|
@@ -376,7 +397,355 @@ namespace :fits do
       Usage:
         bin/rails "fits:compare_mass_pdfs_with_observations[/path/pdfs.json,false,/path/compare.json]"
       Or:
-        PDFS=/path/pdfs.json WRITE=true FIT_OUT=/path/compare.json bin/rails fits:compare_mass_pdfs_with_observations
+      PDFS=/path/pdfs.json WRITE=true FIT_OUT=/path/compare.json bin/rails fits:compare_mass_pdfs_with_observations
+    USAGE
+  end
+
+  desc "Crossmatch local galaxies to MaNGA Pipe3D by coordinates and write JSON: bin/rails 'fits:crossmatch_pipe3d_galaxies[1,/tmp/pipe3d_matches.json,0]'"
+  task :crossmatch_pipe3d_galaxies, [:tol_arcsec, :out, :limit] => :environment do |_task, args|
+    tol_arcsec = Float(args[:tol_arcsec].presence || ENV["TOL_ARCSEC"] || 1.0)
+    out = args[:out].presence || ENV["FIT_OUT"] || Rails.root.join("lib/data/fit/pipe3d_crossmatch.json").to_s
+    limit = Integer(args[:limit].presence || ENV["LIMIT"] || 0)
+
+    pipe3d_path = Rails.root.join("lib/data/fit/SDSS17Pipe3D_v3_1_1.fits").to_s
+    abort "Missing FIT file: #{pipe3d_path}" unless File.file?(pipe3d_path)
+
+    galaxies = Galaxy.where.not(ra: nil, dec: nil).order(:id)
+    galaxies = galaxies.limit(limit) if limit.positive?
+    galaxies = galaxies.to_a
+    abort "No galaxies with RA/DEC found in main DB" if galaxies.empty?
+
+    puts "Loading Pipe3D GAL_PROPERTIES rows (objra/objdec)..."
+    rows_by_ra = load_pipe3d_rows_for_matching(pipe3d_path)
+    puts "Pipe3D rows loaded: #{rows_by_ra.size}"
+    puts "Galaxies checked: #{galaxies.size}"
+
+    rows_by_sdss_objid = rows_by_ra.each_with_object({}) do |row, h|
+      next if row[:sdss_objid].blank?
+      h[row[:sdss_objid]] ||= []
+      h[row[:sdss_objid]] << row
+    end
+
+    matched = 0
+    unmatched = 0
+    matched_by_objid = 0
+    matched_by_radec = 0
+    matches = []
+
+    galaxies.each do |galaxy|
+      normalized_objid = normalize_sdss_objid(galaxy.sdss_objid)
+      m = nil
+      match_type = nil
+
+      if normalized_objid.present?
+        objid_rows = rows_by_sdss_objid[normalized_objid]
+        if objid_rows.present?
+          m = best_row_by_separation(objid_rows, galaxy.ra.to_f, galaxy.dec.to_f)
+          match_type = "sdss_objid" if m
+        end
+      end
+
+      unless m
+        m = find_best_match_by_radec(rows_by_ra, galaxy.ra.to_f, galaxy.dec.to_f, tol_arcsec)
+        match_type = "radec" if m
+      end
+
+      if m
+        matched += 1
+        matched_by_objid += 1 if match_type == "sdss_objid"
+        matched_by_radec += 1 if match_type == "radec"
+        matches << {
+          galaxy_id: galaxy.id,
+          galaxy_name: galaxy.name,
+          galaxy_sdss_objid: galaxy.sdss_objid,
+          galaxy_ra: galaxy.ra,
+          galaxy_dec: galaxy.dec,
+          match_type: match_type,
+          separation_arcsec: m[:separation_arcsec],
+          pipe3d_index: m[:index],
+          pipe3d_sdss_objid: m[:sdss_objid],
+          pipe3d_name: m[:name],
+          pipe3d_plateifu: m[:plateifu],
+          pipe3d_mangaid: m[:mangaid],
+          pipe3d_ra: m[:ra],
+          pipe3d_dec: m[:dec],
+          pipe3d_age_lw_re_fit_gyr: m[:age_lw_re_fit],
+          pipe3d_age_mw_re_fit_gyr: m[:age_mw_re_fit],
+          pipe3d_zh_lw_re_fit: m[:zh_lw_re_fit],
+          pipe3d_zh_mw_re_fit: m[:zh_mw_re_fit],
+          pipe3d_log_mass: m[:log_mass]
+        }
+      else
+        unmatched += 1
+      end
+    end
+
+    payload = {
+      source_fit: pipe3d_path,
+      tolerance_arcsec: tol_arcsec,
+      galaxies_checked: galaxies.size,
+      matched: matched,
+      matched_by_objid: matched_by_objid,
+      matched_by_radec: matched_by_radec,
+      unmatched: unmatched,
+      matches: matches
+    }
+
+    File.write(out, JSON.pretty_generate(payload))
+    puts JSON.pretty_generate(payload.except(:matches))
+    puts "Sample matches:"
+    matches.first(10).each { |row| puts "  - #{row.inspect}" }
+    puts "Wrote JSON: #{out}"
+  rescue ArgumentError => e
+    abort <<~USAGE
+      #{e.class}: #{e.message}
+      Usage:
+        bin/rails "fits:crossmatch_pipe3d_galaxies[1,/tmp/pipe3d_matches.json,0]"
+      Or:
+        TOL_ARCSEC=1 FIT_OUT=/tmp/pipe3d_matches.json LIMIT=0 bin/rails fits:crossmatch_pipe3d_galaxies
+    USAGE
+  end
+
+  desc "Crossmatch local galaxies to MaNGA FIREFLY globalprop by coordinates and write JSON: bin/rails 'fits:crossmatch_firefly_galaxies[/path/firefly.fits,1,/tmp/firefly_matches.json,0]'"
+  task :crossmatch_firefly_galaxies, [:path, :tol_arcsec, :out, :limit] => :environment do |_task, args|
+    firefly_path = args[:path].presence || ENV["FIREFLY_FIT"] || Rails.root.join("lib/data/fit/manga-firefly-globalprop-v3_1_1-mastar.fits").to_s
+    tol_arcsec = Float(args[:tol_arcsec].presence || ENV["TOL_ARCSEC"] || 1.0)
+    out = args[:out].presence || ENV["FIT_OUT"] || Rails.root.join("lib/data/fit/firefly_crossmatch.json").to_s
+    limit = Integer(args[:limit].presence || ENV["LIMIT"] || 0)
+
+    abort "Missing FIT file: #{firefly_path}" unless File.file?(firefly_path)
+
+    galaxies = Galaxy.where.not(ra: nil, dec: nil).order(:id)
+    galaxies = galaxies.limit(limit) if limit.positive?
+    galaxies = galaxies.to_a
+    abort "No galaxies with RA/DEC found in main DB" if galaxies.empty?
+
+    puts "Loading FIREFLY rows (GALAXY_INFO + GLOBAL_PARAMETERS)..."
+    rows_by_ra = load_firefly_global_rows_for_matching(firefly_path)
+    puts "FIREFLY rows loaded: #{rows_by_ra.size}"
+    puts "Galaxies checked: #{galaxies.size}"
+
+    matched = 0
+    unmatched = 0
+    matches = []
+
+    galaxies.each do |galaxy|
+      m = find_best_match_by_radec(rows_by_ra, galaxy.ra.to_f, galaxy.dec.to_f, tol_arcsec)
+      if m
+        matched += 1
+        matches << {
+          galaxy_id: galaxy.id,
+          galaxy_name: galaxy.name,
+          galaxy_sdss_objid: galaxy.sdss_objid,
+          galaxy_ra: galaxy.ra,
+          galaxy_dec: galaxy.dec,
+          separation_arcsec: m[:separation_arcsec],
+          firefly_index: m[:index],
+          firefly_mangaid: m[:mangaid],
+          firefly_plateifu: m[:plateifu],
+          firefly_ra: m[:ra],
+          firefly_dec: m[:dec],
+          firefly_redshift: m[:redshift],
+          firefly_photometric_mass: m[:photometric_mass],
+          firefly_lw_age_1re: m[:lw_age_1re],
+          firefly_mw_age_1re: m[:mw_age_1re],
+          firefly_lw_z_1re: m[:lw_z_1re],
+          firefly_mw_z_1re: m[:mw_z_1re]
+        }
+      else
+        unmatched += 1
+      end
+    end
+
+    payload = {
+      source_fit: firefly_path,
+      tolerance_arcsec: tol_arcsec,
+      galaxies_checked: galaxies.size,
+      matched: matched,
+      unmatched: unmatched,
+      matches: matches
+    }
+
+    File.write(out, JSON.pretty_generate(payload))
+    puts JSON.pretty_generate(payload.except(:matches))
+    puts "Sample matches:"
+    matches.first(10).each { |row| puts "  - #{row.inspect}" }
+    puts "Wrote JSON: #{out}"
+  rescue ArgumentError => e
+    abort <<~USAGE
+      #{e.class}: #{e.message}
+      Usage:
+        bin/rails "fits:crossmatch_firefly_galaxies[/path/firefly.fits,1,/tmp/firefly_matches.json,0]"
+      Or:
+        FIREFLY_FIT=/path/firefly.fits TOL_ARCSEC=1 FIT_OUT=/tmp/firefly_matches.json LIMIT=0 bin/rails fits:crossmatch_firefly_galaxies
+    USAGE
+  end
+
+  desc "Crossmatch local galaxies to DR16 eBOSS FIREFLY by SDSS ObjID or RA/DEC and write JSON: bin/rails 'fits:crossmatch_eboss_firefly_galaxies[/path/sdss_firefly-26.fits,1,/tmp/eboss_firefly.json,0,0]'"
+  task :crossmatch_eboss_firefly_galaxies, [:path, :tol_arcsec, :out, :limit, :max_rows] => :environment do |_task, args|
+    path = args[:path].presence || ENV["FIREFLY_FIT"] || Rails.root.join("lib/data/fit/sdss_firefly-26.fits").to_s
+    tol_arcsec = Float(args[:tol_arcsec].presence || ENV["TOL_ARCSEC"] || 1.0)
+    out = args[:out].presence || ENV["FIT_OUT"] || Rails.root.join("lib/data/fit/eboss_firefly_crossmatch.json").to_s
+    limit = Integer(args[:limit].presence || ENV["LIMIT"] || 0)
+    max_rows = Integer(args[:max_rows].presence || ENV["MAX_ROWS"] || 0)
+
+    abort "Missing FIT file: #{path}" unless File.file?(path)
+
+    galaxies = Galaxy.where.not(ra: nil, dec: nil).order(:id)
+    galaxies = galaxies.limit(limit) if limit.positive?
+    galaxies = galaxies.to_a
+    abort "No galaxies with RA/DEC found in main DB" if galaxies.empty?
+
+    galaxies_by_objid = galaxies.each_with_object({}) do |g, h|
+      objid = normalize_sdss_objid(g.sdss_objid)
+      next if objid.blank?
+      h[objid] ||= []
+      h[objid] << g
+    end
+
+    exact_by_galaxy = {}
+    radec_by_galaxy = {}
+    rows_scanned = 0
+
+    needed = %w[
+      BESTOBJID FLUXOBJID TARGETOBJID
+      PLUG_RA PLUG_DEC PLATE MJD FIBERID
+      CLASS SUBCLASS Z Z_ERR SPECOBJID
+      Chabrier_MILES_age_massW
+      Chabrier_MILES_metallicity_massW
+      Chabrier_MILES_stellar_mass
+    ]
+
+    FitsParser.open(path) do |parser|
+      hdu = parser.parse_hdus.find { |h| h[:header]["XTENSION"] == "BINTABLE" && h[:header]["EXTNAME"] == "Joined" }
+      abort "Joined BINTABLE not found in #{path}" unless hdu
+
+      parser.instance_variable_get(:@io).seek(hdu[:data_pos])
+      row_len = Integer(hdu[:header]["NAXIS1"] || 0)
+      total_rows = Integer(hdu[:header]["NAXIS2"] || 0)
+      use_rows = max_rows.positive? ? [max_rows, total_rows].min : total_rows
+      offsets = bintable_column_offsets(hdu[:header], needed)
+
+      puts "Scanning FIREFLY rows: #{use_rows} (of #{total_rows})"
+
+      use_rows.times do |idx|
+        row_buf = parser.instance_variable_get(:@io).read(row_len)
+        break if row_buf.nil? || row_buf.bytesize != row_len
+        rows_scanned = idx + 1
+
+        rec = decode_row_subset(row_buf, offsets)
+        ra = float_or_nil(rec["PLUG_RA"])
+        dec = float_or_nil(rec["PLUG_DEC"])
+        next if ra.nil? || dec.nil?
+
+        objids = [
+          normalize_sdss_objid(rec["BESTOBJID"]),
+          normalize_sdss_objid(rec["FLUXOBJID"]),
+          normalize_sdss_objid(rec["TARGETOBJID"])
+        ].compact.uniq
+
+        unless objids.empty?
+          objids.each do |oid|
+            next unless galaxies_by_objid.key?(oid)
+            galaxies_by_objid[oid].each do |g|
+              sep = angular_separation_arcsec(g.ra.to_f, g.dec.to_f, ra, dec)
+              prev = exact_by_galaxy[g.id]
+              if prev.nil? || sep < prev[:separation_arcsec]
+                exact_by_galaxy[g.id] = build_eboss_match_record(g, rec, ra, dec, sep, idx, "sdss_objid")
+              end
+            end
+          end
+        end
+
+        galaxies.each do |g|
+          sep = angular_separation_arcsec(g.ra.to_f, g.dec.to_f, ra, dec)
+          next if sep > tol_arcsec
+          prev = radec_by_galaxy[g.id]
+          if prev.nil? || sep < prev[:separation_arcsec]
+            radec_by_galaxy[g.id] = build_eboss_match_record(g, rec, ra, dec, sep, idx, "radec")
+          end
+        end
+      end
+    end
+
+    matches = []
+    matched_by_objid = 0
+    matched_by_radec = 0
+
+    galaxies.each do |g|
+      m = exact_by_galaxy[g.id] || radec_by_galaxy[g.id]
+      next unless m
+      matched_by_objid += 1 if m[:match_type] == "sdss_objid"
+      matched_by_radec += 1 if m[:match_type] == "radec"
+      matches << m
+    end
+
+    payload = {
+      source_fit: path,
+      tolerance_arcsec: tol_arcsec,
+      rows_scanned: rows_scanned,
+      max_rows: max_rows.positive? ? max_rows : nil,
+      galaxies_checked: galaxies.size,
+      matched: matches.size,
+      matched_by_objid: matched_by_objid,
+      matched_by_radec: matched_by_radec,
+      unmatched: galaxies.size - matches.size,
+      matches: matches
+    }
+
+    File.write(out, JSON.pretty_generate(payload))
+    puts JSON.pretty_generate(payload.except(:matches))
+    puts "Sample matches:"
+    matches.first(10).each { |row| puts "  - #{row.inspect}" }
+    puts "Wrote JSON: #{out}"
+  rescue ArgumentError => e
+    abort <<~USAGE
+      #{e.class}: #{e.message}
+      Usage:
+        bin/rails "fits:crossmatch_eboss_firefly_galaxies[/path/sdss_firefly-26.fits,1,/tmp/eboss_firefly.json,0,0]"
+      Or:
+        FIREFLY_FIT=/path/sdss_firefly-26.fits TOL_ARCSEC=1 FIT_OUT=/tmp/eboss_firefly.json LIMIT=0 MAX_ROWS=0 bin/rails fits:crossmatch_eboss_firefly_galaxies
+    USAGE
+  end
+
+  desc "Compare matched DR16 eBOSS FIREFLY age/Z/mass with observations: bin/rails 'fits:compare_eboss_firefly_with_observations[/path/eboss_firefly_crossmatch.json,/tmp/compare.json]'"
+  task :compare_eboss_firefly_with_observations, [:crossmatch, :out] => :environment do |_task, args|
+    crossmatch_path = args[:crossmatch].presence || ENV["CROSSMATCH"] || Rails.root.join("lib/data/fit/eboss_firefly_crossmatch.json").to_s
+    out = args[:out].presence || ENV["FIT_OUT"] || Rails.root.join("lib/data/fit/eboss_firefly_vs_observations.json").to_s
+
+    abort "Crossmatch JSON not found: #{crossmatch_path}" unless File.file?(crossmatch_path)
+
+    data = JSON.parse(File.read(crossmatch_path))
+    matches = data.fetch("matches", [])
+    abort "No matches in #{crossmatch_path}" if matches.empty?
+
+    comparisons = matches.map { |m| compare_eboss_match_with_observations(m) }
+
+    with_age_obs = comparisons.count { |c| !c[:obs_age_gyr].nil? }
+    with_z_obs = comparisons.count { |c| !c[:obs_metallicity_z].nil? }
+    with_mass_obs = comparisons.count { |c| !c[:obs_stellar_mass_msun].nil? }
+
+    payload = {
+      source_crossmatch: crossmatch_path,
+      entries_total: comparisons.size,
+      with_age_observation: with_age_obs,
+      with_metallicity_observation: with_z_obs,
+      with_stellar_mass_observation: with_mass_obs,
+      comparisons: comparisons
+    }
+
+    File.write(out, JSON.pretty_generate(payload))
+    puts JSON.pretty_generate(payload.except(:comparisons))
+    puts "Sample comparisons:"
+    comparisons.first(10).each { |c| puts "  - #{c.inspect}" }
+    puts "Wrote JSON: #{out}"
+  rescue ArgumentError, KeyError => e
+    abort <<~USAGE
+      #{e.class}: #{e.message}
+      Usage:
+        bin/rails "fits:compare_eboss_firefly_with_observations[/path/eboss_firefly_crossmatch.json,/tmp/compare.json]"
+      Or:
+        CROSSMATCH=/path/eboss_firefly_crossmatch.json FIT_OUT=/tmp/compare.json bin/rails fits:compare_eboss_firefly_with_observations
     USAGE
   end
 end
@@ -565,6 +934,255 @@ def load_gal_info_rows_for_matching(info_path)
   end
 
   rows.sort_by { |r| r[:ra] }
+end
+
+def load_pipe3d_rows_for_matching(pipe3d_path)
+  rows = []
+
+  FitsParser.open(pipe3d_path) do |parser|
+    hdu = parser.parse_hdus.find { |x| x[:header]["XTENSION"] == "BINTABLE" && x[:header]["EXTNAME"] == "GAL_PROPERTIES" }
+    raise "Pipe3D GAL_PROPERTIES BINTABLE not found: #{pipe3d_path}" unless hdu
+
+    parser.each_bintable_row(hdu).with_index do |row, idx|
+      ra = row["objra"]
+      dec = row["objdec"]
+      next if ra.nil? || dec.nil?
+
+      rows << {
+        index: idx,
+        ra: ra.to_f,
+        dec: dec.to_f,
+        sdss_objid: normalize_sdss_objid(row["sdss_objid"] || row["OBJID"] || row["objid"] || row["bestobjid"] || row["BESTOBJID"]),
+        name: row["name"],
+        plateifu: row["plateifu"],
+        mangaid: row["mangaid"],
+        age_lw_re_fit: row["Age_LW_Re_fit"],
+        age_mw_re_fit: row["Age_MW_Re_fit"],
+        zh_lw_re_fit: row["ZH_LW_Re_fit"],
+        zh_mw_re_fit: row["ZH_MW_Re_fit"],
+        log_mass: row["log_Mass"]
+      }
+    end
+  end
+
+  rows.sort_by { |r| r[:ra] }
+end
+
+def load_firefly_global_rows_for_matching(firefly_path)
+  info_rows = []
+  global_rows = []
+
+  FitsParser.open(firefly_path) do |parser|
+    hdus = parser.parse_hdus
+    info_hdu = hdus.find { |h| h[:header]["XTENSION"] == "BINTABLE" && h[:header]["EXTNAME"] == "GALAXY_INFO" }
+    global_hdu = hdus.find { |h| h[:header]["XTENSION"] == "BINTABLE" && h[:header]["EXTNAME"] == "GLOBAL_PARAMETERS" }
+    raise "FIREFLY GALAXY_INFO BINTABLE not found: #{firefly_path}" unless info_hdu
+    raise "FIREFLY GLOBAL_PARAMETERS BINTABLE not found: #{firefly_path}" unless global_hdu
+
+    parser.each_bintable_row(info_hdu) { |row| info_rows << row }
+    parser.each_bintable_row(global_hdu) { |row| global_rows << row }
+  end
+
+  raise "FIREFLY row count mismatch: info=#{info_rows.size}, global=#{global_rows.size}" unless info_rows.size == global_rows.size
+
+  rows = []
+  info_rows.each_with_index do |info, idx|
+    global = global_rows[idx]
+    ra = info["OBJRA"]
+    dec = info["OBJDEC"]
+    next if ra.nil? || dec.nil?
+
+    rows << {
+      index: idx,
+      ra: ra.to_f,
+      dec: dec.to_f,
+      mangaid: info["MANGAID"],
+      plateifu: info["PLATEIFU"],
+      redshift: info["REDSHIFT"],
+      photometric_mass: info["PHOTOMETRIC_MASS"],
+      lw_age_1re: global["LW_AGE_1Re"],
+      mw_age_1re: global["MW_AGE_1Re"],
+      lw_z_1re: global["LW_Z_1Re"],
+      mw_z_1re: global["MW_Z_1Re"]
+    }
+  end
+
+  rows.sort_by { |r| r[:ra] }
+end
+
+def build_eboss_match_record(galaxy, rec, ra, dec, sep, idx, match_type)
+  {
+    galaxy_id: galaxy.id,
+    galaxy_name: galaxy.name,
+    galaxy_sdss_objid: galaxy.sdss_objid,
+    galaxy_ra: galaxy.ra,
+    galaxy_dec: galaxy.dec,
+    match_type: match_type,
+    separation_arcsec: sep,
+    firefly_row_index: idx,
+    firefly_bestobjid: rec["BESTOBJID"],
+    firefly_fluxobjid: rec["FLUXOBJID"],
+    firefly_targetobjid: rec["TARGETOBJID"],
+    firefly_specobjid: rec["SPECOBJID"],
+    firefly_plate: rec["PLATE"],
+    firefly_mjd: rec["MJD"],
+    firefly_fiberid: rec["FIBERID"],
+    firefly_class: rec["CLASS"],
+    firefly_subclass: rec["SUBCLASS"],
+    firefly_z: float_or_nil(rec["Z"]),
+    firefly_z_err: float_or_nil(rec["Z_ERR"]),
+    firefly_ra: ra,
+    firefly_dec: dec,
+    firefly_chabrier_miles_age_massw: float_or_nil(rec["Chabrier_MILES_age_massW"]),
+    firefly_chabrier_miles_metallicity_massw: float_or_nil(rec["Chabrier_MILES_metallicity_massW"]),
+    firefly_chabrier_miles_stellar_mass: float_or_nil(rec["Chabrier_MILES_stellar_mass"])
+  }
+end
+
+def bintable_column_offsets(header, needed_names)
+  tfields = Integer(header["TFIELDS"] || 0)
+  offsets = {}
+  cursor = 0
+  needed_set = needed_names.each_with_object({}) { |n, h| h[n] = true }
+
+  (1..tfields).each do |i|
+    name = header["TTYPE#{i}"]&.to_s
+    form = header["TFORM#{i}"]&.to_s
+    raise "Missing TFORM/TTYPE for column #{i}" if name.blank? || form.blank?
+
+    bytes = tform_size_bytes(form)
+    if needed_set[name]
+      offsets[name] = { offset: cursor, form: form }
+    end
+    cursor += bytes
+  end
+
+  missing = needed_names.reject { |n| offsets.key?(n) }
+  raise "Missing required FIREFLY columns: #{missing.join(', ')}" if missing.any?
+
+  offsets
+end
+
+def tform_size_bytes(form)
+  m = form.to_s.strip.upcase.match(/\A(\d*)([A-Z])\z/)
+  raise "Unsupported TFORM for size calc: #{form}" unless m
+
+  repeat = m[1].empty? ? 1 : m[1].to_i
+  unit =
+    case m[2]
+    when "A", "B" then 1
+    when "I" then 2
+    when "J", "E" then 4
+    when "K", "D" then 8
+    else
+      raise "Unsupported TFORM code for size calc: #{m[2]}"
+    end
+  repeat * unit
+end
+
+def decode_row_subset(row_buf, offsets)
+  offsets.each_with_object({}) do |(name, spec), h|
+    h[name] = decode_tform_scalar(row_buf, spec[:offset], spec[:form])
+  end
+end
+
+def decode_tform_scalar(buf, offset, form)
+  m = form.to_s.strip.upcase.match(/\A(\d*)([A-Z])\z/)
+  raise "Unsupported TFORM decode: #{form}" unless m
+
+  repeat = m[1].empty? ? 1 : m[1].to_i
+  code = m[2]
+  raw = buf.byteslice(offset, tform_size_bytes(form))
+
+  case code
+  when "A"
+    raw.to_s.strip
+  when "B"
+    vals = raw.bytes
+    repeat == 1 ? vals[0] : vals
+  when "I"
+    vals = repeat.times.map { |i| raw.byteslice(i * 2, 2).unpack1("s>") }
+    repeat == 1 ? vals[0] : vals
+  when "J"
+    vals = repeat.times.map { |i| raw.byteslice(i * 4, 4).unpack1("l>") }
+    repeat == 1 ? vals[0] : vals
+  when "K"
+    vals = repeat.times.map { |i| raw.byteslice(i * 8, 8).unpack1("q>") }
+    repeat == 1 ? vals[0] : vals
+  when "E"
+    vals = repeat.times.map { |i| raw.byteslice(i * 4, 4).unpack1("g") }
+    repeat == 1 ? vals[0] : vals
+  when "D"
+    vals = repeat.times.map { |i| raw.byteslice(i * 8, 8).unpack1("G") }
+    repeat == 1 ? vals[0] : vals
+  else
+    raise "Unsupported TFORM code decode: #{code}"
+  end
+end
+
+def compare_eboss_match_with_observations(match)
+  galaxy_id = match["galaxy_id"]
+  galaxy = Galaxy.find_by(id: galaxy_id)
+  observations = Observation.where(galaxy_id: galaxy_id).to_a
+
+  obs_age_vals = observations.map { |o| float_or_nil(o.age_gyr) }.compact
+  obs_z_vals = observations.map { |o| float_or_nil(o.metallicity_z) }.compact
+  obs_mass_vals = observations.map { |o| float_or_nil(o.stellar_mass) }.compact.select(&:positive?)
+
+  obs_age_gyr = average_or_nil(obs_age_vals)
+  obs_metallicity_z = average_or_nil(obs_z_vals)
+  obs_stellar_mass_msun = average_or_nil(obs_mass_vals)
+
+  ff_age_raw = float_or_nil(match["firefly_chabrier_miles_age_massw"])
+  ff_age_gyr = normalize_firefly_age_to_gyr(ff_age_raw)
+  ff_z = float_or_nil(match["firefly_chabrier_miles_metallicity_massw"])
+  ff_mass = float_or_nil(match["firefly_chabrier_miles_stellar_mass"])
+
+  {
+    galaxy_id: galaxy_id,
+    galaxy_name: match["galaxy_name"] || galaxy&.name,
+    match_type: match["match_type"],
+    separation_arcsec: float_or_nil(match["separation_arcsec"]),
+    observations_count: observations.size,
+    obs_age_gyr: obs_age_gyr,
+    obs_metallicity_z: obs_metallicity_z,
+    obs_stellar_mass_msun: obs_stellar_mass_msun,
+    firefly_age_massw_raw: ff_age_raw,
+    firefly_age_gyr: ff_age_gyr,
+    firefly_metallicity_massw: ff_z,
+    firefly_stellar_mass_msun: ff_mass,
+    delta_age_gyr: (ff_age_gyr && obs_age_gyr) ? (ff_age_gyr - obs_age_gyr) : nil,
+    ratio_age: (ff_age_gyr && obs_age_gyr&.positive?) ? (ff_age_gyr / obs_age_gyr) : nil,
+    delta_metallicity_z: (ff_z && obs_metallicity_z) ? (ff_z - obs_metallicity_z) : nil,
+    ratio_metallicity: (ff_z && obs_metallicity_z&.positive?) ? (ff_z / obs_metallicity_z) : nil,
+    delta_stellar_mass_msun: (ff_mass && obs_stellar_mass_msun) ? (ff_mass - obs_stellar_mass_msun) : nil,
+    ratio_stellar_mass: (ff_mass && obs_stellar_mass_msun&.positive?) ? (ff_mass / obs_stellar_mass_msun) : nil
+  }
+end
+
+def normalize_firefly_age_to_gyr(value)
+  return nil if value.nil?
+  # DR16 FIREFLY age fields are typically in years (~1e10 for old populations).
+  value > 1_000_000.0 ? (value / 1_000_000_000.0) : value
+end
+
+def average_or_nil(values)
+  return nil if values.empty?
+
+  values.sum / values.size.to_f
+end
+
+def normalize_sdss_objid(value)
+  s = value.to_s.strip
+  return nil if s.empty?
+
+  s
+end
+
+def best_row_by_separation(rows, target_ra, target_dec)
+  rows
+    .map { |row| row.merge(separation_arcsec: angular_separation_arcsec(target_ra, target_dec, row[:ra], row[:dec])) }
+    .min_by { |row| row[:separation_arcsec] }
 end
 
 def find_best_match_by_radec(rows_by_ra, target_ra, target_dec, tol_arcsec)

@@ -1,0 +1,32 @@
+{
+  "source_fit": "/var/stellar_pop/lib/data/fit/SDSS17Pipe3D_v3_1_1.fits",
+  "tolerance_arcsec": 1.0,
+  "galaxies_checked": 35,
+  "matched": 1,
+  "matched_by_objid": 0,
+  "matched_by_radec": 1,
+  "unmatched": 34,
+  "matches": [
+    {
+      "galaxy_id": 4,
+      "galaxy_name": "NGC4889",
+      "galaxy_sdss_objid": "1237667444048723983",
+      "galaxy_ra": 195.0338,
+      "galaxy_dec": 27.9769,
+      "match_type": "radec",
+      "separation_arcsec": 0.23111483636024574,
+      "pipe3d_index": 9919,
+      "pipe3d_sdss_objid": null,
+      "pipe3d_name": "manga-9877-12704",
+      "pipe3d_plateifu": "9877-12704",
+      "pipe3d_mangaid": "1-456627",
+      "pipe3d_ra": 195.033836039,
+      "pipe3d_dec": 27.9769557537,
+      "pipe3d_age_lw_re_fit_gyr": 9.81709902343295,
+      "pipe3d_age_mw_re_fit_gyr": 9.91019957690011,
+      "pipe3d_zh_lw_re_fit": 0.0548260560414442,
+      "pipe3d_zh_mw_re_fit": 0.0905057391861362,
+      "pipe3d_log_mass": 11.4926967706272
+    }
+  ]
+}
