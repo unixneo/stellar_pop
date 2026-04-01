@@ -26,6 +26,8 @@
 /storage/*
 !/storage/.keep
 !/storage/development.sqlite3
+!/storage/gallazzi_stellar_metallicities_development.sqlite3
+!/storage/gallazzi_rband_weighted_ages_development.sqlite3
 /tmp/storage/*
 !/tmp/storage/
 !/tmp/storage/.keep
