@@ -1,6 +1,6 @@
 {
   "source_compare": "lib/data/fit/firefly_fast_bm_compare.json",
-  "generated_at": "2026-04-01T15:09:09Z",
+  "generated_at": "2026-04-01T15:25:06Z",
   "entries_count": 10,
   "entries": [
     {
@@ -12,7 +12,9 @@
       },
       "firefly": {
         "age_gyr": 13.325740826833337,
-        "metallicity": 1.1920224771853682,
+        "metallicity_raw": 1.1920224771853682,
+        "metallicity_z_assuming_linear_z_over_zsun": 0.023840449543707367,
+        "metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02",
         "stellar_mass_msun": 916291670.6733524
       }
     },
@@ -25,7 +27,9 @@
       },
       "firefly": {
         "age_gyr": 0.03150416016666669,
-        "metallicity": 0.9991713988565798,
+        "metallicity_raw": 0.9991713988565798,
+        "metallicity_z_assuming_linear_z_over_zsun": 0.019983427977131596,
+        "metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02",
         "stellar_mass_msun": 55063.53342477927
       }
     },
@@ -38,7 +42,9 @@
       },
       "firefly": {
         "age_gyr": 5.3292074935,
-        "metallicity": 0.20781697399017093,
+        "metallicity_raw": 0.20781697399017093,
+        "metallicity_z_assuming_linear_z_over_zsun": 0.0041563394798034186,
+        "metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02",
         "stellar_mass_msun": 1040381874.4670113
       }
     },
@@ -51,7 +57,9 @@
       },
       "firefly": {
         "age_gyr": 14.87506916016668,
-        "metallicity": 0.5070686472589809,
+        "metallicity_raw": 0.5070686472589809,
+        "metallicity_z_assuming_linear_z_over_zsun": 0.01014137294517962,
+        "metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02",
         "stellar_mass_msun": 78439255.74641803
       }
     },
@@ -64,7 +72,9 @@
       },
       "firefly": {
         "age_gyr": 10.426997493499995,
-        "metallicity": 0.07481623031514423,
+        "metallicity_raw": 0.07481623031514423,
+        "metallicity_z_assuming_linear_z_over_zsun": 0.0014963246063028847,
+        "metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02",
         "stellar_mass_msun": 1601393918.0947387
       }
     },
@@ -77,7 +87,9 @@
       },
       "firefly": {
         "age_gyr": 11.126694160166672,
-        "metallicity": 1.9301766045817663,
+        "metallicity_raw": 1.9301766045817663,
+        "metallicity_z_assuming_linear_z_over_zsun": 0.03860353209163533,
+        "metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02",
         "stellar_mass_msun": 3644538382.359806
       }
     },
@@ -90,7 +102,9 @@
       },
       "firefly": {
         "age_gyr": 10.077149160166663,
-        "metallicity": 0.9858713244890771,
+        "metallicity_raw": 0.9858713244890771,
+        "metallicity_z_assuming_linear_z_over_zsun": 0.01971742648978154,
+        "metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02",
         "stellar_mass_msun": 238037783.3679967
       }
     },
@@ -103,7 +117,9 @@
       },
       "firefly": {
         "age_gyr": 4.9293808268333335,
-        "metallicity": 1.9966769764192795,
+        "metallicity_raw": 1.9966769764192795,
+        "metallicity_z_assuming_linear_z_over_zsun": 0.03993353952838559,
+        "metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02",
         "stellar_mass_msun": 45217868.17850969
       }
     },
@@ -116,7 +132,9 @@
       },
       "firefly": {
         "age_gyr": 10.526954160166655,
-        "metallicity": 1.524524336372935,
+        "metallicity_raw": 1.524524336372935,
+        "metallicity_z_assuming_linear_z_over_zsun": 0.0304904867274587,
+        "metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02",
         "stellar_mass_msun": 14253754075.631289
       }
     },
@@ -129,7 +147,9 @@
       },
       "firefly": {
         "age_gyr": 12.775979160166676,
-        "metallicity": 1.9966769764192795,
+        "metallicity_raw": 1.9966769764192795,
+        "metallicity_z_assuming_linear_z_over_zsun": 0.03993353952838559,
+        "metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02",
         "stellar_mass_msun": 46615058989.391045
       }
     }

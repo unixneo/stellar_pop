@@ -14,10 +14,13 @@
       "age_ratio": 0.007504273218239042,
       "sps_metallicity_z": 0.02,
       "firefly_metallicity": 1.1920224771853682,
-      "metallicity_ratio": 0.01677820710832943,
+      "metallicity_ratio": 0.8389103554164714,
       "sps_stellar_mass_msun": null,
       "firefly_stellar_mass_msun": 916291670.6733524,
-      "stellar_mass_ratio": null
+      "stellar_mass_ratio": null,
+      "firefly_metallicity_raw": 1.1920224771853682,
+      "firefly_metallicity_z_assuming_linear_z_over_zsun": 0.023840449543707367,
+      "firefly_metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02"
     },
     {
       "galaxy": "NGC3184",
@@ -29,10 +32,13 @@
       "age_ratio": 380.9020756787774,
       "sps_metallicity_z": 0.02,
       "firefly_metallicity": 0.9991713988565798,
-      "metallicity_ratio": 0.020016585765852954,
+      "metallicity_ratio": 1.0008292882926477,
       "sps_stellar_mass_msun": null,
       "firefly_stellar_mass_msun": 55063.53342477927,
-      "stellar_mass_ratio": null
+      "stellar_mass_ratio": null,
+      "firefly_metallicity_raw": 0.9991713988565798,
+      "firefly_metallicity_z_assuming_linear_z_over_zsun": 0.019983427977131596,
+      "firefly_metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02"
     },
     {
       "galaxy": "NGC3690",
@@ -44,10 +50,13 @@
       "age_ratio": 0.09382258067636637,
       "sps_metallicity_z": 0.02,
       "firefly_metallicity": 0.20781697399017093,
-      "metallicity_ratio": 0.096238529586837,
+      "metallicity_ratio": 4.81192647934185,
       "sps_stellar_mass_msun": 4168603819.3428426,
       "firefly_stellar_mass_msun": 1040381874.4670113,
-      "stellar_mass_ratio": 4.006801657783996
+      "stellar_mass_ratio": 4.006801657783996,
+      "firefly_metallicity_raw": 0.20781697399017093,
+      "firefly_metallicity_z_assuming_linear_z_over_zsun": 0.0041563394798034186,
+      "firefly_metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02"
     },
     {
       "galaxy": "NGC4151",
@@ -59,10 +68,13 @@
       "age_ratio": 0.0067226578191505685,
       "sps_metallicity_z": 0.02,
       "firefly_metallicity": 0.5070686472589809,
-      "metallicity_ratio": 0.03944239129773128,
+      "metallicity_ratio": 1.9721195648865637,
       "sps_stellar_mass_msun": null,
       "firefly_stellar_mass_msun": 78439255.74641803,
-      "stellar_mass_ratio": null
+      "stellar_mass_ratio": null,
+      "firefly_metallicity_raw": 0.5070686472589809,
+      "firefly_metallicity_z_assuming_linear_z_over_zsun": 0.01014137294517962,
+      "firefly_metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02"
     },
     {
       "galaxy": "NGC4194",
@@ -74,10 +86,13 @@
       "age_ratio": 0.009590488543066999,
       "sps_metallicity_z": 0.02,
       "firefly_metallicity": 0.07481623031514423,
-      "metallicity_ratio": 0.2673216749327668,
+      "metallicity_ratio": 13.36608374663834,
       "sps_stellar_mass_msun": 957417451.3262644,
       "firefly_stellar_mass_msun": 1601393918.0947387,
-      "stellar_mass_ratio": 0.5978650477612364
+      "stellar_mass_ratio": 0.5978650477612364,
+      "firefly_metallicity_raw": 0.07481623031514423,
+      "firefly_metallicity_z_assuming_linear_z_over_zsun": 0.0014963246063028847,
+      "firefly_metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02"
     },
     {
       "galaxy": "NGC4261",
@@ -89,10 +104,13 @@
       "age_ratio": 0.7189916326306361,
       "sps_metallicity_z": 0.002,
       "firefly_metallicity": 1.9301766045817663,
-      "metallicity_ratio": 0.0010361746149303074,
+      "metallicity_ratio": 0.051808730746515375,
       "sps_stellar_mass_msun": null,
       "firefly_stellar_mass_msun": 3644538382.359806,
-      "stellar_mass_ratio": null
+      "stellar_mass_ratio": null,
+      "firefly_metallicity_raw": 1.9301766045817663,
+      "firefly_metallicity_z_assuming_linear_z_over_zsun": 0.03860353209163533,
+      "firefly_metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02"
     },
     {
       "galaxy": "NGC4387",
@@ -104,10 +122,13 @@
       "age_ratio": 0.1984688296473447,
       "sps_metallicity_z": 0.02,
       "firefly_metallicity": 0.9858713244890771,
-      "metallicity_ratio": 0.02028662311520715,
+      "metallicity_ratio": 1.0143311557603576,
       "sps_stellar_mass_msun": 424641479.18055475,
       "firefly_stellar_mass_msun": 238037783.3679967,
-      "stellar_mass_ratio": 1.7839246911658404
+      "stellar_mass_ratio": 1.7839246911658404,
+      "firefly_metallicity_raw": 0.9858713244890771,
+      "firefly_metallicity_z_assuming_linear_z_over_zsun": 0.01971742648978154,
+      "firefly_metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02"
     },
     {
       "galaxy": "NGC4472",
@@ -119,10 +140,13 @@
       "age_ratio": 2.4343828203894073,
       "sps_metallicity_z": 0.02,
       "firefly_metallicity": 1.9966769764192795,
-      "metallicity_ratio": 0.010016642770062286,
+      "metallicity_ratio": 0.5008321385031143,
       "sps_stellar_mass_msun": null,
       "firefly_stellar_mass_msun": 45217868.17850969,
-      "stellar_mass_ratio": null
+      "stellar_mass_ratio": null,
+      "firefly_metallicity_raw": 1.9966769764192795,
+      "firefly_metallicity_z_assuming_linear_z_over_zsun": 0.03993353952838559,
+      "firefly_metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02"
     },
     {
       "galaxy": "NGC4874",
@@ -134,10 +158,13 @@
       "age_ratio": 1.1399308686464371,
       "sps_metallicity_z": 0.002,
       "firefly_metallicity": 1.524524336372935,
-      "metallicity_ratio": 0.0013118846005163098,
+      "metallicity_ratio": 0.06559423002581548,
       "sps_stellar_mass_msun": 541282611363.3439,
       "firefly_stellar_mass_msun": 14253754075.631289,
-      "stellar_mass_ratio": 37.97474044320291
+      "stellar_mass_ratio": 37.97474044320291,
+      "firefly_metallicity_raw": 1.524524336372935,
+      "firefly_metallicity_z_assuming_linear_z_over_zsun": 0.0304904867274587,
+      "firefly_metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02"
     },
     {
       "galaxy": "NGC4889",
@@ -149,10 +176,13 @@
       "age_ratio": 0.9392626466873046,
       "sps_metallicity_z": 0.02,
       "firefly_metallicity": 1.9966769764192795,
-      "metallicity_ratio": 0.010016642770062286,
+      "metallicity_ratio": 0.5008321385031143,
       "sps_stellar_mass_msun": 242904510470.93524,
       "firefly_stellar_mass_msun": 46615058989.391045,
-      "stellar_mass_ratio": 5.210859231696285
+      "stellar_mass_ratio": 5.210859231696285,
+      "firefly_metallicity_raw": 1.9966769764192795,
+      "firefly_metallicity_z_assuming_linear_z_over_zsun": 0.03993353952838559,
+      "firefly_metallicity_conversion_note": "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=0.02"
     }
   ]
 }

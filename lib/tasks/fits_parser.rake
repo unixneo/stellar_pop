@@ -1121,6 +1121,7 @@ def decode_tform_scalar(buf, offset, form)
 end
 
 def compare_eboss_match_with_observations(match)
+  zsun = 0.02
   galaxy_id = match["galaxy_id"]
   galaxy = Galaxy.find_by(id: galaxy_id)
   observations = Observation.where(galaxy_id: galaxy_id).to_a
@@ -1135,7 +1136,8 @@ def compare_eboss_match_with_observations(match)
 
   ff_age_raw = float_or_nil(match["firefly_chabrier_miles_age_massw"])
   ff_age_gyr = normalize_firefly_age_to_gyr(ff_age_raw)
-  ff_z = float_or_nil(match["firefly_chabrier_miles_metallicity_massw"])
+  ff_z_raw = float_or_nil(match["firefly_chabrier_miles_metallicity_massw"])
+  ff_z_assuming_linear = ff_z_raw.nil? ? nil : (ff_z_raw * zsun)
   ff_mass = float_or_nil(match["firefly_chabrier_miles_stellar_mass"])
 
   {
@@ -1149,12 +1151,14 @@ def compare_eboss_match_with_observations(match)
     obs_stellar_mass_msun: obs_stellar_mass_msun,
     firefly_age_massw_raw: ff_age_raw,
     firefly_age_gyr: ff_age_gyr,
-    firefly_metallicity_massw: ff_z,
+    firefly_metallicity_massw_raw: ff_z_raw,
+    firefly_metallicity_z_assuming_linear_z_over_zsun: ff_z_assuming_linear,
+    firefly_metallicity_conversion_note: "Assumes FIREFLY metallicity is linear Z/Zsun and uses Zsun=#{zsun}",
     firefly_stellar_mass_msun: ff_mass,
     delta_age_gyr: (ff_age_gyr && obs_age_gyr) ? (ff_age_gyr - obs_age_gyr) : nil,
     ratio_age: (ff_age_gyr && obs_age_gyr&.positive?) ? (ff_age_gyr / obs_age_gyr) : nil,
-    delta_metallicity_z: (ff_z && obs_metallicity_z) ? (ff_z - obs_metallicity_z) : nil,
-    ratio_metallicity: (ff_z && obs_metallicity_z&.positive?) ? (ff_z / obs_metallicity_z) : nil,
+    delta_metallicity_z: (ff_z_assuming_linear && obs_metallicity_z) ? (ff_z_assuming_linear - obs_metallicity_z) : nil,
+    ratio_metallicity: (ff_z_assuming_linear && obs_metallicity_z&.positive?) ? (ff_z_assuming_linear / obs_metallicity_z) : nil,
     delta_stellar_mass_msun: (ff_mass && obs_stellar_mass_msun) ? (ff_mass - obs_stellar_mass_msun) : nil,
     ratio_stellar_mass: (ff_mass && obs_stellar_mass_msun&.positive?) ? (ff_mass / obs_stellar_mass_msun) : nil
   }
