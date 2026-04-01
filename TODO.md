@@ -30,6 +30,8 @@ v0.3.4 packaging/doc sync:
   - `fits:crossmatch_eboss_firefly_galaxies` (DR16 eBOSS FIREFLY; overlap `12/35`, `11` ObjID + `1` RA/DEC)
 - 🟩 Add DR16 FIREFLY-vs-observations comparison task (`fits:compare_eboss_firefly_with_observations`) and export normalized age/Z/mass comparison JSON
 - 🟩 Run fast BM over FIREFLY-overlap targets (`10` galaxies with observations) and export BM-vs-FIREFLY value comparison JSON (`lib/data/fit/firefly_bm_vs_firefly_values.json`)
+- 🟩 Fix FIREFLY metallicity comparison units in JSON/report workflow (keep raw value and add converted `Z` assuming linear `Z/Zsun` with `Zsun=0.02`)
+- 🟩 Document FIREFLY aperture-effects and match-quality caveats in `paper.md` (fiber-vs-global light and large-separation match risk)
 
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution
