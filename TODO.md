@@ -19,6 +19,8 @@ v0.3.4 packaging/doc sync:
 - 🟩 Add FIT stellar-mass PDF extraction task from crossmatch reports (`fits:mass_pdfs_from_report`)
 - 🟩 Add FIT-vs-observations stellar-mass comparison task (`fits:compare_mass_pdfs_with_observations`) in log-mass space with interval checks (`P16-P84`, `P2P5-P97P5`)
 - 🟩 Update NGC4387 observation stellar mass from FIT `AVG` PDF value with FIT provenance note (`method_used=fits_pdf_avg`)
+- 🟩 Add DR2 Gallazzi catalog schema (`gallazzi_stellar_metallicities`, `gallazzi_rband_weighted_ages`) with unique `(plateid,mjd,fiberid)` keys
+- 🟩 Add DR2 Gallazzi importer task (`gallazzi:import_dr2`) and ingest both catalogs (`261054` rows each)
 
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution

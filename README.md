@@ -32,6 +32,10 @@ chi-squared metric.
   - `fits:mass_pdfs_from_report` (pull `totlgm_dr7_v5_2.fit` stellar-mass PDFs for matched rows)
   - `fits:compare_mass_pdfs_with_observations` (compare FIT log-mass PDFs with `observations.stellar_mass`)
 - FIT-based mass validation now reports interval coverage in log-mass space (`P16-P84` and `P2P5-P97P5`) and supports JSON export for reproducibility.
+- Added DR2 Gallazzi reference-catalog ingestion for stellar metallicity and r-band weighted age:
+  - schema tables: `gallazzi_stellar_metallicities`, `gallazzi_rband_weighted_ages`
+  - import task: `bin/rails gallazzi:import_dr2`
+  - ingested rows: `261,054` metallicity + `261,054` age
 - Added SDSS uncertainty and quality ingestion for DR19 galaxies:
   - per-band photometric errors (`err_*`, `petro_err_*`, `model_err_*`)
   - per-band extinction (`extinction_*`)

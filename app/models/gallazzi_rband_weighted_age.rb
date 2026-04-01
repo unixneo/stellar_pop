@@ -1,0 +1,2 @@
+class GallazziRbandWeightedAge < ApplicationRecord
+end

@@ -43,6 +43,8 @@ Asynchronous execution is handled by Sidekiq through a dedicated synthesis queue
 
 FITS ingestion tasks used for SDSS-derived tabular products (for example `gal_info_dr7_v5_2.fit` and `totlgm_dr7_v5_2.fit`) now rely on the standalone `fits_parser` gem rather than app-local FITS parsing code. This extraction improves modularity and enables parser versioning independent of the Rails application.
 
+To support future age/stellar-metallicity benchmark provenance keyed by spectroscopic identifiers, two DR2 Gallazzi reference tables were added to the application schema (`gallazzi_stellar_metallicities`, `gallazzi_rband_weighted_ages`) with unique `(plateid, mjd, fiberid)` indexing. An importer task (`gallazzi:import_dr2`) ingests the public catalogs directly from MPA-JHU URLs; current ingest size is 261,054 rows for each table.
+
 Three pipeline fixes were required to recover physically correct color behavior: (1) BaSeL binary parsing was corrected from big-endian (`g*`) to little-endian (`e*`) unpacking; (2) spectral lookup now uses MIST-evolved `teff/logg` per star instead of a mass-only mapping; and (3) chi-squared moved to magnitude-space color comparison normalized to `r`-band, reducing scale artifacts in photometric fitting.
 
 Recent usability and provenance updates focused on reproducible interpretation: local SDSS catalog entries now carry `agn` and `sdss_dr` metadata, the run form defaults to catalog-driven target selection with RA/Dec autofill (manual override optional), and run notes now distinguish SDSS failure causes (no object found vs API timeout vs unreachable API) instead of using a single ambiguous message.
