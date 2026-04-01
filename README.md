@@ -36,6 +36,10 @@ chi-squared metric.
   - schema tables: `gallazzi_stellar_metallicities`, `gallazzi_rband_weighted_ages`
   - import task: `bin/rails gallazzi:import_dr2`
   - ingested rows: `261,054` metallicity + `261,054` age
+  - storage split: Gallazzi catalogs now live in dedicated development SQLite files
+    (`storage/gallazzi_stellar_metallicities_development.sqlite3`,
+    `storage/gallazzi_rband_weighted_ages_development.sqlite3`) via model-specific
+    external DB connections, not the main `storage/development.sqlite3`
 - Added SDSS uncertainty and quality ingestion for DR19 galaxies:
   - per-band photometric errors (`err_*`, `petro_err_*`, `model_err_*`)
   - per-band extinction (`extinction_*`)

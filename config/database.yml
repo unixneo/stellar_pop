@@ -23,3 +23,11 @@ test:
 production:
   <<: *default
   database: storage/production.sqlite3
+
+gallazzi_metal_development:
+  <<: *default
+  database: storage/gallazzi_stellar_metallicities_development.sqlite3
+
+gallazzi_age_development:
+  <<: *default
+  database: storage/gallazzi_rband_weighted_ages_development.sqlite3

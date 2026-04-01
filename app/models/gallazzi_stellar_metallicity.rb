@@ -1,2 +1,2 @@
-class GallazziStellarMetallicity < ApplicationRecord
+class GallazziStellarMetallicity < GallazziMetalRecord
 end

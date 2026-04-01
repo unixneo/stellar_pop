@@ -1,2 +1,2 @@
-class GallazziRbandWeightedAge < ApplicationRecord
+class GallazziRbandWeightedAge < GallazziAgeRecord
 end

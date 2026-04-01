@@ -9,11 +9,71 @@ namespace :gallazzi do
 
   desc "Import DR2 Gallazzi stellar metallicity and r-band weighted age catalogs"
   task import_dr2: :environment do
+    ensure_external_tables!
     imported_metals = import_metallicities
     imported_ages = import_ages
 
     puts "Imported/updated metallicity rows: #{imported_metals}"
     puts "Imported/updated age rows: #{imported_ages}"
+  end
+
+  def ensure_external_tables!
+    ensure_metal_table!
+    ensure_age_table!
+  end
+
+  def ensure_metal_table!
+    conn = GallazziStellarMetallicity.connection
+    conn.execute <<~SQL
+      CREATE TABLE IF NOT EXISTS gallazzi_stellar_metallicities (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        plateid INTEGER NOT NULL,
+        mjd INTEGER NOT NULL,
+        fiberid INTEGER NOT NULL,
+        p2p5 REAL NOT NULL,
+        p16 REAL NOT NULL,
+        median_log_z REAL NOT NULL,
+        p84 REAL NOT NULL,
+        p97p5 REAL NOT NULL,
+        mode_log_z REAL NOT NULL,
+        sdss_index INTEGER,
+        source_release VARCHAR NOT NULL DEFAULT 'DR2',
+        source_file VARCHAR NOT NULL DEFAULT 'gallazzi_z_star.txt',
+        created_at DATETIME NOT NULL,
+        updated_at DATETIME NOT NULL
+      )
+    SQL
+    conn.execute <<~SQL
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_gallazzi_metals_plate_mjd_fiber
+      ON gallazzi_stellar_metallicities (plateid, mjd, fiberid)
+    SQL
+  end
+
+  def ensure_age_table!
+    conn = GallazziRbandWeightedAge.connection
+    conn.execute <<~SQL
+      CREATE TABLE IF NOT EXISTS gallazzi_rband_weighted_ages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        plateid INTEGER NOT NULL,
+        mjd INTEGER NOT NULL,
+        fiberid INTEGER NOT NULL,
+        p2p5_log_yr REAL NOT NULL,
+        p16_log_yr REAL NOT NULL,
+        median_log_yr REAL NOT NULL,
+        p84_log_yr REAL NOT NULL,
+        p97p5_log_yr REAL NOT NULL,
+        mode_log_yr REAL NOT NULL,
+        sdss_index INTEGER,
+        source_release VARCHAR NOT NULL DEFAULT 'DR2',
+        source_file VARCHAR NOT NULL DEFAULT 'gallazzi_lwage.txt',
+        created_at DATETIME NOT NULL,
+        updated_at DATETIME NOT NULL
+      )
+    SQL
+    conn.execute <<~SQL
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_gallazzi_ages_plate_mjd_fiber
+      ON gallazzi_rband_weighted_ages (plateid, mjd, fiberid)
+    SQL
   end
 
   def import_metallicities
