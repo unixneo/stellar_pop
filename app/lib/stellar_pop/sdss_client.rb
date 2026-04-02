@@ -227,6 +227,39 @@ module StellarPop
       nil
     end
 
+    def fetch_spectral_classification_by_objid(objid)
+      @last_failure_reason = nil
+      sql = spectral_classification_by_objid_query(objid)
+      response = @connection.get(nil, cmd: sql, format: "json")
+      payload = parse_json(response.body)
+      row = extract_first_row(payload)
+      unless row
+        @last_failure_reason = :no_object_found
+        return nil
+      end
+
+      {
+        spec_objid: (row["specObjID"] || row[:specObjID] || row["specobjid"] || row[:specobjid]).to_s.presence,
+        object_class: (row["class"] || row[:class]).to_s.presence,
+        object_subclass: (row["subClass"] || row[:subClass] || row["subclass"] || row[:subclass]).to_s.presence,
+        redshift_z: to_float_or_nil(row["z"] || row[:z]),
+        redshift_err: to_float_or_nil(row["zErr"] || row[:zErr] || row["zerr"] || row[:zerr]),
+        redshift_warning: to_int_or_nil(row["zWarning"] || row[:zWarning] || row["zwarning"] || row[:zwarning])
+      }
+    rescue Faraday::TimeoutError
+      @last_failure_reason = :timeout
+      nil
+    rescue Faraday::ConnectionFailed
+      @last_failure_reason = :api_unreachable
+      nil
+    rescue JSON::ParserError
+      @last_failure_reason = :invalid_response
+      nil
+    rescue Faraday::Error
+      @last_failure_reason = :request_error
+      nil
+    end
+
     private
 
     def build_photometry_hash(row)
@@ -380,6 +413,16 @@ module StellarPop
         JOIN SpecObj AS s
           ON s.specObjID = n.specObjID
         ORDER BY n.distance ASC
+      SQL
+        .gsub(/\s+/, " ")
+        .strip
+    end
+
+    def spectral_classification_by_objid_query(objid)
+      <<~SQL
+        SELECT TOP 1 specObjID, class, subClass, z, zErr, zWarning
+        FROM SpecObj
+        WHERE bestObjID = #{objid}
       SQL
         .gsub(/\s+/, " ")
         .strip

@@ -96,6 +96,23 @@ chi-squared metric.
   - `lib/data/fit/dr19_simbad_z_check.json` (SIMBAD `z`, `z_err`, and type for DR19 galaxies)
 - Cleaned legacy spectroscopy placeholders by deleting rows with `redshift_z IS NULL` after SIMBAD backfill.
 
+## v0.3.6 AGN Classification and Traceability Updates
+
+- Added galaxy-level AGN traceability fields:
+  - `agn_source`, `agn_method`, `agn_confidence`, `agn_checked_at`
+- Added SDSS AGN classification task:
+  - `sdss:classify_agn_dr19`
+  - classification source: SDSS `SpecObj.class` / `SpecObj.subClass` by `bestObjID = sdss_objid`
+  - writes JSON report: `lib/data/fit/dr19_agn_classification_report.json`
+  - supports dry run and `WRITE=true`
+- Added SIMBAD fallback task for unresolved SDSS rows:
+  - `external:classify_simbad_agn_for_unresolved_dr19`
+  - writes JSON report: `lib/data/fit/dr19_agn_simbad_fallback_report.json`
+  - supports dry run and `WRITE=true`
+- Current run status:
+  - SDSS AGN classification resolved `5/26` DR19 galaxies (`21` unresolved via strict `bestObjID` lookup)
+  - SIMBAD fallback task is implemented but currently blocked in this environment by SIMBAD endpoint connectivity timeouts.
+
 ## FIT Crossmatch Snapshot (DR19 sample)
 
 Recent DR19 sample crossmatch against DR7 FIT metadata (`gal_info_dr7_v5_2.fit`) found 3 matches within 1 arcsec for the active benchmark subset (`NGC4889`, `NGC4874`, `NGC4387`). Stellar-mass PDF extraction from `totlgm_dr7_v5_2.fit` and comparison against `observations.stellar_mass` showed 3/3 inside the 95% interval (`P2P5-P97P5`) after updating `NGC4387` to the FIT-derived `AVG` value with explicit FIT provenance.

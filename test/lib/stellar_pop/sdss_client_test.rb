@@ -86,4 +86,34 @@ class SdssClientTest < ActiveSupport::TestCase
 
     assert_nil client.fetch_photometry(10.0, 20.0)
   end
+
+  test "parses spectral class/subclass payload for agn classification inputs" do
+    body = [
+      {
+        "TableName" => "Table1",
+        "Rows" => [
+          {
+            "specObjID" => "123456789",
+            "class" => "GALAXY",
+            "subClass" => "AGN BROADLINE",
+            "z" => "0.0042",
+            "zErr" => "0.0001",
+            "zWarning" => "0"
+          }
+        ]
+      }
+    ].to_json
+    connection = FakeConnection.new(body: body)
+    client = StellarPop::SdssClient.new(connection: connection)
+
+    row = client.fetch_spectral_classification_by_objid("987654321")
+
+    assert_equal "123456789", row[:spec_objid]
+    assert_equal "GALAXY", row[:object_class]
+    assert_equal "AGN BROADLINE", row[:object_subclass]
+    assert_in_delta 0.0042, row[:redshift_z], 1e-8
+    assert_in_delta 0.0001, row[:redshift_err], 1e-8
+    assert_equal 0, row[:redshift_warning]
+    assert_includes connection.last_params[:cmd], "WHERE bestObjID = 987654321"
+  end
 end

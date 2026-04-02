@@ -529,6 +529,97 @@ namespace :sdss do
     puts "total rows: #{scope.count}"
   end
 
+  desc "Classify AGN status for DR19 galaxies from SDSS SpecObj class/subClass by objid. Usage: bin/rails sdss:classify_agn_dr19 WRITE=true REPORT=lib/data/fit/dr19_agn_classification_report.json"
+  task classify_agn_dr19: :environment do
+    write_enabled = ActiveModel::Type::Boolean.new.cast(ENV["WRITE"])
+    report_path = ENV.fetch("REPORT", Rails.root.join("lib/data/fit/dr19_agn_classification_report.json").to_s)
+    release = "DR19"
+    client = StellarPop::SdssClient.new(release: release)
+    galaxies = Galaxy.where(sdss_dr: release).order(:id).to_a
+
+    if galaxies.empty?
+      puts "No DR19 galaxies found."
+      next
+    end
+
+    now = Time.current
+    summary = {
+      release: release,
+      generated_at: now.iso8601,
+      write: write_enabled,
+      total: galaxies.size,
+      updated: 0,
+      unresolved: 0,
+      agn_true: 0,
+      agn_false: 0
+    }
+    rows = []
+
+    galaxies.each do |galaxy|
+      objid = galaxy.sdss_objid.to_s.strip
+      if objid.empty? || !objid.match?(/\A\d+\z/)
+        summary[:unresolved] += 1
+        rows << {
+          galaxy_id: galaxy.id,
+          name: galaxy.name,
+          sdss_objid: galaxy.sdss_objid,
+          status: "unresolved",
+          reason: "missing_or_invalid_sdss_objid"
+        }
+        next
+      end
+
+      spec = client.fetch_spectral_classification_by_objid(objid)
+      if spec.nil?
+        summary[:unresolved] += 1
+        rows << {
+          galaxy_id: galaxy.id,
+          name: galaxy.name,
+          sdss_objid: galaxy.sdss_objid,
+          status: "unresolved",
+          reason: client.last_failure_reason || "spec_lookup_failed"
+        }
+        next
+      end
+
+      agn_flag, confidence, reason = classify_agn_from_spec_class(spec[:object_class], spec[:object_subclass])
+      summary[:agn_true] += 1 if agn_flag
+      summary[:agn_false] += 1 unless agn_flag
+
+      if write_enabled
+        galaxy.update!(
+          agn: agn_flag,
+          agn_source: "sdss_specobj",
+          agn_method: "spec_class_subclass_rules",
+          agn_confidence: confidence,
+          agn_checked_at: now
+        )
+        summary[:updated] += 1
+      end
+
+      rows << {
+        galaxy_id: galaxy.id,
+        name: galaxy.name,
+        sdss_objid: galaxy.sdss_objid,
+        agn: agn_flag,
+        agn_confidence: confidence,
+        reason: reason,
+        object_class: spec[:object_class],
+        object_subclass: spec[:object_subclass],
+        spec_objid: spec[:spec_objid],
+        redshift_z: spec[:redshift_z],
+        redshift_warning: spec[:redshift_warning]
+      }
+    end
+
+    payload = { summary: summary, rows: rows }
+    File.write(report_path, JSON.pretty_generate(payload))
+
+    puts "AGN classification complete."
+    puts "  total=#{summary[:total]} updated=#{summary[:updated]} unresolved=#{summary[:unresolved]} agn_true=#{summary[:agn_true]} agn_false=#{summary[:agn_false]} write=#{write_enabled}"
+    puts "  report=#{report_path}"
+  end
+
   def detect_best_profile(galaxy, profiles, bands)
     petrosian = profiles[:petrosian] || {}
     model = profiles[:model] || {}
@@ -621,6 +712,17 @@ namespace :sdss do
   def upsert_spectroscopy_for_galaxy!(galaxy, attrs)
     rec = GalaxySpectroscopy.find_or_initialize_by(galaxy_id: galaxy.id, current: true)
     rec.update!(attrs)
+  end
+
+  def classify_agn_from_spec_class(object_class, object_subclass)
+    klass = object_class.to_s.upcase
+    subclass = object_subclass.to_s.upcase
+
+    return [true, "high", "class_qso"] if klass.include?("QSO")
+    return [true, "high", "subclass_agn_signature"] if subclass.match?(/\b(AGN|SEYFERT|LINER|BROADLINE)\b/)
+    return [false, "medium", "class_galaxy_without_agn_signature"] if klass == "GALAXY"
+
+    [false, "low", "non_agn_or_unknown_class"]
   end
 
 end

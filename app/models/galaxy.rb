@@ -2,6 +2,7 @@ class Galaxy < ApplicationRecord
   MAG_TYPES = %w[petrosian model unknown].freeze
   ID_MATCH_QUALITIES = %w[exact_objid coord_validated unverified].freeze
   REDSHIFT_CONFIDENCES = %w[high medium low].freeze
+  AGN_CONFIDENCES = %w[high medium low].freeze
 
   has_many :synthesis_runs, dependent: :nullify
   has_many :grid_fits, dependent: :nullify
@@ -13,6 +14,7 @@ class Galaxy < ApplicationRecord
   validates :name, presence: true
   validates :ra, presence: true
   validates :dec, presence: true
+  validates :agn_confidence, inclusion: { in: AGN_CONFIDENCES }, allow_nil: true
   scope :usable_photometry, -> { where(photometry_usable: true) }
 
   def self.find_by_ra_dec(ra, dec, tolerance: 0.01)

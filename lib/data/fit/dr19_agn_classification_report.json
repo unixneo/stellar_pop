@@ -1,0 +1,226 @@
+{
+  "summary": {
+    "release": "DR19",
+    "generated_at": "2026-04-02T23:30:01Z",
+    "write": true,
+    "total": 26,
+    "updated": 5,
+    "unresolved": 21,
+    "agn_true": 0,
+    "agn_false": 5
+  },
+  "rows": [
+    {
+      "galaxy_id": 2,
+      "name": "M87",
+      "sdss_objid": "1237658629695668671",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 3,
+      "name": "NGC1068",
+      "sdss_objid": "1237666407923318886",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 4,
+      "name": "NGC4889",
+      "sdss_objid": "1237667444048723983",
+      "agn": false,
+      "agn_confidence": "medium",
+      "reason": "class_galaxy_without_agn_signature",
+      "object_class": "GALAXY",
+      "object_subclass": null,
+      "spec_objid": "2523290745004124160",
+      "redshift_z": 0.02150175,
+      "redshift_warning": 0
+    },
+    {
+      "galaxy_id": 5,
+      "name": "NGC4261",
+      "sdss_objid": "1237654606410285096",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 6,
+      "name": "NGC4472",
+      "sdss_objid": "1237654786779906058",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 7,
+      "name": "NGC4579",
+      "sdss_objid": "1237658629159518212",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 8,
+      "name": "NGC4552",
+      "sdss_objid": "1237658630232997996",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 10,
+      "name": "NGC3379",
+      "sdss_objid": "1237661951318491161",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 15,
+      "name": "NGC4621",
+      "sdss_objid": "1237661816022499507",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 16,
+      "name": "NGC4564",
+      "sdss_objid": "1237658628622450878",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 17,
+      "name": "NGC4339",
+      "sdss_objid": "1237654881798062219",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 18,
+      "name": "NGC4570",
+      "sdss_objid": "1237661971187367996",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 19,
+      "name": "NGC4459",
+      "sdss_objid": "1237664289392558136",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 22,
+      "name": "NGC4194",
+      "sdss_objid": "1237658916918984718",
+      "agn": false,
+      "agn_confidence": "medium",
+      "reason": "class_galaxy_without_agn_signature",
+      "object_class": "GALAXY",
+      "object_subclass": "STARBURST",
+      "spec_objid": "1147363793622296576",
+      "redshift_z": 0.008177739,
+      "redshift_warning": 0
+    },
+    {
+      "galaxy_id": 23,
+      "name": "NGC3690",
+      "sdss_objid": "1237655107301277785",
+      "agn": false,
+      "agn_confidence": "medium",
+      "reason": "class_galaxy_without_agn_signature",
+      "object_class": "GALAXY",
+      "object_subclass": "STARBURST",
+      "spec_objid": "1071924646573533184",
+      "redshift_z": 0.009989776,
+      "redshift_warning": 0
+    },
+    {
+      "galaxy_id": 26,
+      "name": "NGC4051",
+      "sdss_objid": "1237661850394362028",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 27,
+      "name": "NGC4151",
+      "sdss_objid": "1237664667907915840",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 28,
+      "name": "NGC4594",
+      "sdss_objid": "1237671267102228500",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 30,
+      "name": "NGC4874",
+      "sdss_objid": "1237667444048658532",
+      "agn": false,
+      "agn_confidence": "medium",
+      "reason": "class_galaxy_without_agn_signature",
+      "object_class": "GALAXY",
+      "object_subclass": null,
+      "spec_objid": "2522176659042363392",
+      "redshift_z": 0.02390867,
+      "redshift_warning": 0
+    },
+    {
+      "galaxy_id": 31,
+      "name": "NGC4365",
+      "sdss_objid": "1237661971186057245",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 32,
+      "name": "NGC4660",
+      "sdss_objid": "1237661815485956105",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 33,
+      "name": "NGC3184",
+      "sdss_objid": "1237661851996520504",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 34,
+      "name": "NGC4321",
+      "sdss_objid": "1237662526839914556",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 36,
+      "name": "NGC4350",
+      "sdss_objid": "1237668589186580596",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 37,
+      "name": "NGC4262",
+      "sdss_objid": "1237664290465251349",
+      "status": "unresolved",
+      "reason": "no_object_found"
+    },
+    {
+      "galaxy_id": 38,
+      "name": "NGC4387",
+      "sdss_objid": "1237661950255169580",
+      "agn": false,
+      "agn_confidence": "medium",
+      "reason": "class_galaxy_without_agn_signature",
+      "object_class": "GALAXY",
+      "object_subclass": null,
+      "spec_objid": "1817354784349382656",
+      "redshift_z": 0.001793675,
+      "redshift_warning": 0
+    }
+  ]
+}
