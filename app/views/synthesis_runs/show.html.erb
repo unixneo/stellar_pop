@@ -227,6 +227,9 @@
       </div>
     </div>
     <div class="cyberspace-panel-body">
+  <p class="card-subtitle" style="margin: 0 0 10px 0;">
+    Model SED (flux vs wavelength) synthesized by combining stellar contributions under the selected IMF, SFH, and metallicity.
+  </p>
   <% spectrum_points = wavelengths.each_with_index.map { |wavelength, idx| [wavelength.to_f, fluxes[idx].to_f] } %>
   <canvas id="spectrum-canvas" height="320" style="display: block; width: 100%; border: 1px solid #334155; margin-bottom: 12px;"></canvas>
 
@@ -240,6 +243,13 @@
 
       const ctx = canvas.getContext("2d");
       const pad = { left: 52, right: 16, top: 16, bottom: 36 };
+      const sdssBandMarkers = [
+        { label: "u", wavelengthNm: 354.0, color: "#60a5fa" },
+        { label: "g", wavelengthNm: 477.0, color: "#22c55e" },
+        { label: "r", wavelengthNm: 623.0, color: "#ef4444" },
+        { label: "i", wavelengthNm: 763.0, color: "#f59e0b" },
+        { label: "z", wavelengthNm: 913.0, color: "#a78bfa" }
+      ];
 
       function draw() {
         const cssWidth = (table && table.clientWidth) ? table.clientWidth : canvas.clientWidth;
@@ -277,6 +287,23 @@
         ctx.lineTo(pad.left, h - pad.bottom);
         ctx.lineTo(w - pad.right, h - pad.bottom);
         ctx.stroke();
+
+        ctx.setLineDash([4, 4]);
+        sdssBandMarkers.forEach((band) => {
+          if (band.wavelengthNm < minX || band.wavelengthNm > maxX) return;
+          const x = xToPx(band.wavelengthNm);
+          ctx.strokeStyle = band.color;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(x, pad.top);
+          ctx.lineTo(x, h - pad.bottom);
+          ctx.stroke();
+
+          ctx.fillStyle = band.color;
+          ctx.font = "11px monospace";
+          ctx.fillText(band.label, x - 3, pad.top + 11);
+        });
+        ctx.setLineDash([]);
 
         ctx.strokeStyle = "#22d3ee";
         ctx.lineWidth = 2;

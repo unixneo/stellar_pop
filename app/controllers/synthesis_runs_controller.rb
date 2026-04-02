@@ -70,6 +70,7 @@ class SynthesisRunsController < ApplicationController
   end
 
   def seed_test
+    config = PipelineConfig.current
     target = catalog_targets.to_a.sample
     target_name = target&.name || "fallback"
     target_ra = target&.ra || 187.2779
@@ -82,8 +83,13 @@ class SynthesisRunsController < ApplicationController
     metallicity_z = [0.008, 0.02, 0.03].sample
     burst_age_gyr = sfh_model == "burst" ? [1.0, 2.0, 4.0, 8.0].sample : 2.0
     burst_width_gyr = sfh_model == "burst" ? [0.3, 0.5, 1.0].sample : 0.5
-    wavelength_min = [300, 350, 400].sample
-    wavelength_max = [800, 900, 1000].sample
+    wavelength_min = config.float_value("synthesis_default_wavelength_min_nm")
+    wavelength_max = config.float_value("synthesis_default_wavelength_max_nm")
+
+    if wavelength_max <= wavelength_min
+      wavelength_min = PipelineConfig::DEFAULTS["synthesis_default_wavelength_min_nm"].to_f
+      wavelength_max = PipelineConfig::DEFAULTS["synthesis_default_wavelength_max_nm"].to_f
+    end
 
     target_slug = target_name.to_s.downcase.gsub(/[^a-z0-9]+/, "_").gsub(/\A_+|_+\z/, "")
     run_name = [

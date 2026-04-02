@@ -53,12 +53,14 @@ v0.3.5 galaxy data-model split:
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution
 - 🟨 Add more galaxy targets to local SDSS catalog covering wider range of types and environments
+- 🟨 Execute calibration plan in `CALIBRATE.md` (Phases 1-4) and track per-phase completion in TODO
 - 🟨 Stellar mass estimator needs calibration -- current M/L ratios produce systematic underestimates; validate against NGC3379 and NGC4472 published masses and recalibrate SFH_BASE_MASS_TO_LIGHT and age_scale formula
 - 🟨 Reconcile DR19 `sdss_objid` values where `SpecObj.bestObjID` lookup fails and restore high-confidence redshift coverage for benchmark targets
 - 🟨 Add strict redshift sanity checks (target-type-aware z bounds) to block implausible spectroscopic matches from ever being persisted
 - 🟨 Add weighted chi-squared in benchmark and grid jobs using stored `err_*` columns (`sum((model-observed)^2 / sigma^2)`)
 - 🟨 Add observation uncertainty columns to `observations` table: `age_err_plus`, `age_err_minus`, `metallicity_err_plus`, `metallicity_err_minus`, `method_note`
 - 🟨 Use configurable per-band sigma floor when errors are missing, and flag reduced confidence
+- 🟨 Upgrade isochrone source from MIST v1.2 to latest MIST v2.5 in a controlled path: ingest v2.5 side-by-side, run v1.2 vs v2.5 A/B benchmarks on the same galaxy set, document deltas, and switch default only after calibration sign-off
 - 🟩 Store both Petrosian and model magnitudes in `galaxies` (`petro_*`, `model_*`) and keep active photometry provenance in `mag_type`
 - 🟩 Update `SdssClient` photometry query path to retrieve both `petroMag_*` and `modelMag_*` fields
 - 🟩 Add DR19 objid maintenance tasks (`sdss:verify_objids`, `sdss:fix_objids`) and objid-first photometry fetch for catalog refresh (`sdss:fetch_dr19_photometry`)
