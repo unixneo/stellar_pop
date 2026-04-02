@@ -1,4 +1,6 @@
-<%= form_with model: [@galaxy, @spectroscopy] do |f| %>
+<%= form_with model: @spectroscopy,
+              url: (@spectroscopy.persisted? ? galaxy_spectroscopy_path(@galaxy, @spectroscopy) : galaxy_spectroscopies_path(@galaxy)),
+              method: (@spectroscopy.persisted? ? :patch : :post) do |f| %>
   <div class="form-card">
     <table class="galaxy-form-table">
       <thead>
