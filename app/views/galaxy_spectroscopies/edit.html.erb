@@ -1,0 +1,60 @@
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title">Edit Spectroscopy: <%= @galaxy.name %></h1>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <%= form_with model: [@galaxy, @spectroscopy], url: galaxy_spectroscopy_path(@galaxy), method: :patch do |f| %>
+      <div class="form-card">
+        <table class="galaxy-form-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><%= f.label :redshift_z %></td>
+              <td><%= f.number_field :redshift_z, step: 0.000001 %></td>
+            </tr>
+            <tr>
+              <td><%= f.label :z_err %></td>
+              <td><%= f.number_field :z_err, step: 0.000001 %></td>
+            </tr>
+            <tr>
+              <td><%= f.label :z_warning %></td>
+              <td><%= f.number_field :z_warning, step: 1 %></td>
+            </tr>
+            <tr>
+              <td><%= f.label :redshift_source %></td>
+              <td><%= f.text_field :redshift_source %></td>
+            </tr>
+            <tr>
+              <td><%= f.label :redshift_confidence %></td>
+              <td><%= f.select :redshift_confidence, options_for_select(Galaxy::REDSHIFT_CONFIDENCES, @spectroscopy.redshift_confidence), include_blank: true %></td>
+            </tr>
+            <tr>
+              <td><%= f.label :redshift_checked_at %></td>
+              <td><%= f.datetime_local_field :redshift_checked_at %></td>
+            </tr>
+            <tr>
+              <td><%= f.label :sdss_dr %></td>
+              <td><%= f.text_field :sdss_dr %></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="form-card">
+        <p><%= f.submit "Save Spectroscopy" %></p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="action-links">
+  <%= link_to "Back to Galaxy", galaxy_path(@galaxy) %>
+  <%= link_to "Back to Galaxies", galaxies_path %>
+</div>

@@ -33,6 +33,15 @@ v0.3.4 packaging/doc sync:
 - 🟩 Fix FIREFLY metallicity comparison units in JSON/report workflow (keep raw value and add converted `Z` assuming linear `Z/Zsun` with `Zsun=0.02`)
 - 🟩 Document FIREFLY aperture-effects and match-quality caveats in `paper.md` (fiber-vs-global light and large-separation match risk)
 
+v0.3.5 galaxy data-model split:
+- 🟩 Add `galaxy_photometries` and `galaxy_spectroscopies` tables and backfill from existing `galaxies` columns
+- 🟩 Add dedicated edit controllers/routes/views for measurement cards (`/galaxies/:id/photometry/edit`, `/galaxies/:id/spectroscopy/edit`)
+- 🟩 Refactor galaxy show page into distinct Identity/Photometry/Spectroscopy cards
+- 🟩 Move galaxy index to render split measurement data (`photometry` mags + `spectroscopy` redshift)
+- 🟩 Remove index-row edit actions; keep metadata/measurement edits in show-card actions
+- 🟨 Migrate calculators/jobs to read measurement tables first and use `galaxies` measurement columns as compatibility cache only
+- 🟨 Decide on deprecation plan for duplicated measurement columns on `galaxies`
+
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution
 - 🟨 Add more galaxy targets to local SDSS catalog covering wider range of types and environments

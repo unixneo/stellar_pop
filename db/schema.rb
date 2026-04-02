@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_01_170000) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_02_010000) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -83,6 +83,72 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_01_170000) do
     t.string "redshift_confidence", default: "low", null: false
     t.datetime "redshift_checked_at"
     t.string "sdss_status"
+    t.float "luminosity_distance_mpc"
+    t.string "distance_calc_method"
+    t.datetime "distance_updated_at"
+    t.float "luminosity_distance_ly"
+  end
+
+  create_table "galaxy_photometries", force: :cascade do |t|
+    t.integer "galaxy_id", null: false
+    t.float "mag_u"
+    t.float "mag_g"
+    t.float "mag_r"
+    t.float "mag_i"
+    t.float "mag_z"
+    t.float "petro_u"
+    t.float "petro_g"
+    t.float "petro_r"
+    t.float "petro_i"
+    t.float "petro_z"
+    t.float "model_u"
+    t.float "model_g"
+    t.float "model_r"
+    t.float "model_i"
+    t.float "model_z"
+    t.float "err_u"
+    t.float "err_g"
+    t.float "err_r"
+    t.float "err_i"
+    t.float "err_z"
+    t.float "petro_err_u"
+    t.float "petro_err_g"
+    t.float "petro_err_r"
+    t.float "petro_err_i"
+    t.float "petro_err_z"
+    t.float "model_err_u"
+    t.float "model_err_g"
+    t.float "model_err_r"
+    t.float "model_err_i"
+    t.float "model_err_z"
+    t.float "extinction_u"
+    t.float "extinction_g"
+    t.float "extinction_r"
+    t.float "extinction_i"
+    t.float "extinction_z"
+    t.string "mag_type"
+    t.boolean "sdss_clean"
+    t.string "id_match_quality"
+    t.float "id_match_distance_arcsec"
+    t.text "id_match_note"
+    t.string "sdss_dr"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["galaxy_id"], name: "index_galaxy_photometries_on_galaxy_id", unique: true
+  end
+
+  create_table "galaxy_spectroscopies", force: :cascade do |t|
+    t.integer "galaxy_id", null: false
+    t.float "redshift_z"
+    t.float "z_err"
+    t.integer "z_warning"
+    t.string "redshift_source"
+    t.string "redshift_confidence"
+    t.datetime "redshift_checked_at"
+    t.string "sdss_dr"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["galaxy_id"], name: "index_galaxy_spectroscopies_on_galaxy_id", unique: true
   end
 
   create_table "grid_fits", force: :cascade do |t|
@@ -162,6 +228,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_01_170000) do
     t.index ["galaxy_id"], name: "index_synthesis_runs_on_galaxy_id"
   end
 
+  add_foreign_key "galaxy_photometries", "galaxies"
+  add_foreign_key "galaxy_spectroscopies", "galaxies"
   add_foreign_key "grid_fits", "galaxies"
   add_foreign_key "observations", "galaxies"
   add_foreign_key "spectrum_results", "synthesis_runs"

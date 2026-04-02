@@ -6,6 +6,8 @@ class Galaxy < ApplicationRecord
   has_many :synthesis_runs, dependent: :nullify
   has_many :grid_fits, dependent: :nullify
   has_many :observations, dependent: :destroy
+  has_one :galaxy_photometry, dependent: :destroy
+  has_one :galaxy_spectroscopy, dependent: :destroy
   before_update :prevent_identity_coordinate_changes_for_dr19
 
   validates :name, presence: true

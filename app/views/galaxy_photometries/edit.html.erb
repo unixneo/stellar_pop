@@ -1,0 +1,89 @@
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div>
+      <h1 class="card-title">Edit Photometry: <%= @galaxy.name %></h1>
+    </div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <%= form_with model: [@galaxy, @photometry], url: galaxy_photometry_path(@galaxy), method: :patch do |f| %>
+      <div class="form-card">
+        <table class="galaxy-form-table">
+          <thead>
+            <tr>
+              <th>Band</th>
+              <th>Active Mag</th>
+              <th>Petro Mag</th>
+              <th>Model Mag</th>
+              <th>Error</th>
+              <th>Extinction</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% [
+                 %w[u mag_u petro_u model_u err_u extinction_u],
+                 %w[g mag_g petro_g model_g err_g extinction_g],
+                 %w[r mag_r petro_r model_r err_r extinction_r],
+                 %w[i mag_i petro_i model_i err_i extinction_i],
+                 %w[z mag_z petro_z model_z err_z extinction_z]
+               ].each do |band, mag_col, petro_col, model_col, err_col, ext_col| %>
+              <tr>
+                <td><%= band %></td>
+                <td><%= f.number_field mag_col, step: 0.0001 %></td>
+                <td><%= f.number_field petro_col, step: 0.0001 %></td>
+                <td><%= f.number_field model_col, step: 0.0001 %></td>
+                <td><%= f.number_field err_col, step: 0.0001 %></td>
+                <td><%= f.number_field ext_col, step: 0.0001 %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="form-card">
+        <table class="galaxy-form-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><%= f.label :mag_type %></td>
+              <td><%= f.select :mag_type, options_for_select(Galaxy::MAG_TYPES, @photometry.mag_type), include_blank: true %></td>
+            </tr>
+            <tr>
+              <td><%= f.label :sdss_clean %></td>
+              <td><%= f.check_box :sdss_clean %></td>
+            </tr>
+            <tr>
+              <td><%= f.label :id_match_quality %></td>
+              <td><%= f.select :id_match_quality, options_for_select(Galaxy::ID_MATCH_QUALITIES, @photometry.id_match_quality), include_blank: true %></td>
+            </tr>
+            <tr>
+              <td><%= f.label :id_match_distance_arcsec %></td>
+              <td><%= f.number_field :id_match_distance_arcsec, step: 0.0001 %></td>
+            </tr>
+            <tr>
+              <td><%= f.label :id_match_note %></td>
+              <td><%= f.text_area :id_match_note, rows: 3 %></td>
+            </tr>
+            <tr>
+              <td><%= f.label :sdss_dr %></td>
+              <td><%= f.text_field :sdss_dr %></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="form-card">
+        <p><%= f.submit "Save Photometry" %></p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="action-links">
+  <%= link_to "Back to Galaxy", galaxy_path(@galaxy) %>
+  <%= link_to "Back to Galaxies", galaxies_path %>
+</div>

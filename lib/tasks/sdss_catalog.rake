@@ -1,4 +1,8 @@
 namespace :sdss do
+  SPEED_OF_LIGHT_KM_S = 299_792.458
+  HUBBLE_CONSTANT_KM_S_MPC = 70.0
+  DECELERATION_PARAMETER = -0.55
+
   desc "Verify Galaxy photometry against configured SDSS release and infer magnitude type (WRITE=true to update galaxies.sdss_dr and galaxies.mag_type)"
   task verify_photometry: :environment do
     bands = %w[u g r i z].freeze
@@ -159,6 +163,15 @@ namespace :sdss do
           }
           objid = result[:objid].to_s.strip
           attrs[:sdss_objid] = objid if objid.match?(/\A[1-9]\d*\z/) && galaxy.sdss_objid.blank?
+          upsert_spectroscopy_for_galaxy!(galaxy, {
+            redshift_z: attrs[:redshift_z],
+            z_err: attrs[:z_err],
+            z_warning: attrs[:z_warning],
+            redshift_source: attrs[:redshift_source],
+            redshift_confidence: attrs[:redshift_confidence],
+            redshift_checked_at: attrs[:redshift_checked_at],
+            sdss_dr: attrs[:sdss_dr]
+          })
           galaxy.update!(attrs)
         end
         updated += 1
@@ -213,7 +226,7 @@ namespace :sdss do
         selected_err_i = active_mag_type == "model" ? result[:model_err_i] : result[:petro_err_i]
         selected_err_z = active_mag_type == "model" ? result[:model_err_z] : result[:petro_err_z]
 
-        galaxy.update!(
+        photometry_attrs = {
           petro_u: result[:petro_u],
           petro_g: result[:petro_g],
           petro_r: result[:petro_r],
@@ -249,16 +262,32 @@ namespace :sdss do
           extinction_r: result[:extinction_r],
           extinction_i: result[:extinction_i],
           extinction_z: result[:extinction_z],
-          redshift_z: result[:redshift_z] || galaxy.redshift_z,
-          z_err: result[:z_err],
-          z_warning: result[:z_warning],
           sdss_clean: result[:sdss_clean],
           id_match_quality: (fetch_path == "objid" ? "exact_objid" : "coord_validated"),
           id_match_distance_arcsec: (fetch_path == "objid" ? 0.0 : nil),
           id_match_note: "DR19 photometry fetch via #{fetch_path}",
           mag_type: active_mag_type,
           sdss_dr: "DR19"
-        )
+        }
+
+        existing_spec = galaxy.galaxy_spectroscopy
+        spectroscopy_attrs = {
+          redshift_z: result[:redshift_z] || existing_spec&.redshift_z || galaxy.redshift_z,
+          z_err: result[:z_err],
+          z_warning: result[:z_warning],
+          redshift_source: existing_spec&.redshift_source || galaxy.redshift_source,
+          redshift_confidence: existing_spec&.redshift_confidence || galaxy.redshift_confidence,
+          redshift_checked_at: existing_spec&.redshift_checked_at || galaxy.redshift_checked_at,
+          sdss_dr: "DR19"
+        }
+
+        upsert_photometry_for_galaxy!(galaxy, photometry_attrs)
+        upsert_spectroscopy_for_galaxy!(galaxy, spectroscopy_attrs)
+        galaxy.update!(photometry_attrs.merge(
+          redshift_z: spectroscopy_attrs[:redshift_z],
+          z_err: spectroscopy_attrs[:z_err],
+          z_warning: spectroscopy_attrs[:z_warning]
+        ))
         puts "#{galaxy.name}: success via #{fetch_path} petro_r=#{result[:petro_r].inspect}"
       else
         puts "#{galaxy.name}: failure via #{fetch_path} reason=#{failure_reason || client.last_failure_reason || 'unknown'} petro_r=nil"
@@ -291,7 +320,7 @@ namespace :sdss do
       if result && z.finite? && !z.zero?
         z_warning = result[:redshift_warning]
         confidence = (z_warning.to_i == 0) ? "high" : "medium"
-        galaxy.update!(
+        spectroscopy_attrs = {
           redshift_z: z,
           z_err: result[:redshift_err],
           z_warning: z_warning,
@@ -299,17 +328,22 @@ namespace :sdss do
           redshift_confidence: confidence,
           redshift_checked_at: Time.current,
           sdss_dr: "DR19"
-        )
+        }
+        upsert_spectroscopy_for_galaxy!(galaxy, spectroscopy_attrs)
+        galaxy.update!(spectroscopy_attrs)
         updated += 1
         puts "#{galaxy.name}: z=#{format('%.6f', z)} z_err=#{result[:redshift_err].inspect} z_warning=#{result[:redshift_warning].inspect} via #{source}"
       else
-        galaxy.update!(
+        spectroscopy_attrs = {
           z_err: nil,
           z_warning: nil,
           redshift_source: "unresolved",
           redshift_confidence: "low",
-          redshift_checked_at: Time.current
-        )
+          redshift_checked_at: Time.current,
+          sdss_dr: "DR19"
+        }
+        upsert_spectroscopy_for_galaxy!(galaxy, spectroscopy_attrs)
+        galaxy.update!(spectroscopy_attrs.except(:sdss_dr))
         unresolved += 1
         puts "#{galaxy.name}: unresolved (objid=#{galaxy.sdss_objid.presence || 'nil'} reason=#{client.last_failure_reason || 'no_redshift'})"
       end
@@ -427,6 +461,72 @@ namespace :sdss do
     end
   end
 
+  desc "Compute redshift-based luminosity distance for galaxies (Mpc + light-years). WRITE=true to persist."
+  task compute_redshift_distances: :environment do
+    write_enabled = ActiveModel::Type::Boolean.new.cast(ENV.fetch("WRITE", "true"))
+    max_z = ENV["MAX_Z"].present? ? ENV["MAX_Z"].to_f : nil
+    scope = Galaxy.where.not(redshift_z: nil).where("redshift_z > 0").order(:id)
+    scope = scope.where("redshift_z <= ?", max_z) if max_z
+
+    total = scope.count
+    if total.zero?
+      puts "No galaxies with positive redshift_z found."
+      next
+    end
+
+    updated = 0
+    skipped = 0
+
+    scope.find_each(batch_size: 500) do |galaxy|
+      z = galaxy.redshift_z.to_f
+      d_mpc = approximate_luminosity_distance_mpc(z)
+      d_ly = mpc_to_light_years(d_mpc)
+
+      if d_mpc.nil? || d_ly.nil? || !d_mpc.finite? || !d_ly.finite? || d_mpc <= 0 || d_ly <= 0
+        skipped += 1
+        next
+      end
+
+      if write_enabled
+        galaxy.update!(
+          luminosity_distance_mpc: d_mpc,
+          luminosity_distance_ly: d_ly,
+          distance_calc_method: "hubble_q0_approx",
+          distance_updated_at: Time.current
+        )
+      end
+
+      updated += 1
+    end
+
+    puts "Distance calculation summary:"
+    puts "  galaxies considered: #{total}"
+    puts "  distances computed: #{updated}"
+    puts "  skipped: #{skipped}"
+    puts "  write mode: #{write_enabled}"
+    puts "  method: D_L ~= (c/H0)*z*(1 + 0.5*(1-q0)*z), H0=#{HUBBLE_CONSTANT_KM_S_MPC}, q0=#{DECELERATION_PARAMETER}"
+  end
+
+  desc "Report galaxy distances in million light-years (Mly) and Mpc"
+  task report_distances: :environment do
+    scope = Galaxy.where.not(luminosity_distance_mpc: nil).where.not(luminosity_distance_ly: nil).order(:id)
+    if scope.none?
+      puts "No galaxies with computed distances found. Run: bin/rails sdss:compute_redshift_distances"
+      next
+    end
+
+    puts "Galaxy distance report"
+    puts "name | redshift_z | distance_mpc | distance_mly"
+
+    scope.find_each(batch_size: 500) do |galaxy|
+      mpc = galaxy.luminosity_distance_mpc.to_f
+      mly = galaxy.luminosity_distance_ly.to_f / 1_000_000.0
+      puts "#{galaxy.name} | #{format('%.6f', galaxy.redshift_z.to_f)} | #{format('%.3f', mpc)} | #{format('%.3f', mly)}"
+    end
+
+    puts "total rows: #{scope.count}"
+  end
+
   def detect_best_profile(galaxy, profiles, bands)
     petrosian = profiles[:petrosian] || {}
     model = profiles[:model] || {}
@@ -493,6 +593,31 @@ namespace :sdss do
     return [normalized_objid, photometry, nil] if photometry
 
     [nil, nil, (client.last_failure_reason || :objid_fetch_failed)]
+  end
+
+  def approximate_luminosity_distance_mpc(redshift_z)
+    z = redshift_z.to_f
+    return nil unless z.positive?
+
+    linear_mpc = (SPEED_OF_LIGHT_KM_S / HUBBLE_CONSTANT_KM_S_MPC) * z
+    correction = 1.0 + (0.5 * (1.0 - DECELERATION_PARAMETER) * z)
+    linear_mpc * correction
+  end
+
+  def mpc_to_light_years(distance_mpc)
+    return nil if distance_mpc.nil?
+
+    distance_mpc.to_f * 3_261_560.0
+  end
+
+  def upsert_photometry_for_galaxy!(galaxy, attrs)
+    rec = GalaxyPhotometry.find_or_initialize_by(galaxy_id: galaxy.id)
+    rec.update!(attrs)
+  end
+
+  def upsert_spectroscopy_for_galaxy!(galaxy, attrs)
+    rec = GalaxySpectroscopy.find_or_initialize_by(galaxy_id: galaxy.id)
+    rec.update!(attrs)
   end
 
 end

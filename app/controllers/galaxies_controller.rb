@@ -11,6 +11,7 @@ class GalaxiesController < ApplicationController
     "mag_r" => "mag_r",
     "mag_i" => "mag_i",
     "mag_z" => "mag_z",
+    "redshift_z" => "redshift_z",
     "sdss_dr" => "sdss_dr",
     "source_catalog" => "source_catalog"
   }.freeze
@@ -20,7 +21,9 @@ class GalaxiesController < ApplicationController
     @query = params[:q].to_s.strip
     @sort = SORT_COLUMNS[params[:sort].to_s] || "name"
     @dir = params[:dir].to_s == "desc" ? "desc" : "asc"
-    scope = Galaxy.where(sdss_dr: @active_sdss_release).order(Arel.sql("#{@sort} #{@dir}"))
+    scope = Galaxy.includes(:galaxy_photometry, :galaxy_spectroscopy)
+                 .where(sdss_dr: @active_sdss_release)
+                 .order(Arel.sql("#{@sort} #{@dir}"))
     if @query.present?
       like = "%#{@query.downcase}%"
       scope = scope.where("lower(name) LIKE :q OR lower(galaxy_type) LIKE :q", q: like)
@@ -30,6 +33,8 @@ class GalaxiesController < ApplicationController
 
   def show
     @galaxy = Galaxy.find(params[:id])
+    @photometry = @galaxy.galaxy_photometry
+    @spectroscopy = @galaxy.galaxy_spectroscopy
   end
 
   def new
@@ -110,12 +115,8 @@ class GalaxiesController < ApplicationController
   def galaxy_params
     params.require(:galaxy).permit(
       :name, :ra, :dec,
-      :mag_u, :mag_g, :mag_r, :mag_i, :mag_z,
-      :petro_u, :petro_g, :petro_r, :petro_i, :petro_z,
-      :model_u, :model_g, :model_r, :model_i, :model_z,
-      :err_u, :err_g, :err_r, :err_i, :err_z,
-      :extinction_u, :extinction_g, :extinction_r, :extinction_i, :extinction_z,
-      :galaxy_type, :notes, :agn, :sdss_dr, :redshift_z, :sdss_objid, :source_catalog, :mag_type
+      :galaxy_type, :notes, :agn,
+      :sdss_dr, :sdss_objid, :source_catalog
     )
   end
 

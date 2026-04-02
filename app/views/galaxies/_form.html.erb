@@ -20,6 +20,10 @@
           <td><%= f.label :notes %></td>
           <td><%= f.text_area :notes, rows: 3 %></td>
         </tr>
+        <tr>
+          <td><%= f.label :agn %></td>
+          <td><%= f.check_box :agn %></td>
+        </tr>
       </tbody>
     </table>
   </div>
@@ -40,98 +44,6 @@
         <tr>
           <td><%= f.label :dec, "Dec" %></td>
           <td><%= f.number_field :dec, step: 0.0001 %></td>
-        </tr>
-        <tr>
-          <td><%= f.label :redshift_z %></td>
-          <td><%= f.number_field :redshift_z, step: 0.000001 %></td>
-        </tr>
-        <tr>
-          <td><%= f.label :agn %></td>
-          <td><%= f.check_box :agn %></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="form-card">
-    <table class="galaxy-form-table">
-      <thead>
-        <tr>
-          <th>Band</th>
-          <th>Active Mag</th>
-          <th>Petro Mag</th>
-          <th>Model Mag</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><%= f.label :mag_u, "u" %></td>
-          <td><%= f.number_field :mag_u, step: 0.0001 %></td>
-          <td><%= f.number_field :petro_u, step: 0.0001 %></td>
-          <td><%= f.number_field :model_u, step: 0.0001 %></td>
-        </tr>
-        <tr>
-          <td><%= f.label :mag_g, "g" %></td>
-          <td><%= f.number_field :mag_g, step: 0.0001 %></td>
-          <td><%= f.number_field :petro_g, step: 0.0001 %></td>
-          <td><%= f.number_field :model_g, step: 0.0001 %></td>
-        </tr>
-        <tr>
-          <td><%= f.label :mag_r, "r" %></td>
-          <td><%= f.number_field :mag_r, step: 0.0001 %></td>
-          <td><%= f.number_field :petro_r, step: 0.0001 %></td>
-          <td><%= f.number_field :model_r, step: 0.0001 %></td>
-        </tr>
-        <tr>
-          <td><%= f.label :mag_i, "i" %></td>
-          <td><%= f.number_field :mag_i, step: 0.0001 %></td>
-          <td><%= f.number_field :petro_i, step: 0.0001 %></td>
-          <td><%= f.number_field :model_i, step: 0.0001 %></td>
-        </tr>
-        <tr>
-          <td><%= f.label :mag_z, "z" %></td>
-          <td><%= f.number_field :mag_z, step: 0.0001 %></td>
-          <td><%= f.number_field :petro_z, step: 0.0001 %></td>
-          <td><%= f.number_field :model_z, step: 0.0001 %></td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="form-card">
-    <table class="galaxy-form-table">
-      <thead>
-        <tr>
-          <th>Band</th>
-          <th>Error</th>
-          <th>Extinction</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><%= f.label :err_u, "u" %></td>
-          <td><%= f.number_field :err_u, step: 0.0001 %></td>
-          <td><%= f.number_field :extinction_u, step: 0.0001 %></td>
-        </tr>
-        <tr>
-          <td><%= f.label :err_g, "g" %></td>
-          <td><%= f.number_field :err_g, step: 0.0001 %></td>
-          <td><%= f.number_field :extinction_g, step: 0.0001 %></td>
-        </tr>
-        <tr>
-          <td><%= f.label :err_r, "r" %></td>
-          <td><%= f.number_field :err_r, step: 0.0001 %></td>
-          <td><%= f.number_field :extinction_r, step: 0.0001 %></td>
-        </tr>
-        <tr>
-          <td><%= f.label :err_i, "i" %></td>
-          <td><%= f.number_field :err_i, step: 0.0001 %></td>
-          <td><%= f.number_field :extinction_i, step: 0.0001 %></td>
-        </tr>
-        <tr>
-          <td><%= f.label :err_z, "z" %></td>
-          <td><%= f.number_field :err_z, step: 0.0001 %></td>
-          <td><%= f.number_field :extinction_z, step: 0.0001 %></td>
         </tr>
       </tbody>
     </table>
@@ -157,10 +69,6 @@
         <tr>
           <td><%= f.label :source_catalog %></td>
           <td><%= f.text_field :source_catalog %></td>
-        </tr>
-        <tr>
-          <td><%= f.label :mag_type %></td>
-          <td><%= f.select :mag_type, options_for_select(Galaxy::MAG_TYPES, galaxy.mag_type), include_blank: true %></td>
         </tr>
       </tbody>
     </table>

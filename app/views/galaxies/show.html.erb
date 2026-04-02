@@ -4,6 +4,7 @@
       <h1 class="card-title"><%= @galaxy.name %></h1>
       <p class="card-subtitle">Galaxy record details and provenance.</p>
     </div>
+    <div><%= link_to "Edit Galaxy", edit_galaxy_path(@galaxy), class: "benchmark-new-button" %></div>
   </div>
   <div class="cyberspace-panel-body">
     <% if @galaxy.sdss_status == "confirmed" %>
@@ -31,9 +32,7 @@
         <tr><td>Type</td><td><%= @galaxy.galaxy_type %></td></tr>
         <tr><td>RA</td><td><%= @galaxy.ra %></td></tr>
         <tr><td>Dec</td><td><%= @galaxy.dec %></td></tr>
-        <tr><td>Redshift z</td><td><%= @galaxy.redshift_z %></td></tr>
         <tr><td>AGN</td><td><%= @galaxy.agn %></td></tr>
-        <tr><td>Mag Type</td><td><%= @galaxy.mag_type %></td></tr>
         <tr><td>SDSS DR</td><td><%= @galaxy.sdss_dr %></td></tr>
         <tr><td>SDSS ObjID</td><td><%= @galaxy.sdss_objid %></td></tr>
         <tr><td>Source Catalog</td><td><%= @galaxy.source_catalog %></td></tr>
@@ -48,38 +47,76 @@
 <div class="cyberspace-panel">
   <div class="card-header">
     <div><h2 class="card-title">Photometry</h2></div>
+    <div><%= link_to "Edit Photometry", edit_galaxy_photometry_path(@galaxy), class: "benchmark-new-button" %></div>
   </div>
   <div class="cyberspace-panel-body">
-    <table>
-      <thead>
-        <tr>
-          <th>Band</th>
-          <th>Active Mag</th>
-          <th>Petro Mag</th>
-          <th>Model Mag</th>
-          <th>Error</th>
-          <th>Extinction</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% [
-             %w[u mag_u petro_u model_u err_u extinction_u],
-             %w[g mag_g petro_g model_g err_g extinction_g],
-             %w[r mag_r petro_r model_r err_r extinction_r],
-             %w[i mag_i petro_i model_i err_i extinction_i],
-             %w[z mag_z petro_z model_z err_z extinction_z]
-           ].each do |band, mag_col, petro_col, model_col, err_col, ext_col| %>
+    <% if @photometry.present? %>
+      <table>
+        <thead>
           <tr>
-            <td><%= band %></td>
-            <td><%= @galaxy.public_send(mag_col) %></td>
-            <td><%= @galaxy.public_send(petro_col) %></td>
-            <td><%= @galaxy.public_send(model_col) %></td>
-            <td><%= @galaxy.public_send(err_col) %></td>
-            <td><%= @galaxy.public_send(ext_col) %></td>
+            <th>Band</th>
+            <th>Active Mag</th>
+            <th>Petro Mag</th>
+            <th>Model Mag</th>
+            <th>Error</th>
+            <th>Extinction</th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% [
+               %w[u mag_u petro_u model_u err_u extinction_u],
+               %w[g mag_g petro_g model_g err_g extinction_g],
+               %w[r mag_r petro_r model_r err_r extinction_r],
+               %w[i mag_i petro_i model_i err_i extinction_i],
+               %w[z mag_z petro_z model_z err_z extinction_z]
+             ].each do |band, mag_col, petro_col, model_col, err_col, ext_col| %>
+            <tr>
+              <td><%= band %></td>
+              <td><%= @photometry.public_send(mag_col) %></td>
+              <td><%= @photometry.public_send(petro_col) %></td>
+              <td><%= @photometry.public_send(model_col) %></td>
+              <td><%= @photometry.public_send(err_col) %></td>
+              <td><%= @photometry.public_send(ext_col) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+      <p><strong>Mag Type:</strong> <%= @photometry.mag_type.presence || "-" %> |
+         <strong>SDSS Clean:</strong> <%= @photometry.sdss_clean.nil? ? "-" : @photometry.sdss_clean %> |
+         <strong>ID Match:</strong> <%= @photometry.id_match_quality.presence || "-" %></p>
+    <% else %>
+      <p>No photometry record yet.</p>
+    <% end %>
+  </div>
+</div>
+
+<div class="cyberspace-panel">
+  <div class="card-header">
+    <div><h2 class="card-title">Spectroscopy</h2></div>
+    <div><%= link_to "Edit Spectroscopy", edit_galaxy_spectroscopy_path(@galaxy), class: "benchmark-new-button" %></div>
+  </div>
+  <div class="cyberspace-panel-body">
+    <% if @spectroscopy.present? %>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Redshift z</td><td><%= @spectroscopy.redshift_z || "-" %></td></tr>
+          <tr><td>z_err</td><td><%= @spectroscopy.z_err || "-" %></td></tr>
+          <tr><td>z_warning</td><td><%= @spectroscopy.z_warning || "-" %></td></tr>
+          <tr><td>Redshift Source</td><td><%= @spectroscopy.redshift_source.presence || "-" %></td></tr>
+          <tr><td>Confidence</td><td><%= @spectroscopy.redshift_confidence.presence || "-" %></td></tr>
+          <tr><td>Checked At</td><td><%= @spectroscopy.redshift_checked_at || "-" %></td></tr>
+          <tr><td>SDSS DR</td><td><%= @spectroscopy.sdss_dr.presence || "-" %></td></tr>
+        </tbody>
+      </table>
+    <% else %>
+      <p>No spectroscopy record yet.</p>
+    <% end %>
   </div>
 </div>
 

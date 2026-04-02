@@ -1,0 +1,179 @@
+{
+  "generated_at": "2026-04-01T18:47:13Z",
+  "source": "https://skyserver.sdss.org/dr19/SkyServerWS/SearchTools/SqlSearch",
+  "summary": {
+    "checked": 21,
+    "found_with_positive_z": 0,
+    "no_match_or_nonpositive": 21
+  },
+  "rows": [
+    {
+      "galaxy_id": 2,
+      "name": "M87",
+      "sdss_objid": "1237658629695668671",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 3,
+      "name": "NGC1068",
+      "sdss_objid": "1237666407923318886",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 33,
+      "name": "NGC3184",
+      "sdss_objid": "1237661851996520504",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 10,
+      "name": "NGC3379",
+      "sdss_objid": "1237661951318491161",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 26,
+      "name": "NGC4051",
+      "sdss_objid": "1237661850394362028",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 27,
+      "name": "NGC4151",
+      "sdss_objid": "1237664667907915840",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 5,
+      "name": "NGC4261",
+      "sdss_objid": "1237654606410285096",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 37,
+      "name": "NGC4262",
+      "sdss_objid": "1237664290465251349",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 34,
+      "name": "NGC4321",
+      "sdss_objid": "1237662526839914556",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 17,
+      "name": "NGC4339",
+      "sdss_objid": "1237654881798062219",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 36,
+      "name": "NGC4350",
+      "sdss_objid": "1237668589186580596",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 31,
+      "name": "NGC4365",
+      "sdss_objid": "1237661971186057245",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 19,
+      "name": "NGC4459",
+      "sdss_objid": "1237664289392558136",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 6,
+      "name": "NGC4472",
+      "sdss_objid": "1237654786779906058",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 8,
+      "name": "NGC4552",
+      "sdss_objid": "1237658630232997996",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 16,
+      "name": "NGC4564",
+      "sdss_objid": "1237658628622450878",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 18,
+      "name": "NGC4570",
+      "sdss_objid": "1237661971187367996",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 7,
+      "name": "NGC4579",
+      "sdss_objid": "1237658629159518212",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 28,
+      "name": "NGC4594",
+      "sdss_objid": "1237671267102228500",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 15,
+      "name": "NGC4621",
+      "sdss_objid": "1237661816022499507",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    },
+    {
+      "galaxy_id": 32,
+      "name": "NGC4660",
+      "sdss_objid": "1237661815485956105",
+      "dr19_found": false,
+      "redshift_z": null,
+      "note": "no_row"
+    }
+  ]
+}

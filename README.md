@@ -65,6 +65,25 @@ chi-squared metric.
   - spectroscopic redshift aliases (`spec_z`, `spec_zErr`, `spec_zWarning`) are
     separated from photometric `z` band in parsing
 
+## v0.3.5 Galaxy Data-Model Split (in progress)
+
+- Added dedicated measurement tables:
+  - `galaxy_photometries` (PhotoObj-like fields: `mag_*`, `petro_*`, `model_*`, errors, extinction, SDSS photometry provenance)
+  - `galaxy_spectroscopies` (SpecObj-like fields: `redshift_z`, `z_err`, `z_warning`, redshift provenance/confidence)
+- Added one-time backfill task:
+  - `bin/rails galaxies:backfill_measurement_tables`
+- Updated SDSS ingestion tasks to write measurement tables first, while still mirroring key fields to `galaxies` for compatibility:
+  - `sdss:fetch_dr19_photometry`
+  - `sdss:refresh_dr19_spectroscopy`
+  - `sdss:backfill_redshifts`
+- Refactored Galaxy UI:
+  - Galaxy index shows split data (photometry values from `galaxy_photometries`, redshift from `galaxy_spectroscopies`)
+  - Galaxy show now has distinct cards: Identity, Photometry, Spectroscopy
+  - Added dedicated edit pages for each card:
+    - `/galaxies/:id/photometry/edit`
+    - `/galaxies/:id/spectroscopy/edit`
+  - Main galaxy form is now identity-focused metadata only
+
 ## FIT Crossmatch Snapshot (DR19 sample)
 
 Recent DR19 sample crossmatch against DR7 FIT metadata (`gal_info_dr7_v5_2.fit`) found 3 matches within 1 arcsec for the active benchmark subset (`NGC4889`, `NGC4874`, `NGC4387`). Stellar-mass PDF extraction from `totlgm_dr7_v5_2.fit` and comparison against `observations.stellar_mass` showed 3/3 inside the 95% interval (`P2P5-P97P5`) after updating `NGC4387` to the FIT-derived `AVG` value with explicit FIT provenance.

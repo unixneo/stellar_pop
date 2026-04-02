@@ -23,17 +23,6 @@
       <% end %>
     </div>
 
-    <div class="form-card import-form-card">
-      <%= form_with url: import_galaxies_path, method: :post, multipart: true, class: "import-galaxies-form" do %>
-        <p class="file-chooser-row">
-          <label for="csv_file">Import CSV</label>
-          <input type="file" id="csv_file" name="csv_file" accept=".csv,text/csv">
-          <span class="form-help">Upsert by name, fallback by RA/Dec match.</span>
-        </p>
-        <p class="form-action-row import-action-row"><%= submit_tag "Import CSV", class: "galaxies-submit-button import-csv-button" %></p>
-      <% end %>
-    </div>
-
     <div class="table-wrap">
       <% sort_link = lambda do |label, key|
            next_dir = (@sort == key && @dir == "asc") ? "desc" : "asc"
@@ -47,37 +36,48 @@
             <th><%= sort_link.call("Type", "galaxy_type") %></th>
             <th><%= sort_link.call("RA", "ra") %></th>
             <th><%= sort_link.call("Dec", "dec") %></th>
-            <th><%= sort_link.call("u", "mag_u") %></th>
-            <th><%= sort_link.call("g", "mag_g") %></th>
-            <th><%= sort_link.call("r", "mag_r") %></th>
-            <th><%= sort_link.call("i", "mag_i") %></th>
-            <th><%= sort_link.call("z", "mag_z") %></th>
+            <th><%= sort_link.call("Redshift z", "redshift_z") %></th>
+            <th><%= sort_link.call("u mag", "mag_u") %></th>
+            <th><%= sort_link.call("g mag", "mag_g") %></th>
+            <th><%= sort_link.call("r mag", "mag_r") %></th>
+            <th><%= sort_link.call("i mag", "mag_i") %></th>
+            <th><%= sort_link.call("z mag", "mag_z") %></th>
             <th><%= sort_link.call("SDSS DR", "sdss_dr") %></th>
             <th><%= sort_link.call("Source", "source_catalog") %></th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           <% @galaxies.each do |galaxy| %>
+            <% phot = galaxy.galaxy_photometry %>
+            <% spec = galaxy.galaxy_spectroscopy %>
             <tr>
               <td><%= link_to galaxy.name, galaxy_path(galaxy) %></td>
               <td><%= galaxy.galaxy_type %></td>
               <td style="color: <%= galaxy.sdss_status == 'confirmed' ? '#1a7a1a' : '#8b0000' %>;"><%= number_with_precision(galaxy.ra, precision: 4) %></td>
               <td style="color: <%= galaxy.sdss_status == 'confirmed' ? '#1a7a1a' : '#8b0000' %>;"><%= number_with_precision(galaxy.dec, precision: 4) %></td>
-              <td><%= galaxy.mag_u %></td>
-              <td><%= galaxy.mag_g %></td>
-              <td><%= galaxy.mag_r %></td>
-              <td><%= galaxy.mag_i %></td>
-              <td><%= galaxy.mag_z %></td>
+              <td><%= spec&.redshift_z.present? ? number_with_precision(spec.redshift_z, precision: 6) : "-" %></td>
+              <td><%= phot&.mag_u || "-" %></td>
+              <td><%= phot&.mag_g || "-" %></td>
+              <td><%= phot&.mag_r || "-" %></td>
+              <td><%= phot&.mag_i || "-" %></td>
+              <td><%= phot&.mag_z || "-" %></td>
               <td><%= galaxy.sdss_dr %></td>
               <td><%= galaxy.source_catalog %></td>
-              <td>
-                <%= link_to "Edit", edit_galaxy_path(galaxy) %>
-              </td>
             </tr>
           <% end %>
         </tbody>
       </table>
+    </div>
+
+    <div class="form-card import-form-card">
+      <%= form_with url: import_galaxies_path, method: :post, multipart: true, class: "import-galaxies-form" do %>
+        <p class="file-chooser-row">
+          <label for="csv_file">Import CSV</label>
+          <input type="file" id="csv_file" name="csv_file" accept=".csv,text/csv">
+          <span class="form-help">Upsert by name, fallback by RA/Dec match.</span>
+        </p>
+        <p class="form-action-row import-action-row"><%= submit_tag "Import CSV", class: "galaxies-submit-button import-csv-button" %></p>
+      <% end %>
     </div>
   </div>
 </div>

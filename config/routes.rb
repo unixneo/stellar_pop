@@ -21,6 +21,8 @@ Rails.application.routes.draw do
     collection do
       post :import
     end
+    resource :photometry, only: %i[edit update], controller: "galaxy_photometries"
+    resource :spectroscopy, only: %i[edit update], controller: "galaxy_spectroscopies"
     resources :observations, only: %i[new]
   end
   resources :observations
