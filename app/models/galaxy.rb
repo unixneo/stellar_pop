@@ -7,7 +7,7 @@ class Galaxy < ApplicationRecord
   has_many :grid_fits, dependent: :nullify
   has_many :observations, dependent: :destroy
   has_one :galaxy_photometry, dependent: :destroy
-  has_one :galaxy_spectroscopy, dependent: :destroy
+  has_many :galaxy_spectroscopies, dependent: :destroy
   before_update :prevent_identity_coordinate_changes_for_dr19
 
   validates :name, presence: true
@@ -59,6 +59,11 @@ class Galaxy < ApplicationRecord
 
   def preferred_spectroscopy
     galaxy_spectroscopy || self
+  end
+
+  # Compatibility accessor during has_one -> has_many transition.
+  def galaxy_spectroscopy
+    galaxy_spectroscopies.current.first || galaxy_spectroscopies.order(redshift_checked_at: :desc, id: :desc).first
   end
 
   private

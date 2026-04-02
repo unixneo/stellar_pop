@@ -93,27 +93,45 @@
 <div class="cyberspace-panel">
   <div class="card-header">
     <div><h2 class="card-title">Spectroscopy</h2></div>
-    <div><%= link_to "Edit Spectroscopy", edit_galaxy_spectroscopy_path(@galaxy), class: "benchmark-new-button" %></div>
+    <div><%= link_to "Add Spectroscopy", new_galaxy_spectroscopy_path(@galaxy), class: "benchmark-new-button" %></div>
   </div>
   <div class="cyberspace-panel-body">
-    <% if @spectroscopy.present? %>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>Redshift z</td><td><%= @spectroscopy.redshift_z || "-" %></td></tr>
-          <tr><td>z_err</td><td><%= @spectroscopy.z_err || "-" %></td></tr>
-          <tr><td>z_warning</td><td><%= @spectroscopy.z_warning || "-" %></td></tr>
-          <tr><td>Redshift Source</td><td><%= @spectroscopy.redshift_source.presence || "-" %></td></tr>
-          <tr><td>Confidence</td><td><%= @spectroscopy.redshift_confidence.presence || "-" %></td></tr>
-          <tr><td>Checked At</td><td><%= @spectroscopy.redshift_checked_at || "-" %></td></tr>
-          <tr><td>SDSS DR</td><td><%= @spectroscopy.sdss_dr.presence || "-" %></td></tr>
-        </tbody>
-      </table>
+    <% if @spectroscopies.any? %>
+      <% @spectroscopies.each do |spec| %>
+        <div class="form-card">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>ID</td><td><%= spec.id %></td></tr>
+              <tr><td>Current</td><td><%= spec.current %></td></tr>
+              <tr><td>Redshift z</td><td><%= spec.redshift_z || "-" %></td></tr>
+              <tr><td>z_err</td><td><%= spec.z_err || "-" %></td></tr>
+              <tr><td>z_warning</td><td><%= spec.z_warning || "-" %></td></tr>
+              <tr><td>Redshift Source</td><td><%= spec.redshift_source.presence || "-" %></td></tr>
+              <tr><td>Confidence</td><td><%= spec.redshift_confidence.presence || "-" %></td></tr>
+              <tr><td>Checked At</td><td><%= spec.redshift_checked_at || "-" %></td></tr>
+              <tr><td>SDSS DR</td><td><%= spec.sdss_dr.presence || "-" %></td></tr>
+              <tr><td>Spec ObjID</td><td><%= spec.spec_objid.presence || "-" %></td></tr>
+              <tr><td>Source Release</td><td><%= spec.source_release.presence || "-" %></td></tr>
+              <tr><td>Match Type</td><td><%= spec.match_type.presence || "-" %></td></tr>
+              <tr><td>Match Distance (arcsec)</td><td><%= spec.match_distance_arcsec || "-" %></td></tr>
+            </tbody>
+          </table>
+          <p>
+            <%= link_to "Edit", edit_galaxy_spectroscopy_path(@galaxy, spec) %> |
+            <%= button_to "Delete",
+                          galaxy_spectroscopy_path(@galaxy, spec),
+                          method: :delete,
+                          form: { style: "display:inline" },
+                          data: { turbo_confirm: "Delete this spectroscopy record?" } %>
+          </p>
+        </div>
+      <% end %>
     <% else %>
       <p>No spectroscopy record yet.</p>
     <% end %>

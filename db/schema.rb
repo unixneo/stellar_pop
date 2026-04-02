@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_02_010000) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_02_020000) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -148,7 +148,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_02_010000) do
     t.string "sdss_dr"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["galaxy_id"], name: "index_galaxy_spectroscopies_on_galaxy_id", unique: true
+    t.boolean "current", default: true, null: false
+    t.string "spec_objid"
+    t.string "source_release"
+    t.string "match_type"
+    t.float "match_distance_arcsec"
+    t.index ["galaxy_id", "current"], name: "index_galaxy_spectroscopies_on_galaxy_id_and_current"
+    t.index ["galaxy_id"], name: "index_galaxy_spectroscopies_on_galaxy_id"
   end
 
   create_table "grid_fits", force: :cascade do |t|

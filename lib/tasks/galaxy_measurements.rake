@@ -70,7 +70,7 @@ namespace :galaxies do
         photo.update!(photometry_attrs)
         photo_count += 1
 
-        spec = GalaxySpectroscopy.find_or_initialize_by(galaxy_id: galaxy.id)
+        spec = GalaxySpectroscopy.find_or_initialize_by(galaxy_id: galaxy.id, current: true)
         spec.update!(spectroscopy_attrs)
         spec_count += 1
       end

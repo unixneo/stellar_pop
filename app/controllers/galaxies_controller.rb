@@ -21,7 +21,7 @@ class GalaxiesController < ApplicationController
     @query = params[:q].to_s.strip
     @sort = SORT_COLUMNS[params[:sort].to_s] || "name"
     @dir = params[:dir].to_s == "desc" ? "desc" : "asc"
-    scope = Galaxy.includes(:galaxy_photometry, :galaxy_spectroscopy)
+    scope = Galaxy.includes(:galaxy_photometry, :galaxy_spectroscopies)
                  .where(sdss_dr: @active_sdss_release)
                  .order(Arel.sql("#{@sort} #{@dir}"))
     if @query.present?
@@ -34,7 +34,7 @@ class GalaxiesController < ApplicationController
   def show
     @galaxy = Galaxy.find(params[:id])
     @photometry = @galaxy.galaxy_photometry
-    @spectroscopy = @galaxy.galaxy_spectroscopy
+    @spectroscopies = @galaxy.galaxy_spectroscopies.order(current: :desc, redshift_checked_at: :desc, id: :desc)
   end
 
   def new

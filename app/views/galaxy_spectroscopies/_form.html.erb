@@ -1,0 +1,66 @@
+<%= form_with model: [@galaxy, @spectroscopy] do |f| %>
+  <div class="form-card">
+    <table class="galaxy-form-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><%= f.label :redshift_z %></td>
+          <td><%= f.number_field :redshift_z, step: 0.000001 %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :z_err %></td>
+          <td><%= f.number_field :z_err, step: 0.000001 %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :z_warning %></td>
+          <td><%= f.number_field :z_warning, step: 1 %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :redshift_source %></td>
+          <td><%= f.text_field :redshift_source %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :redshift_confidence %></td>
+          <td><%= f.select :redshift_confidence, options_for_select(Galaxy::REDSHIFT_CONFIDENCES, @spectroscopy.redshift_confidence), include_blank: true %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :redshift_checked_at %></td>
+          <td><%= f.datetime_local_field :redshift_checked_at %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :sdss_dr %></td>
+          <td><%= f.text_field :sdss_dr %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :spec_objid %></td>
+          <td><%= f.text_field :spec_objid %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :source_release %></td>
+          <td><%= f.text_field :source_release %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :match_type %></td>
+          <td><%= f.text_field :match_type %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :match_distance_arcsec %></td>
+          <td><%= f.number_field :match_distance_arcsec, step: 0.0001 %></td>
+        </tr>
+        <tr>
+          <td><%= f.label :current %></td>
+          <td><%= f.check_box :current %></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="form-card">
+    <p><%= f.submit submit_label %></p>
+  </div>
+<% end %>

@@ -616,7 +616,7 @@ namespace :sdss do
   end
 
   def upsert_spectroscopy_for_galaxy!(galaxy, attrs)
-    rec = GalaxySpectroscopy.find_or_initialize_by(galaxy_id: galaxy.id)
+    rec = GalaxySpectroscopy.find_or_initialize_by(galaxy_id: galaxy.id, current: true)
     rec.update!(attrs)
   end
 
