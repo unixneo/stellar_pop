@@ -275,7 +275,7 @@
 
 <div class="run-show-actions">
   <div class="action-links">
-    <%= link_to "Back to Grid Fits", grid_fits_path %>
+    <%= link_to "Back to Grid Fits", grid_fits_path, class: "benchmark-new-button" %>
   </div>
   <% if %w[pending running].include?(@grid_fit.status.to_s) %>
     <span class="delete-disabled-note">Delete disabled while grid fit is pending/running.</span>

@@ -455,8 +455,8 @@
 <% end %>
 
 <div class="run-show-actions">
-  <div class="action-links">
-    <%= link_to "Back to Benchmark Runs", benchmark_runs_path %>
+  <div class="action-links benchmark-run-back-link">
+    <%= link_to "Back to Benchmark Runs", benchmark_runs_path, class: "benchmark-new-button" %>
   </div>
   <% if %w[pending running].include?(@benchmark_run.status.to_s) %>
     <span class="delete-disabled-note">Delete disabled while benchmark run is pending/running.</span>

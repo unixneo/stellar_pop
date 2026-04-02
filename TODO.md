@@ -39,8 +39,10 @@ v0.3.5 galaxy data-model split:
 - 🟩 Refactor galaxy show page into distinct Identity/Photometry/Spectroscopy cards
 - 🟩 Move galaxy index to render split measurement data (`photometry` mags + `spectroscopy` redshift)
 - 🟩 Remove index-row edit actions; keep metadata/measurement edits in show-card actions
-- 🟨 Migrate calculators/jobs to read measurement tables first and use `galaxies` measurement columns as compatibility cache only
-- 🟨 Decide on deprecation plan for duplicated measurement columns on `galaxies`
+- 🟩 Migrate calculators/jobs to read split measurement tables (`galaxy_photometries`, `galaxy_spectroscopies`) as canonical sources
+- 🟩 Drop duplicated legacy measurement columns from `galaxies`; keep identity/provenance fields only
+- 🟩 Support spectroscopy history with `has_many :galaxy_spectroscopies` and current-row promotion/demotion logic
+- 🟩 Add spectroscopy history test coverage (model + integration flows)
 
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution

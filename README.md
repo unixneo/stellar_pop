@@ -14,7 +14,7 @@ chi-squared metric.
 
 - SDSS `DR19` is now the default dataset release, configurable in `/pipeline_config/edit`.
 - Live SDSS photometry refresh now uses objid-based fetch as the primary path (`sdss_objid`), replacing coordinate-first lookup for runtime fetches.
-- The `galaxies` table stores both Petrosian and model magnitudes (`petro_*`, `model_*`) per galaxy, with `mag_type` controlling active `mag_u..mag_z`.
+- The SDSS measurement layer stores both Petrosian and model magnitudes (`petro_*`, `model_*`) per galaxy, with `mag_type` controlling active `mag_u..mag_z`.
 - Added Chabrier IMF support alongside Kroupa and Salpeter.
 - Added delayed exponential SFH (`tau * t * exp(-t/tau)`).
 - Added `burst_age_gyr` as a grid-sweep parameter for burst SFH runs.
@@ -65,17 +65,18 @@ chi-squared metric.
   - spectroscopic redshift aliases (`spec_z`, `spec_zErr`, `spec_zWarning`) are
     separated from photometric `z` band in parsing
 
-## v0.3.5 Galaxy Data-Model Split (in progress)
+## v0.3.5 Galaxy Data-Model Split (final)
 
 - Added dedicated measurement tables:
   - `galaxy_photometries` (PhotoObj-like fields: `mag_*`, `petro_*`, `model_*`, errors, extinction, SDSS photometry provenance)
-  - `galaxy_spectroscopies` (SpecObj-like fields: `redshift_z`, `z_err`, `z_warning`, redshift provenance/confidence)
+  - `galaxy_spectroscopies` (SpecObj-like fields: `redshift_z`, `z_err`, `z_warning`, redshift provenance/confidence) with `has_many` history per galaxy and a single current row
 - Added one-time backfill task:
   - `bin/rails galaxies:backfill_measurement_tables`
-- Updated SDSS ingestion tasks to write measurement tables first, while still mirroring key fields to `galaxies` for compatibility:
+- Updated SDSS ingestion tasks to write measurement tables directly:
   - `sdss:fetch_dr19_photometry`
   - `sdss:refresh_dr19_spectroscopy`
   - `sdss:backfill_redshifts`
+- Dropped legacy measurement columns from `galaxies`; galaxy records now hold identity/provenance only.
 - Refactored Galaxy UI:
   - Galaxy index shows split data (photometry values from `galaxy_photometries`, redshift from `galaxy_spectroscopies`)
   - Galaxy show now has distinct cards: Identity, Photometry, Spectroscopy
@@ -83,6 +84,9 @@ chi-squared metric.
     - `/galaxies/:id/photometry/edit`
     - `/galaxies/:id/spectroscopy/edit`
   - Main galaxy form is now identity-focused metadata only
+- Added spectroscopy history test coverage:
+  - model tests for current-record demotion and validations
+  - integration tests for nested spectroscopy CRUD flows
 
 ## FIT Crossmatch Snapshot (DR19 sample)
 

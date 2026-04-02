@@ -122,13 +122,11 @@
               <tr><td>Match Distance (arcsec)</td><td><%= spec.match_distance_arcsec || "-" %></td></tr>
             </tbody>
           </table>
-          <p>
+          <p class="card-inline-actions">
             <%= link_to "Edit", edit_galaxy_spectroscopy_path(@galaxy, spec) %> |
-            <%= button_to "Delete",
-                          galaxy_spectroscopy_path(@galaxy, spec),
-                          method: :delete,
-                          form: { style: "display:inline" },
-                          data: { turbo_confirm: "Delete this spectroscopy record?" } %>
+            <%= link_to "Delete",
+                        galaxy_spectroscopy_path(@galaxy, spec),
+                        data: { turbo_method: :delete, turbo_confirm: "Delete this spectroscopy record?" } %>
           </p>
         </div>
       <% end %>
@@ -186,14 +184,12 @@
 </div>
 
 <div class="run-show-actions">
-  <div class="action-links">
-    <%= link_to "Back to Galaxies", galaxies_path %>
-    <%= link_to "Edit", edit_galaxy_path(@galaxy) %>
-  </div>
-  <%= button_to "Delete Galaxy",
+  <div class="action-links run-show-inline-links">
+    <%= link_to "Back to Galaxies", galaxies_path, class: "benchmark-new-button" %>
+    <%= link_to "Edit", edit_galaxy_path(@galaxy), class: "benchmark-new-button" %>
+    <%= link_to "Delete",
                 galaxy_path(@galaxy),
-                method: :delete,
                 class: "danger-button",
-                form: { class: "danger-button-form" },
-                data: { turbo_confirm: "Delete this galaxy permanently?" } %>
+                data: { turbo_method: :delete, turbo_confirm: "Delete this galaxy permanently?" } %>
+  </div>
 </div>

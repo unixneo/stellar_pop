@@ -212,13 +212,54 @@ main > h2 {
 
 .run-show-actions {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  justify-content: flex-end;
+  align-items: center;
   margin-top: 1rem;
 }
 
 .run-show-actions p {
   margin: 0;
+}
+
+.run-show-inline-links {
+  text-align: right;
+}
+
+.run-show-inline-links a:last-child {
+  margin-right: 0;
+}
+
+.card-inline-actions {
+  text-align: right;
+  margin: 0.6rem 0 0;
+}
+
+.benchmark-run-back-link {
+  margin-right: auto;
+}
+
+.run-show-actions .benchmark-new-button,
+.run-show-actions .danger-button {
+  padding: 10px 18px;
+  line-height: 1.2;
+}
+
+.observation-actions-left,
+.observation-actions-center,
+.observation-actions-right {
+  flex: 1;
+}
+
+.observation-actions-left {
+  text-align: left;
+}
+
+.observation-actions-center {
+  text-align: center;
+}
+
+.observation-actions-right {
+  text-align: right;
 }
 
 .danger-button-form {
