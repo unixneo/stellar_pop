@@ -13,9 +13,6 @@ class Galaxy < ApplicationRecord
   validates :name, presence: true
   validates :ra, presence: true
   validates :dec, presence: true
-  validates :mag_type, inclusion: { in: MAG_TYPES }, allow_nil: true
-  validates :id_match_quality, inclusion: { in: ID_MATCH_QUALITIES }, allow_nil: false
-  validates :redshift_confidence, inclusion: { in: REDSHIFT_CONFIDENCES }, allow_nil: false
 
   def self.find_by_ra_dec(ra, dec, tolerance: 0.01)
     target_ra = ra.to_f
@@ -54,11 +51,11 @@ class Galaxy < ApplicationRecord
   end
 
   def preferred_photometry
-    galaxy_photometry || self
+    galaxy_photometry
   end
 
   def preferred_spectroscopy
-    galaxy_spectroscopy || self
+    galaxy_spectroscopy
   end
 
   # Compatibility accessor during has_one -> has_many transition.

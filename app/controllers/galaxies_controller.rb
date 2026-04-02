@@ -6,12 +6,6 @@ class GalaxiesController < ApplicationController
     "galaxy_type" => "galaxy_type",
     "ra" => "ra",
     "dec" => "dec",
-    "mag_u" => "mag_u",
-    "mag_g" => "mag_g",
-    "mag_r" => "mag_r",
-    "mag_i" => "mag_i",
-    "mag_z" => "mag_z",
-    "redshift_z" => "redshift_z",
     "sdss_dr" => "sdss_dr",
     "source_catalog" => "source_catalog"
   }.freeze
@@ -82,7 +76,7 @@ class GalaxiesController < ApplicationController
     errors = []
 
     CSV.foreach(upload.path, headers: true) do |row|
-      attrs = row_to_attrs(row.to_h)
+      attrs, photometry_attrs, spectroscopy_attrs = row_to_attrs(row.to_h)
       if attrs[:name].blank? || attrs[:ra].nil? || attrs[:dec].nil?
         skipped += 1
         next
@@ -96,6 +90,14 @@ class GalaxiesController < ApplicationController
       was_new = galaxy.new_record?
       galaxy.assign_attributes(attrs)
       if galaxy.save
+        if photometry_attrs.any?
+          phot = GalaxyPhotometry.find_or_initialize_by(galaxy_id: galaxy.id)
+          phot.update!(photometry_attrs)
+        end
+        if spectroscopy_attrs.any?
+          spec = GalaxySpectroscopy.find_or_initialize_by(galaxy_id: galaxy.id, current: true)
+          spec.update!(spectroscopy_attrs)
+        end
         was_new ? created += 1 : updated += 1
       else
         skipped += 1
@@ -125,29 +127,35 @@ class GalaxiesController < ApplicationController
     attrs[:name] = value_for(row, "name")
     attrs[:ra] = to_float(value_for(row, "ra"))
     attrs[:dec] = to_float(value_for(row, "dec"))
-    attrs[:mag_u] = to_float(value_for(row, "mag_u", "u"))
-    attrs[:mag_g] = to_float(value_for(row, "mag_g", "g"))
-    attrs[:mag_r] = to_float(value_for(row, "mag_r", "r"))
-    attrs[:mag_i] = to_float(value_for(row, "mag_i", "i"))
-    attrs[:mag_z] = to_float(value_for(row, "mag_z", "z"))
-    attrs[:err_u] = to_float(value_for(row, "err_u"))
-    attrs[:err_g] = to_float(value_for(row, "err_g"))
-    attrs[:err_r] = to_float(value_for(row, "err_r"))
-    attrs[:err_i] = to_float(value_for(row, "err_i"))
-    attrs[:err_z] = to_float(value_for(row, "err_z"))
-    attrs[:extinction_u] = to_float(value_for(row, "extinction_u"))
-    attrs[:extinction_g] = to_float(value_for(row, "extinction_g"))
-    attrs[:extinction_r] = to_float(value_for(row, "extinction_r"))
-    attrs[:extinction_i] = to_float(value_for(row, "extinction_i"))
-    attrs[:extinction_z] = to_float(value_for(row, "extinction_z"))
     attrs[:galaxy_type] = value_for(row, "galaxy_type", "type")
     attrs[:notes] = value_for(row, "notes")
     attrs[:agn] = to_bool(value_for(row, "agn"))
     attrs[:sdss_dr] = value_for(row, "sdss_dr")
-    attrs[:redshift_z] = to_float(value_for(row, "redshift_z"))
     attrs[:sdss_objid] = value_for(row, "sdss_objid", "objid")
     attrs[:source_catalog] = value_for(row, "source_catalog")
-    attrs.compact
+    photometry_attrs = {
+      mag_u: to_float(value_for(row, "mag_u", "u")),
+      mag_g: to_float(value_for(row, "mag_g", "g")),
+      mag_r: to_float(value_for(row, "mag_r", "r")),
+      mag_i: to_float(value_for(row, "mag_i", "i")),
+      mag_z: to_float(value_for(row, "mag_z", "z")),
+      err_u: to_float(value_for(row, "err_u")),
+      err_g: to_float(value_for(row, "err_g")),
+      err_r: to_float(value_for(row, "err_r")),
+      err_i: to_float(value_for(row, "err_i")),
+      err_z: to_float(value_for(row, "err_z")),
+      extinction_u: to_float(value_for(row, "extinction_u")),
+      extinction_g: to_float(value_for(row, "extinction_g")),
+      extinction_r: to_float(value_for(row, "extinction_r")),
+      extinction_i: to_float(value_for(row, "extinction_i")),
+      extinction_z: to_float(value_for(row, "extinction_z"))
+    }.compact
+    spectroscopy_attrs = {
+      redshift_z: to_float(value_for(row, "redshift_z")),
+      sdss_dr: value_for(row, "sdss_dr")
+    }.compact
+
+    [attrs.compact, photometry_attrs, spectroscopy_attrs]
   end
 
   def value_for(row, *keys)

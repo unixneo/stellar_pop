@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_02_020000) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_02_024500) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -28,60 +28,14 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_02_020000) do
     t.string "name", null: false
     t.float "ra", null: false
     t.float "dec", null: false
-    t.float "mag_u"
-    t.float "mag_g"
-    t.float "mag_r"
-    t.float "mag_i"
-    t.float "mag_z"
-    t.float "err_u"
-    t.float "err_g"
-    t.float "err_r"
-    t.float "err_i"
-    t.float "err_z"
-    t.float "extinction_u"
-    t.float "extinction_g"
-    t.float "extinction_r"
-    t.float "extinction_i"
-    t.float "extinction_z"
     t.string "galaxy_type"
     t.text "notes"
     t.boolean "agn", default: false, null: false
     t.string "sdss_dr"
-    t.float "redshift_z"
     t.string "sdss_objid"
     t.string "source_catalog", default: "local", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "mag_type"
-    t.float "petro_u"
-    t.float "petro_g"
-    t.float "petro_r"
-    t.float "petro_i"
-    t.float "petro_z"
-    t.float "model_u"
-    t.float "model_g"
-    t.float "model_r"
-    t.float "model_i"
-    t.float "model_z"
-    t.float "petro_err_u"
-    t.float "petro_err_g"
-    t.float "petro_err_r"
-    t.float "petro_err_i"
-    t.float "petro_err_z"
-    t.float "model_err_u"
-    t.float "model_err_g"
-    t.float "model_err_r"
-    t.float "model_err_i"
-    t.float "model_err_z"
-    t.float "z_err"
-    t.integer "z_warning"
-    t.boolean "sdss_clean"
-    t.string "id_match_quality", default: "unverified", null: false
-    t.float "id_match_distance_arcsec"
-    t.text "id_match_note"
-    t.string "redshift_source", default: "legacy", null: false
-    t.string "redshift_confidence", default: "low", null: false
-    t.datetime "redshift_checked_at"
     t.string "sdss_status"
     t.float "luminosity_distance_mpc"
     t.string "distance_calc_method"

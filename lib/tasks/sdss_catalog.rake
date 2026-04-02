@@ -49,8 +49,9 @@ namespace :sdss do
       end
 
       differences = {}
+      photometry = galaxy.preferred_photometry
       bands.each do |band|
-        stored_raw = galaxy.public_send("mag_#{band}")
+        stored_raw = photometry&.public_send("mag_#{band}")
         fetched_raw = fetched[band.to_sym]
         next if stored_raw.nil? || fetched_raw.nil?
 
@@ -74,8 +75,8 @@ namespace :sdss do
       end
 
       if write_enabled
-        attrs = { sdss_dr: sdss_release, mag_type: detected_type }
-        galaxy.update!(attrs)
+        upsert_photometry_for_galaxy!(galaxy, { mag_type: detected_type, sdss_dr: sdss_release })
+        galaxy.update!(sdss_dr: sdss_release)
       end
     end
 
@@ -94,24 +95,27 @@ namespace :sdss do
     end
 
     if write_enabled
-      puts "Updated galaxies.sdss_dr and galaxies.mag_type for fetched rows."
+      puts "Updated galaxies.sdss_dr and photometry.mag_type for fetched rows."
     else
       puts "Dry run only (set WRITE=true to persist updates)."
     end
   end
 
-  desc "Backfill galaxies.redshift_z from live SDSS (objid-strict for writes). WRITE=true to persist."
+  desc "Backfill current galaxy spectroscopy redshift from live SDSS (objid-strict for writes). WRITE=true to persist."
   task backfill_redshifts: :environment do
     config = PipelineConfig.current
     sdss_release = config.sdss_dataset_release
     write_enabled = ActiveModel::Type::Boolean.new.cast(ENV["WRITE"])
     radius_arcmin = ENV.fetch("RADIUS_ARCMIN", "2.0").to_f
     max_match_distance_arcmin = ENV.fetch("MAX_MATCH_ARCMIN", "0.5").to_f
-    scope = Galaxy.where("redshift_z IS NULL OR redshift_z = 0").order(:id)
-    total = scope.count
+    scope = Galaxy.order(:id).to_a.select do |galaxy|
+      current_spec = galaxy.galaxy_spectroscopy
+      current_spec.nil? || current_spec.redshift_z.to_f.zero?
+    end
+    total = scope.size
 
-    if scope.empty?
-      puts "No galaxies with missing/zero redshift_z."
+    if total.zero?
+      puts "No galaxies with missing/zero spectroscopy redshift."
       next
     end
 
@@ -172,7 +176,7 @@ namespace :sdss do
             redshift_checked_at: attrs[:redshift_checked_at],
             sdss_dr: attrs[:sdss_dr]
           })
-          galaxy.update!(attrs)
+          galaxy.update!(sdss_dr: sdss_release, sdss_objid: attrs[:sdss_objid]) if attrs[:sdss_objid].present?
         end
         updated += 1
         puts "#{galaxy.name}: z=#{format('%.6f', z)} via #{source}"
@@ -272,22 +276,18 @@ namespace :sdss do
 
         existing_spec = galaxy.galaxy_spectroscopy
         spectroscopy_attrs = {
-          redshift_z: result[:redshift_z] || existing_spec&.redshift_z || galaxy.redshift_z,
+          redshift_z: result[:redshift_z] || existing_spec&.redshift_z,
           z_err: result[:z_err],
           z_warning: result[:z_warning],
-          redshift_source: existing_spec&.redshift_source || galaxy.redshift_source,
-          redshift_confidence: existing_spec&.redshift_confidence || galaxy.redshift_confidence,
-          redshift_checked_at: existing_spec&.redshift_checked_at || galaxy.redshift_checked_at,
+          redshift_source: existing_spec&.redshift_source || "specobj_bestobjid",
+          redshift_confidence: existing_spec&.redshift_confidence || "high",
+          redshift_checked_at: existing_spec&.redshift_checked_at || Time.current,
           sdss_dr: "DR19"
         }
 
         upsert_photometry_for_galaxy!(galaxy, photometry_attrs)
         upsert_spectroscopy_for_galaxy!(galaxy, spectroscopy_attrs)
-        galaxy.update!(photometry_attrs.merge(
-          redshift_z: spectroscopy_attrs[:redshift_z],
-          z_err: spectroscopy_attrs[:z_err],
-          z_warning: spectroscopy_attrs[:z_warning]
-        ))
+        galaxy.update!(sdss_dr: "DR19")
         puts "#{galaxy.name}: success via #{fetch_path} petro_r=#{result[:petro_r].inspect}"
       else
         puts "#{galaxy.name}: failure via #{fetch_path} reason=#{failure_reason || client.last_failure_reason || 'unknown'} petro_r=nil"
@@ -330,7 +330,7 @@ namespace :sdss do
           sdss_dr: "DR19"
         }
         upsert_spectroscopy_for_galaxy!(galaxy, spectroscopy_attrs)
-        galaxy.update!(spectroscopy_attrs)
+        galaxy.update!(sdss_dr: "DR19")
         updated += 1
         puts "#{galaxy.name}: z=#{format('%.6f', z)} z_err=#{result[:redshift_err].inspect} z_warning=#{result[:redshift_warning].inspect} via #{source}"
       else
@@ -343,7 +343,6 @@ namespace :sdss do
           sdss_dr: "DR19"
         }
         upsert_spectroscopy_for_galaxy!(galaxy, spectroscopy_attrs)
-        galaxy.update!(spectroscopy_attrs.except(:sdss_dr))
         unresolved += 1
         puts "#{galaxy.name}: unresolved (objid=#{galaxy.sdss_objid.presence || 'nil'} reason=#{client.last_failure_reason || 'no_redshift'})"
       end
@@ -461,14 +460,16 @@ namespace :sdss do
     end
   end
 
-  desc "Compute redshift-based luminosity distance for galaxies (Mpc + light-years). WRITE=true to persist."
+  desc "Compute redshift-based luminosity distance for galaxies with current spectroscopy redshift (Mpc + light-years). WRITE=true to persist."
   task compute_redshift_distances: :environment do
     write_enabled = ActiveModel::Type::Boolean.new.cast(ENV.fetch("WRITE", "true"))
     max_z = ENV["MAX_Z"].present? ? ENV["MAX_Z"].to_f : nil
-    scope = Galaxy.where.not(redshift_z: nil).where("redshift_z > 0").order(:id)
-    scope = scope.where("redshift_z <= ?", max_z) if max_z
+    scope = Galaxy.includes(:galaxy_spectroscopies).order(:id).to_a.select do |galaxy|
+      z = galaxy.galaxy_spectroscopy&.redshift_z.to_f
+      z.positive? && (max_z.nil? || z <= max_z)
+    end
 
-    total = scope.count
+    total = scope.size
     if total.zero?
       puts "No galaxies with positive redshift_z found."
       next
@@ -477,8 +478,8 @@ namespace :sdss do
     updated = 0
     skipped = 0
 
-    scope.find_each(batch_size: 500) do |galaxy|
-      z = galaxy.redshift_z.to_f
+    scope.each do |galaxy|
+      z = galaxy.galaxy_spectroscopy&.redshift_z.to_f
       d_mpc = approximate_luminosity_distance_mpc(z)
       d_ly = mpc_to_light_years(d_mpc)
 
@@ -521,7 +522,8 @@ namespace :sdss do
     scope.find_each(batch_size: 500) do |galaxy|
       mpc = galaxy.luminosity_distance_mpc.to_f
       mly = galaxy.luminosity_distance_ly.to_f / 1_000_000.0
-      puts "#{galaxy.name} | #{format('%.6f', galaxy.redshift_z.to_f)} | #{format('%.3f', mpc)} | #{format('%.3f', mly)}"
+      z = galaxy.galaxy_spectroscopy&.redshift_z.to_f
+      puts "#{galaxy.name} | #{format('%.6f', z)} | #{format('%.3f', mpc)} | #{format('%.3f', mly)}"
     end
 
     puts "total rows: #{scope.count}"
@@ -550,8 +552,9 @@ namespace :sdss do
   end
 
   def profile_score(galaxy, profile, bands)
+    photometry = galaxy.preferred_photometry
     deltas = bands.filter_map do |band|
-      stored_raw = galaxy.public_send("mag_#{band}")
+      stored_raw = photometry&.public_send("mag_#{band}")
       fetched_raw = profile[band.to_sym]
       next if stored_raw.nil? || fetched_raw.nil?
 

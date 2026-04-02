@@ -227,10 +227,12 @@ namespace :fits do
         }
 
         if write_updates
-          galaxy.update!(
+          phot = GalaxyPhotometry.find_or_initialize_by(galaxy_id: galaxy.id)
+          phot.update!(
             id_match_quality: "coord_validated",
             id_match_distance_arcsec: match[:separation_arcsec],
-            id_match_note: note
+            id_match_note: note,
+            sdss_dr: galaxy.sdss_dr
           )
           updated += 1
         end
@@ -246,10 +248,12 @@ namespace :fits do
         }
 
         if write_updates
-          galaxy.update!(
+          phot = GalaxyPhotometry.find_or_initialize_by(galaxy_id: galaxy.id)
+          phot.update!(
             id_match_quality: "unverified",
             id_match_distance_arcsec: nil,
-            id_match_note: note
+            id_match_note: note,
+            sdss_dr: galaxy.sdss_dr
           )
           updated += 1
         end

@@ -42,16 +42,17 @@
           <label for="sdss-catalog-target">Target from local SDSS catalog</label><br>
           <select id="sdss-catalog-target" name="sdss_catalog_target">
             <% @catalog_targets.to_a.each do |target| %>
+              <% phot = target.photometry_hash %>
               <option
                 value="<%= target.name %>"
                 data-ra="<%= target.ra %>"
                 data-dec="<%= target.dec %>"
-                data-mag-u="<%= target.mag_u %>"
-                data-mag-g="<%= target.mag_g %>"
-                data-mag-r="<%= target.mag_r %>"
-                data-mag-i="<%= target.mag_i %>"
-                data-mag-z="<%= target.mag_z %>"
-                data-redshift="<%= target.redshift_z %>"
+                data-mag-u="<%= phot[:u] %>"
+                data-mag-g="<%= phot[:g] %>"
+                data-mag-r="<%= phot[:r] %>"
+                data-mag-i="<%= phot[:i] %>"
+                data-mag-z="<%= phot[:z] %>"
+                data-redshift="<%= phot[:redshift_z] %>"
                 <%= "selected" if @synthesis_run.sdss_ra.to_f == target.ra.to_f && @synthesis_run.sdss_dec.to_f == target.dec.to_f %>
               >
                 <%= "#{target.name} (#{target.galaxy_type}) — RA #{target.ra}, Dec #{target.dec}" %>

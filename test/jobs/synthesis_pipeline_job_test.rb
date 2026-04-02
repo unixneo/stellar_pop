@@ -214,16 +214,19 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
       raise "live api should not be called when local catalog hits"
     end
 
-    Galaxy.create!(
+    galaxy = Galaxy.create!(
       name: "NGC4564B",
       ra: run.sdss_ra,
       dec: run.sdss_dec,
+      galaxy_type: "elliptical"
+    )
+    GalaxyPhotometry.create!(
+      galaxy: galaxy,
       mag_u: 14.0,
       mag_g: 13.0,
       mag_r: 12.9,
       mag_i: 12.6,
-      mag_z: 13.2,
-      galaxy_type: "elliptical"
+      mag_z: 13.2
     )
 
     with_stubbed_new(StellarPop::Integrator::SpectralIntegrator, fake_integrator_factory) do
