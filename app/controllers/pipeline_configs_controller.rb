@@ -63,7 +63,8 @@ class PipelineConfigsController < ApplicationController
       :calibration_fast_metallicities_z,
       :calibration_fast_sfh_models,
       :calibration_fast_imf_types,
-      :calibration_fast_burst_ages_gyr
+      :calibration_fast_burst_ages_gyr,
+      calibration_allowed_redshift_confidences: []
     )
   end
 end

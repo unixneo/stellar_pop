@@ -190,6 +190,22 @@
             </td>
           </tr>
           <tr>
+            <td><%= f.label :calibration_allowed_redshift_confidences, "Allowed redshift confidence values" %></td>
+            <td>
+              <% selected_confidences = Array(@settings["calibration_allowed_redshift_confidences"]).map(&:to_s) %>
+              <%= hidden_field_tag "pipeline_config[calibration_allowed_redshift_confidences][]", "" %>
+              <% PipelineConfig::CALIBRATION_REDSHIFT_CONFIDENCES.each do |confidence| %>
+                <label style="display: inline-flex; align-items: center; gap: 6px; margin-right: 12px;">
+                  <%= check_box_tag "pipeline_config[calibration_allowed_redshift_confidences][]",
+                                    confidence,
+                                    selected_confidences.include?(confidence),
+                                    id: "pipeline_config_calibration_allowed_redshift_confidences_#{confidence}" %>
+                  <%= confidence %>
+                </label>
+              <% end %>
+            </td>
+          </tr>
+          <tr>
             <td><%= f.label :calibration_fast_ages_gyr, "Fast mode ages (Gyr, comma-separated)" %></td>
             <td><%= f.text_field :calibration_fast_ages_gyr, value: Array(@settings["calibration_fast_ages_gyr"]).join(", ") %></td>
           </tr>

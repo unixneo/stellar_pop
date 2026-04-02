@@ -69,6 +69,7 @@
           <tr><td>Progress write frequency (steps)</td><td><%= @settings["calibration_progress_write_every"] %></td></tr>
           <tr><td>Enable Validation Gate Failure</td><td><%= ActiveModel::Type::Boolean.new.cast(@settings["calibration_enable_validation_gate"]) ? "true" : "false" %></td></tr>
           <tr><td>Allow Multiple Benchmark Targets Per Run</td><td><%= ActiveModel::Type::Boolean.new.cast(@settings["calibration_allow_multi_benchmark_targets"]) ? "true" : "false" %></td></tr>
+          <tr><td>Allowed redshift confidence values</td><td><%= Array(@settings["calibration_allowed_redshift_confidences"]).join(", ") %></td></tr>
           <tr><td>Fast mode ages (Gyr)</td><td><%= Array(@settings["calibration_fast_ages_gyr"]).join(", ") %></td></tr>
           <tr><td>Fast mode metallicities</td><td><%= Array(@settings["calibration_fast_metallicities_z"]).join(", ") %></td></tr>
           <tr><td>Fast mode SFH models</td><td><%= Array(@settings["calibration_fast_sfh_models"]).join(", ") %></td></tr>

@@ -1,6 +1,7 @@
 class PipelineConfig < ApplicationRecord
   SDSS_RELEASES = %w[DR18 DR19].freeze
   MAG_TYPES = %w[petrosian model].freeze
+  CALIBRATION_REDSHIFT_CONFIDENCES = %w[high medium low].freeze
 
   validates :mag_type, inclusion: { in: MAG_TYPES }
 
@@ -35,6 +36,7 @@ class PipelineConfig < ApplicationRecord
     "calibration_progress_write_every" => 10,
     "calibration_enable_validation_gate" => false,
     "calibration_allow_multi_benchmark_targets" => false,
+    "calibration_allowed_redshift_confidences" => %w[high],
     "calibration_fast_ages_gyr" => [0.1, 0.5, 2.0, 8.0, 12.0],
     "calibration_fast_metallicities_z" => [0.0020, 0.0200],
     "calibration_fast_sfh_models" => %w[exponential delayed_exponential constant burst],
@@ -108,6 +110,9 @@ class PipelineConfig < ApplicationRecord
     assign_scalar(merged, "calibration_progress_write_every", form_params[:calibration_progress_write_every], :int)
     assign_boolean(merged, "calibration_enable_validation_gate", form_params[:calibration_enable_validation_gate])
     assign_boolean(merged, "calibration_allow_multi_benchmark_targets", form_params[:calibration_allow_multi_benchmark_targets])
+    assign_list(merged, "calibration_allowed_redshift_confidences", form_params[:calibration_allowed_redshift_confidences], :string)
+    merged["calibration_allowed_redshift_confidences"] =
+      normalized_calibration_redshift_confidences(merged["calibration_allowed_redshift_confidences"])
     assign_list(merged, "calibration_fast_ages_gyr", form_params[:calibration_fast_ages_gyr], :float)
     assign_list(merged, "calibration_fast_metallicities_z", form_params[:calibration_fast_metallicities_z], :float)
     assign_list(merged, "calibration_fast_sfh_models", form_params[:calibration_fast_sfh_models], :string)
@@ -136,8 +141,12 @@ class PipelineConfig < ApplicationRecord
   def assign_list(target, key, raw, type)
     return if raw.nil?
 
-    parsed = raw.to_s.split(",").map(&:strip).reject(&:empty?)
-    return if parsed.empty?
+    parsed =
+      if raw.is_a?(Array)
+        raw.map(&:to_s).map(&:strip).reject(&:empty?)
+      else
+        raw.to_s.split(",").map(&:strip).reject(&:empty?)
+      end
 
     target[key] =
       case type
@@ -178,5 +187,12 @@ class PipelineConfig < ApplicationRecord
   def normalized_mag_type(raw_value)
     value = raw_value.to_s.downcase
     MAG_TYPES.include?(value) ? value : "petrosian"
+  end
+
+  def normalized_calibration_redshift_confidences(raw_values)
+    values = Array(raw_values).map(&:to_s).map(&:downcase).uniq
+    filtered = values.select { |v| CALIBRATION_REDSHIFT_CONFIDENCES.include?(v) }
+    filtered = ["high"] if filtered.empty?
+    filtered
   end
 end

@@ -78,7 +78,7 @@ module StellarPop
 
         reasons = []
         reasons << "id_match_quality=#{id_quality}" unless id_quality == "exact_objid"
-        reasons << "redshift_confidence=#{redshift_conf}" unless redshift_conf == "high"
+        reasons << "redshift_confidence=#{redshift_conf}" unless allowed_redshift_confidences.include?(redshift_conf)
         reasons << "missing_band_errors" unless has_band_errors
         reasons << "missing_redshift_error" unless has_redshift_error
 
@@ -126,6 +126,15 @@ module StellarPop
         return "Single literature value per observable (matched by SDSS ObjID)." if multi.empty?
 
         "Averaged multiple literature values by SDSS ObjID for: #{multi.join(', ')}."
+      end
+
+      def allowed_redshift_confidences
+        @allowed_redshift_confidences ||= begin
+          config = PipelineConfig.current
+          values = Array(config.fetch("calibration_allowed_redshift_confidences")).map(&:to_s).map(&:downcase).reject(&:empty?)
+          values = ["high"] if values.empty?
+          values
+        end
       end
     end
   end
