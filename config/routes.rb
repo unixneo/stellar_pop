@@ -22,7 +22,7 @@ Rails.application.routes.draw do
       post :import
     end
     resource :photometry, only: %i[edit update], controller: "galaxy_photometries"
-    resources :spectroscopies, only: %i[new create edit update destroy], controller: "galaxy_spectroscopies"
+    resources :spectroscopies, only: %i[show new create edit update destroy], controller: "galaxy_spectroscopies"
     resources :observations, only: %i[new]
   end
   resources :observations

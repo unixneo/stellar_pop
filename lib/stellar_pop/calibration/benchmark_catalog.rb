@@ -12,7 +12,7 @@ module StellarPop
       end
 
       def benchmarks
-        scope = Galaxy.includes(:galaxy_photometry, :galaxy_spectroscopies).order(:name)
+        scope = Galaxy.usable_photometry.includes(:galaxy_photometry, :galaxy_spectroscopies).order(:name)
         scope = scope.where(sdss_dr: @sdss_release) if @sdss_release.present?
 
         scope.filter_map do |galaxy|

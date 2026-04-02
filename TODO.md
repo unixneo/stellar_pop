@@ -43,6 +43,12 @@ v0.3.5 galaxy data-model split:
 - 🟩 Drop duplicated legacy measurement columns from `galaxies`; keep identity/provenance fields only
 - 🟩 Support spectroscopy history with `has_many :galaxy_spectroscopies` and current-row promotion/demotion logic
 - 🟩 Add spectroscopy history test coverage (model + integration flows)
+- 🟩 Add `photometry_usable` flags to `galaxies` and `galaxy_photometries` (default `true`) and exclude unusable targets from benchmark selection via `Galaxy.usable_photometry`
+- 🟩 Add SIMBAD spectroscopy ingestion task for a single galaxy (`external:import_simbad_spectroscopy`)
+- 🟩 Add DR19 SIMBAD z audit/report JSON (`lib/data/fit/dr19_simbad_z_check.json`)
+- 🟩 Add bulk SIMBAD report apply task to spectroscopy history (`external:apply_simbad_z_report`)
+- 🟩 Backfill DR19 spectroscopy current rows from SIMBAD z report (`26/26` with current non-nil z)
+- 🟩 Remove legacy unresolved spectroscopy rows with `redshift_z=nil` after SIMBAD backfill
 
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution

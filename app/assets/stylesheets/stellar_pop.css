@@ -234,6 +234,19 @@ main > h2 {
   margin: 0.6rem 0 0;
 }
 
+.spectroscopy-row-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.6rem;
+}
+
+.spectroscopy-row-actions .benchmark-new-button,
+.spectroscopy-row-actions .danger-button {
+  padding: 10px 18px;
+  line-height: 1.2;
+}
+
 .benchmark-run-back-link {
   margin-right: auto;
 }

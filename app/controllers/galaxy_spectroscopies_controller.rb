@@ -1,6 +1,10 @@
 class GalaxySpectroscopiesController < ApplicationController
   before_action :set_galaxy
-  before_action :set_spectroscopy, only: %i[edit update destroy]
+  before_action :set_spectroscopy, only: %i[show edit update destroy]
+
+  def show
+    redirect_to galaxy_path(@galaxy), notice: "Showing spectroscopy within galaxy details."
+  end
 
   def new
     @spectroscopy = @galaxy.galaxy_spectroscopies.new(current: false, sdss_dr: @galaxy.sdss_dr)

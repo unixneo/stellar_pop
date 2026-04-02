@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_02_024500) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_02_110000) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -41,6 +41,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_02_024500) do
     t.string "distance_calc_method"
     t.datetime "distance_updated_at"
     t.float "luminosity_distance_ly"
+    t.boolean "photometry_usable", default: true, null: false
   end
 
   create_table "galaxy_photometries", force: :cascade do |t|
@@ -88,6 +89,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_02_024500) do
     t.string "sdss_dr"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "photometry_usable", default: true, null: false
     t.index ["galaxy_id"], name: "index_galaxy_photometries_on_galaxy_id", unique: true
   end
 

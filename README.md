@@ -87,6 +87,14 @@ chi-squared metric.
 - Added spectroscopy history test coverage:
   - model tests for current-record demotion and validations
   - integration tests for nested spectroscopy CRUD flows
+- Added `photometry_usable` boolean flags (default `true`) on both `galaxies` and `galaxy_photometries`.
+- Benchmark target selection now uses `Galaxy.usable_photometry`, so galaxies marked `photometry_usable=false` are excluded from SPS benchmark fitting.
+- Added external spectroscopy ingestion tasks for SIMBAD:
+  - `external:import_simbad_spectroscopy[GALAXY_NAME]` (single-galaxy import; `WRITE=true` to persist)
+  - `external:apply_simbad_z_report` (bulk apply from `lib/data/fit/dr19_simbad_z_check.json`)
+- Added DR19 SIMBAD redshift coverage report:
+  - `lib/data/fit/dr19_simbad_z_check.json` (SIMBAD `z`, `z_err`, and type for DR19 galaxies)
+- Cleaned legacy spectroscopy placeholders by deleting rows with `redshift_z IS NULL` after SIMBAD backfill.
 
 ## FIT Crossmatch Snapshot (DR19 sample)
 

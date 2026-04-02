@@ -122,12 +122,17 @@
               <tr><td>Match Distance (arcsec)</td><td><%= spec.match_distance_arcsec || "-" %></td></tr>
             </tbody>
           </table>
-          <p class="card-inline-actions">
-            <%= link_to "Edit", edit_galaxy_spectroscopy_path(@galaxy, spec) %> |
-            <%= link_to "Delete",
-                        galaxy_spectroscopy_path(@galaxy, spec),
-                        data: { turbo_method: :delete, turbo_confirm: "Delete this spectroscopy record?" } %>
-          </p>
+          <div class="spectroscopy-row-actions">
+            <%= link_to "Edit",
+                        edit_galaxy_spectroscopy_path(@galaxy, spec),
+                        class: "benchmark-new-button" %>
+            <%= button_to "Delete",
+                          galaxy_spectroscopy_path(@galaxy, spec),
+                          method: :delete,
+                          form: { class: "inline-reset-form" },
+                          class: "danger-button",
+                          data: { turbo_confirm: "Delete this spectroscopy record?" } %>
+          </div>
         </div>
       <% end %>
     <% else %>
@@ -187,9 +192,11 @@
   <div class="action-links run-show-inline-links">
     <%= link_to "Back to Galaxies", galaxies_path, class: "benchmark-new-button" %>
     <%= link_to "Edit", edit_galaxy_path(@galaxy), class: "benchmark-new-button" %>
-    <%= link_to "Delete",
-                galaxy_path(@galaxy),
-                class: "danger-button",
-                data: { turbo_method: :delete, turbo_confirm: "Delete this galaxy permanently?" } %>
+    <%= button_to "Delete",
+                  galaxy_path(@galaxy),
+                  method: :delete,
+                  form: { class: "inline-reset-form" },
+                  class: "danger-button",
+                  data: { turbo_confirm: "Delete this galaxy permanently?" } %>
   </div>
 </div>

@@ -8,11 +8,12 @@ class Galaxy < ApplicationRecord
   has_many :observations, dependent: :destroy
   has_one :galaxy_photometry, dependent: :destroy
   has_many :galaxy_spectroscopies, dependent: :destroy
-  before_update :prevent_identity_coordinate_changes_for_dr19
+  validate :lock_identity_fields_on_update, on: :update
 
   validates :name, presence: true
   validates :ra, presence: true
   validates :dec, presence: true
+  scope :usable_photometry, -> { where(photometry_usable: true) }
 
   def self.find_by_ra_dec(ra, dec, tolerance: 0.01)
     target_ra = ra.to_f
@@ -65,11 +66,15 @@ class Galaxy < ApplicationRecord
 
   private
 
-  def prevent_identity_coordinate_changes_for_dr19
-    return unless sdss_dr == "DR19"
-    return unless will_save_change_to_name? || will_save_change_to_ra? || will_save_change_to_dec?
-
-    errors.add(:base, "name, ra, dec are immutable for DR19 galaxies")
-    throw :abort
+  def lock_identity_fields_on_update
+    if will_save_change_to_sdss_objid?
+      errors.add(:sdss_objid, "is immutable after create")
+    end
+    if will_save_change_to_ra?
+      errors.add(:ra, "is immutable after create")
+    end
+    if will_save_change_to_dec?
+      errors.add(:dec, "is immutable after create")
+    end
   end
 end

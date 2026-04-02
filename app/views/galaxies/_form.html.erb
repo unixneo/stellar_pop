@@ -1,4 +1,5 @@
 <%= form_with model: galaxy do |f| %>
+  <% locked_identity = galaxy.persisted? %>
   <div class="form-card">
     <table class="galaxy-form-table">
       <thead>
@@ -39,11 +40,11 @@
       <tbody>
         <tr>
           <td><%= f.label :ra, "RA" %></td>
-          <td><%= f.number_field :ra, step: 0.0001 %></td>
+          <td><%= f.number_field :ra, step: 0.0001, readonly: locked_identity %></td>
         </tr>
         <tr>
           <td><%= f.label :dec, "Dec" %></td>
-          <td><%= f.number_field :dec, step: 0.0001 %></td>
+          <td><%= f.number_field :dec, step: 0.0001, readonly: locked_identity %></td>
         </tr>
       </tbody>
     </table>
@@ -64,7 +65,7 @@
         </tr>
         <tr>
           <td><%= f.label :sdss_objid %></td>
-          <td><%= f.text_field :sdss_objid %></td>
+          <td><%= f.text_field :sdss_objid, readonly: locked_identity %></td>
         </tr>
         <tr>
           <td><%= f.label :source_catalog %></td>
