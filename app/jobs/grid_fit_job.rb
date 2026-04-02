@@ -145,14 +145,7 @@ class GridFitJob < ApplicationJob
   end
 
   def build_photometry_hash(target)
-    {
-      u: target.mag_u,
-      g: target.mag_g,
-      r: target.mag_r,
-      i: target.mag_i,
-      z: target.mag_z,
-      redshift_z: target.redshift_z
-    }
+    target.photometry_hash
   end
 
   def fetch_sdss_photometry_with_retry(sdss_client, ra, dec, config)

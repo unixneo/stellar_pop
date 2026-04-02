@@ -29,14 +29,36 @@ class Galaxy < ApplicationRecord
   end
 
   def photometry_hash
+    phot = preferred_photometry
+    spec = preferred_spectroscopy
+
     {
-      u: mag_u,
-      g: mag_g,
-      r: mag_r,
-      i: mag_i,
-      z: mag_z,
-      redshift_z: redshift_z
+      u: phot&.mag_u,
+      g: phot&.mag_g,
+      r: phot&.mag_r,
+      i: phot&.mag_i,
+      z: phot&.mag_z,
+      redshift_z: spec&.redshift_z
     }
+  end
+
+  def photometry_errors_hash
+    phot = preferred_photometry
+    {
+      u: phot&.err_u,
+      g: phot&.err_g,
+      r: phot&.err_r,
+      i: phot&.err_i,
+      z: phot&.err_z
+    }
+  end
+
+  def preferred_photometry
+    galaxy_photometry || self
+  end
+
+  def preferred_spectroscopy
+    galaxy_spectroscopy || self
   end
 
   private

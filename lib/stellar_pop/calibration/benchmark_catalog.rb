@@ -12,7 +12,7 @@ module StellarPop
       end
 
       def benchmarks
-        scope = Galaxy.order(:name)
+        scope = Galaxy.includes(:galaxy_photometry, :galaxy_spectroscopy).order(:name)
         scope = scope.where(sdss_dr: @sdss_release) if @sdss_release.present?
 
         scope.filter_map do |galaxy|
@@ -30,14 +30,7 @@ module StellarPop
             benchmark_type: benchmark_type_for(observations),
             ra: galaxy.ra,
             dec: galaxy.dec,
-            photometry: {
-              u: galaxy.mag_u,
-              g: galaxy.mag_g,
-              r: galaxy.mag_r,
-              i: galaxy.mag_i,
-              z: galaxy.mag_z,
-              redshift_z: galaxy.redshift_z
-            },
+            photometry: galaxy.photometry_hash,
             data_quality: build_data_quality(galaxy),
             expected: {
               age_gyr_min: age_avg,
@@ -74,11 +67,14 @@ module StellarPop
       end
 
       def build_data_quality(galaxy)
-        bands = %w[u g r i z]
-        has_band_errors = bands.all? { |band| !galaxy.public_send("err_#{band}").nil? }
-        has_redshift_error = !galaxy.z_err.nil?
-        id_quality = galaxy.id_match_quality.to_s
-        redshift_conf = galaxy.redshift_confidence.to_s
+        phot = galaxy.preferred_photometry
+        spec = galaxy.preferred_spectroscopy
+        bands = %i[u g r i z]
+        errors = galaxy.photometry_errors_hash
+        has_band_errors = bands.all? { |band| !errors[band].nil? }
+        has_redshift_error = !spec&.z_err.nil?
+        id_quality = phot&.id_match_quality.to_s
+        redshift_conf = spec&.redshift_confidence.to_s
 
         reasons = []
         reasons << "id_match_quality=#{id_quality}" unless id_quality == "exact_objid"
@@ -88,8 +84,8 @@ module StellarPop
 
         {
           id_match_quality: id_quality,
-          id_match_distance_arcsec: galaxy.id_match_distance_arcsec,
-          redshift_source: galaxy.redshift_source,
+          id_match_distance_arcsec: phot&.id_match_distance_arcsec,
+          redshift_source: spec&.redshift_source,
           redshift_confidence: redshift_conf,
           has_band_errors: has_band_errors,
           has_redshift_error: has_redshift_error,
