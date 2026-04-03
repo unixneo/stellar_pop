@@ -19,6 +19,7 @@
             <th>Status</th>
             <th>Mode</th>
             <th>Runtime (s)</th>
+            <th>Targets (AGN)</th>
             <th>Summary</th>
             <th>Created At</th>
           </tr>
@@ -28,11 +29,20 @@
             <% parsed = JSON.parse(run.result_json || "{}") rescue {} %>
             <% summary = parsed["summary"] || {} %>
             <% run_mode = parsed["mode"].to_s.presence || "-" %>
+            <% benchmark_names = Array(parsed["benchmarks"]).map { |b| b["name"].to_s.strip }.reject(&:blank?).uniq %>
             <tr>
               <td><%= link_to(run.name, benchmark_run_path(run)) %></td>
               <td><%= run.status %></td>
               <td><%= run_mode %></td>
               <td><%= run.runtime_seconds.present? ? run.runtime_seconds : "-" %></td>
+              <td>
+                <% if benchmark_names.any? %>
+                  <% labels = benchmark_names.map { |name| "#{name}=#{@galaxy_agn_by_name[name] ? 'true' : 'false'}" } %>
+                  <%= labels.join(", ") %>
+                <% else %>
+                  -
+                <% end %>
+              </td>
               <td>
                 <% if summary.present? %>
                   pass=<%= summary["pass"] %>, warn=<%= summary["warn"] %>, fail=<%= summary["fail"] %>

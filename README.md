@@ -112,6 +112,9 @@ chi-squared metric.
 - Current run status:
   - SDSS AGN classification resolved `5/26` DR19 galaxies (`21` unresolved via strict `bestObjID` lookup)
   - SIMBAD fallback task is implemented but currently blocked in this environment by SIMBAD endpoint connectivity timeouts.
+- Benchmark UI now surfaces AGN flags explicitly:
+  - `/benchmark_runs/new` includes sortable `AGN` (`true/false`) per target row
+  - `/benchmark_runs` includes `Targets (AGN)` to show AGN status for galaxies included in each run result
 
 ## FIT Crossmatch Snapshot (DR19 sample)
 

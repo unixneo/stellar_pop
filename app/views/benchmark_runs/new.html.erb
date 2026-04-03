@@ -30,6 +30,7 @@
               <th><%= link_to "Select", new_benchmark_run_path(request.query_parameters.merge(sort: "select", dir: (@sort == "select" && @dir == "asc") ? "desc" : "asc")) %></th>
               <th><%= link_to "Name", new_benchmark_run_path(request.query_parameters.merge(sort: "name", dir: (@sort == "name" && @dir == "asc") ? "desc" : "asc")) %></th>
               <th><%= link_to "Type", new_benchmark_run_path(request.query_parameters.merge(sort: "type", dir: (@sort == "type" && @dir == "asc") ? "desc" : "asc")) %></th>
+              <th><%= link_to "AGN", new_benchmark_run_path(request.query_parameters.merge(sort: "agn", dir: (@sort == "agn" && @dir == "asc") ? "desc" : "asc")) %></th>
               <th><%= link_to "OID Match", new_benchmark_run_path(request.query_parameters.merge(sort: "oid_match", dir: (@sort == "oid_match" && @dir == "asc") ? "desc" : "asc")) %></th>
               <th style="text-align: center;"><%= link_to "Expected Age (Gyr)", new_benchmark_run_path(request.query_parameters.merge(sort: "age", dir: (@sort == "age" && @dir == "asc") ? "desc" : "asc")) %></th>
               <th style="text-align: center;"><%= link_to "Expected Metallicity (Z)", new_benchmark_run_path(request.query_parameters.merge(sort: "metallicity", dir: (@sort == "metallicity" && @dir == "asc") ? "desc" : "asc")) %></th>
@@ -42,7 +43,7 @@
               <% id_quality = dq[:id_match_quality].to_s %>
               <% redshift_conf = dq[:redshift_confidence].to_s %>
               <% eligible = !!dq[:benchmark_eligible] %>
-              <% sdss_status = Galaxy.find_by(name: benchmark[:name], sdss_dr: @active_sdss_release)&.sdss_status %>
+              <% sdss_status = benchmark[:sdss_status] %>
               <% id_quality_class =
                    if id_quality == "exact_objid"
                      "quality-high"
@@ -61,6 +62,7 @@
                 </td>
                 <td data-sort="<%= benchmark[:name].to_s.downcase %>"><%= benchmark[:name] %></td>
                 <td data-sort="<%= benchmark[:type].to_s.downcase %>"><%= benchmark[:type] %></td>
+                <td data-sort="<%= benchmark[:agn] ? 1 : 0 %>"><%= benchmark[:agn] ? "true" : "false" %></td>
                 <td class="quality-cell" style="background-color: <%= sdss_status == 'confirmed' ? '#2d6a2d' : (sdss_status == 'bad_photometry' ? '#8b0000' : '#8b7000') %>;" data-sort="<%= id_quality == "exact_objid" ? 3 : (id_quality == "coord_validated" ? 2 : 1) %>"></td>
                 <td style="text-align: center;" data-sort="<%= benchmark.dig(:expected, :age_gyr_min).to_f %>"><%= benchmark.dig(:expected, :age_gyr_min).nil? ? "-" : format("%.3f", benchmark.dig(:expected, :age_gyr_min).to_f) %></td>
                 <td style="text-align: center;" data-sort="<%= benchmark.dig(:expected, :metallicity_z_min).to_f %>"><%= benchmark.dig(:expected, :metallicity_z_min).nil? ? "-" : format("%.3f", benchmark.dig(:expected, :metallicity_z_min).to_f) %></td>

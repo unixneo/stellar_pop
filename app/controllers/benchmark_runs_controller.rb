@@ -4,6 +4,20 @@ class BenchmarkRunsController < ApplicationController
 
   def index
     @benchmark_runs = BenchmarkRun.order(created_at: :desc)
+    benchmark_names = []
+    @benchmark_runs.each do |run|
+      parsed = parse_result(run.result_json)
+      Array(parsed["benchmarks"]).each do |row|
+        name = row["name"].to_s.strip
+        benchmark_names << name unless name.empty?
+      end
+    end
+    @galaxy_agn_by_name =
+      if benchmark_names.empty?
+        {}
+      else
+        Galaxy.where(name: benchmark_names.uniq).pluck(:name, :agn).to_h
+      end
   end
 
   def show
@@ -100,6 +114,12 @@ class BenchmarkRunsController < ApplicationController
     @dir = params[:dir].to_s.downcase == "desc" ? "desc" : "asc"
     @allow_multi_benchmark_targets = allow_multi_benchmark_targets?
     rows = StellarPop::Calibration::BenchmarkCatalog.all(sdss_release: @active_sdss_release)
+    galaxies_by_name = Galaxy.where(sdss_dr: @active_sdss_release).index_by(&:name)
+    rows.each do |row|
+      galaxy = galaxies_by_name[row[:name].to_s]
+      row[:agn] = galaxy&.agn
+      row[:sdss_status] = galaxy&.sdss_status
+    end
     @benchmarks = rows.sort_by { |row| benchmark_sort_value(row, @sort) }
     @benchmarks.reverse! if @dir == "desc"
   end
@@ -114,6 +134,8 @@ class BenchmarkRunsController < ApplicationController
       row[:name].to_s.downcase
     when "type"
       row[:type].to_s.downcase
+    when "agn"
+      row[:agn] ? 1 : 0
     when "oid_match"
       case dq[:id_match_quality].to_s
       when "exact_objid" then 3

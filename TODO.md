@@ -52,6 +52,7 @@ v0.3.5 galaxy data-model split:
 - 🟩 Add AGN traceability columns on `galaxies` (`agn_source`, `agn_method`, `agn_confidence`, `agn_checked_at`)
 - 🟩 Add SDSS DR19 AGN classification task (`sdss:classify_agn_dr19`) using `SpecObj.class/subClass` by `bestObjID = sdss_objid` with JSON report output (`lib/data/fit/dr19_agn_classification_report.json`)
 - 🟩 Persist SDSS-based AGN classifications where strict objid linkage resolves (`5/26` DR19 galaxies in current run)
+- 🟩 Show AGN flags in benchmark UI target listings (`/benchmark_runs/new` sortable AGN column and `/benchmark_runs` targets-with-AGN summary column)
 - 🟨 Resolve remaining DR19 AGN classification coverage (`21/26` unresolved under strict SDSS `bestObjID`) via controlled fallback policy
 - 🟨 Restore SIMBAD connectivity (or provide offline SIMBAD export) so `external:classify_simbad_agn_for_unresolved_dr19` can classify unresolved AGN rows
 
