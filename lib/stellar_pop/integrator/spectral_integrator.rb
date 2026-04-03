@@ -24,27 +24,18 @@ module StellarPop
 
         masses.each do |mass|
           mass_f = mass.to_f
-          mist_row = mist_isochrone.lookup(mass_f, age_gyr, metallicity_z: metallicity_z)
-          mist_phase = mist_row && mist_row[:phase].to_f
-          next if mist_phase && mist_phase >= 5.0
+          contribution = build_sfh_weighted_star_contribution(
+            mass_f: mass_f,
+            age_bins: age_bins,
+            sfh_weights: sfh_weights,
+            wavelength_range: wavelength_range,
+            metallicity_z: metallicity_z,
+            imf_sampler: imf_sampler,
+            mist_isochrone: mist_isochrone
+          )
+          next if contribution.nil?
 
-          base_spectrum = build_base_spectrum(mass_f, wavelength_range, metallicity_z, imf_sampler, mist_row)
-          star_flux_sum = base_spectrum.values.sum.to_f
-          next unless star_flux_sum.positive?
-          mist_luminosity = mist_row && mist_row[:luminosity_solar].to_f
-          raw_weight = if mist_luminosity&.positive?
-            mist_luminosity
-          else
-            mass_f**1.0
-          end
-          next unless raw_weight.positive?
-
-          star_contributions << {
-            spectrum: base_spectrum,
-            wavelengths: base_spectrum.keys.sort,
-            flux_sum: star_flux_sum,
-            raw_weight: raw_weight
-          }
+          star_contributions << contribution
         end
 
         total_raw_weight = star_contributions.sum { |entry| entry[:raw_weight] }.to_f
@@ -105,6 +96,52 @@ module StellarPop
         return {} unless spectral_type
 
         @spectra_source.spectrum(spectral_type, wavelength_range)
+      end
+
+      def build_sfh_weighted_star_contribution(mass_f:, age_bins:, sfh_weights:, wavelength_range:, metallicity_z:, imf_sampler:, mist_isochrone:)
+        weighted_spectrum = Hash.new(0.0)
+        weighted_flux_sum = 0.0
+        weighted_raw_weight = 0.0
+        total_used_weight = 0.0
+
+        age_bins.zip(sfh_weights).each do |age_bin, sfh_weight|
+          weight = sfh_weight.to_f
+          next unless weight.positive?
+
+          mist_row = mist_isochrone.lookup(mass_f, age_bin.to_f, metallicity_z: metallicity_z)
+          mist_phase = mist_row && mist_row[:phase].to_f
+          next if mist_phase && mist_phase >= 5.0
+
+          base_spectrum = build_base_spectrum(mass_f, wavelength_range, metallicity_z, imf_sampler, mist_row)
+          star_flux_sum = base_spectrum.values.sum.to_f
+          next unless star_flux_sum.positive?
+
+          mist_luminosity = mist_row && mist_row[:luminosity_solar].to_f
+          raw_weight = mist_luminosity&.positive? ? mist_luminosity : mass_f
+          next unless raw_weight.positive?
+
+          base_spectrum.each do |wavelength_nm, flux|
+            weighted_spectrum[wavelength_nm] += flux.to_f * weight
+          end
+          weighted_flux_sum += star_flux_sum * weight
+          weighted_raw_weight += raw_weight * weight
+          total_used_weight += weight
+        end
+
+        return nil unless total_used_weight.positive?
+        return nil unless weighted_flux_sum.positive? && weighted_raw_weight.positive?
+
+        normalization = 1.0 / total_used_weight
+        weighted_spectrum.transform_values! { |flux| flux * normalization }
+        weighted_flux_sum *= normalization
+        weighted_raw_weight *= normalization
+
+        {
+          spectrum: weighted_spectrum,
+          wavelengths: weighted_spectrum.keys.sort,
+          flux_sum: weighted_flux_sum,
+          raw_weight: weighted_raw_weight
+        }
       end
 
       def build_uniform_wavelength_grid(wavelength_range)

@@ -73,9 +73,37 @@
       @benchmark_run.status
     end
 %>
-<%
+<% 
   gate_enabled = ActiveModel::Type::Boolean.new.cast(PipelineConfig.current.fetch("calibration_enable_validation_gate"))
   result_benchmarks = @result.is_a?(Hash) ? Array(@result["benchmarks"]) : []
+  run_target_names = result_benchmarks.map { |row| row["name"].to_s.strip }.reject(&:empty?).uniq
+  run_sfh_models =
+    result_benchmarks.flat_map do |row|
+      top = Array(row["top_results"])
+      if top.any?
+        top.map { |fit| fit["sfh_model"].to_s.strip }
+      else
+        best = row["best_fit"] || {}
+        [best["sfh_model"].to_s.strip]
+      end
+    end.reject(&:empty?).uniq
+  if run_target_names.empty? && processing
+    step_text = @benchmark_run.current_step.to_s
+    if (match = step_text.match(/:\s*(.+)\z/))
+      current_target = match[1].to_s.strip
+      run_target_names = [current_target] unless current_target.empty?
+    end
+  end
+  if run_sfh_models.empty?
+    cfg = PipelineConfig.current
+    active_mode = (@result.is_a?(Hash) ? @result["mode"].to_s.presence : nil) || inferred_mode
+    run_sfh_models =
+      if active_mode == "fast"
+        cfg.string_array("calibration_fast_sfh_models")
+      else
+        cfg.string_array("grid_sfh_models")
+      end
+  end
   skipped_benchmarks =
     result_benchmarks.select do |row|
       dq = row["data_quality"] || {}
@@ -138,6 +166,10 @@
   </div>
   <div class="cyberspace-panel-body">
     <p><strong>Active SDSS dataset:</strong> <code><%= @active_sdss_release %></code></p>
+    <div style="margin: 8px 0 14px; padding: 10px 12px; border: 1px solid #334155; border-radius: 6px; background: rgba(15, 23, 42, 0.6);">
+      <p style="margin: 0 0 6px;"><strong>Benchmark targets:</strong> <%= run_target_names.any? ? run_target_names.join(", ") : "-" %></p>
+      <p style="margin: 0;"><strong>SFH model(s) in run:</strong> <%= run_sfh_models.any? ? run_sfh_models.join(", ") : "-" %></p>
+    </div>
     <table>
       <thead>
         <tr>

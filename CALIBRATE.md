@@ -283,3 +283,63 @@ Risks:
 - Incomplete FUV coverage (NUV is generally better).
 - UV-upturn behavior in old ellipticals may require additional model handling.
 - Spectral library UV support must be verified below 300 nm.
+
+### 2026-04-03 - Tier1 Fast SFH Constraint Test (exponential only)
+
+Run:
+- `bm_tier1_fast_exp_only_20260403_142357` (run id `70`)
+
+Config override during test:
+- `calibration_fast_sfh_models = ["exponential"]`
+- restored afterward to `["exponential", "delayed_exponential", "constant", "burst"]`
+
+Row-by-row (calculated vs observational):
+- NGC4387: SFH exponential | calc age 14.0 vs obs 12.45 | calc Z 0.014 vs obs 0.015625
+- NGC4564: SFH exponential | calc age 12.0 vs obs 11.88 | calc Z 0.020 vs obs 0.02076
+- NGC4570: SFH exponential | calc age 14.0 vs obs 14.27 | calc Z 0.025 vs obs 0.01291
+- NGC4660: SFH exponential | calc age 0.5 vs obs 11.5 | calc Z 0.0063 vs obs 0.0285
+
+Observation:
+- SFH restriction fixed NGC4564 age agreement, but introduced a catastrophic age failure on NGC4660.
+
+### 2026-04-03 - Tier1 Fast SFH Constraint Test (delayed_exponential only)
+
+Run:
+- `bm_tier1_fast_delayed_only_20260403_145044` (run id `71`)
+
+Config override during test:
+- `calibration_fast_sfh_models = ["delayed_exponential"]`
+- restored afterward to `["exponential", "delayed_exponential", "constant", "burst"]`
+
+Row-by-row (calculated vs observational):
+- NGC4387: SFH delayed_exponential | calc age 14.0 vs obs 12.45 | calc Z 0.014 vs obs 0.015625
+- NGC4564: SFH delayed_exponential | calc age 12.0 vs obs 11.88 | calc Z 0.020 vs obs 0.02076
+- NGC4570: SFH delayed_exponential | calc age 14.0 vs obs 14.27 | calc Z 0.025 vs obs 0.01291
+- NGC4660: SFH delayed_exponential | calc age 0.5 vs obs 11.5 | calc Z 0.0063 vs obs 0.0285
+
+Observation:
+- Delayed-only results are effectively identical to exponential-only for this Tier1 fast configuration.
+- NGC4564 age aligns well (~12 Gyr), but NGC4660 remains a hard failure (0.5 Gyr), indicating SFH family choice alone is not the root cause for that galaxy under current objective.
+
+Direct run-to-run conclusion (run 70 vs run 71):
+- The two runs are numerically identical for all four galaxies in age and Z outputs.
+- Only the `sfh_model` label differs (`exponential` vs `delayed_exponential`), because each run restricted SFH to a single allowed model.
+- Therefore, under current fast Tier1 settings, selecting between exponential-only and delayed-only does not change the fitted solution surface for these targets.
+
+### 2026-04-03 - SFH weighting implementation bug and post-fix regression
+
+Finding:
+- Root-cause bug identified in `SpectralIntegrator`: `sfh_weights` were read from the blackboard but not applied to star contributions.
+- A patch was applied locally to use SFH weights across age bins, and a distinguishability test confirms exponential vs delayed-exponential now produce different spectra.
+
+Validation after patch (exponential-only Tier1 run):
+- `bm_tier1_fast_exp_only_after_fix_20260403_152558` (run id `73`)
+- NGC4387: SFH exponential | calc age 0.1 vs obs 12.45 | calc Z 0.025 vs obs 0.015625
+- NGC4564: SFH exponential | calc age 0.1 vs obs 11.88 | calc Z 0.020 vs obs 0.02076
+- NGC4570: SFH exponential | calc age 8.0 vs obs 14.27 | calc Z 0.014 vs obs 0.01291
+- NGC4660: SFH exponential | calc age 14.0 vs obs 11.5 | calc Z 0.032 vs obs 0.0285
+
+Interpretation:
+- Results are significantly worse than prior pre-fix calibration snapshots for Tier1.
+- This indicates previous behavior was partially benefiting from the SFH weighting bug.
+- The SFH weighting patch is currently experimental and not ready for push/release until delayed-only comparison and follow-up calibration diagnostics are complete.

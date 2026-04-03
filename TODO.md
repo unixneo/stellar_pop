@@ -64,6 +64,13 @@ v0.3.7 mass calibration tuning:
 - 🟨 Evaluate whether a single global mass offset should be replaced by tier/type-specific or confidence-weighted mass calibration
 - 🟨 Add benchmark report helper to emit before/after mass-offset deltas in one JSON artifact for calibration tracking
 
+v0.3.8 SFH weighting validation (experimental; do not push yet):
+- 🟨 Verify and document SFH-weighting bug in `SpectralIntegrator` (sfh_weights read but not applied) with minimal reproducible evidence
+- 🟨 Run paired post-fix Tier1 protocol: exponential-only then delayed-only, and record strict side-by-side outputs in `CALIBRATE.md`
+- 🟨 Investigate severe age regression after SFH weighting patch (`run 73`, exponential-only) before any merge to `main`
+- 🟨 Fix benchmark progress denominator bug when SFH model list excludes `burst` (current `progress_total` overcounts combinations)
+- 🟥 Hold commit/push of SFH weighting patch until post-fix diagnostics produce an explicit accept/reject decision
+
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution
 - 🟨 Add more galaxy targets to local SDSS catalog covering wider range of types and environments

@@ -28,7 +28,18 @@ class BenchmarkRunJob < ApplicationJob
     completed_steps = 0
     benchmark_run.update!(progress_total: total_steps, current_step: "Starting benchmark sweep")
 
-    benchmark_results = benchmarks.each_with_index.map do |benchmark, bench_idx|
+    # Persist selected targets immediately so the run page can show full context
+    # before first benchmark result is finished.
+    initial_payload = {
+      generated_at: Time.current.iso8601,
+      mode: profile[:mode],
+      summary: { total: benchmarks.size, pass: 0, warn: 0, fail: 0 },
+      benchmarks: benchmarks.map { |b| { key: b[:key], name: b[:name], type: b[:type] } }
+    }
+    benchmark_run.update_columns(result_json: initial_payload.to_json, updated_at: Time.current)
+
+    benchmark_results = []
+    benchmarks.each_with_index do |benchmark, bench_idx|
       photometry = benchmark_photometry(benchmark)
       step_label = "Benchmark #{bench_idx + 1}/#{benchmarks.size}: #{benchmark[:name]}"
       benchmark_run.update_columns(current_step: step_label)
@@ -60,7 +71,7 @@ class BenchmarkRunJob < ApplicationJob
       photometric_diagnostics = build_photometric_diagnostics(best, photometry, grid_job, bench_idx, config)
       stellar_mass_comparison = compare_stellar_mass(best, benchmark, photometry, config)
 
-      {
+      result_row = {
         key: benchmark[:key],
         name: benchmark[:name],
         type: benchmark[:type],
@@ -79,14 +90,12 @@ class BenchmarkRunJob < ApplicationJob
         checks: evaluation[:checks],
         top_results: ranked.first(20)
       }
+
+      benchmark_results << result_row
+      persist_partial_results(benchmark_run, profile[:mode], benchmark_results)
     end
 
-    summary = {
-      total: benchmark_results.size,
-      pass: benchmark_results.count { |row| row[:verdict] == "pass" },
-      warn: benchmark_results.count { |row| row[:verdict] == "warn" },
-      fail: benchmark_results.count { |row| row[:verdict] == "fail" }
-    }
+    summary = summarize(benchmark_results)
 
     result_payload = {
       generated_at: Time.current.iso8601,
@@ -400,5 +409,25 @@ class BenchmarkRunJob < ApplicationJob
 
   def cancellation_requested?(benchmark_run_id)
     BenchmarkRun.where(id: benchmark_run_id, status: "failed", error_message: "Cancelled by user").exists?
+  end
+
+  def persist_partial_results(benchmark_run, mode, benchmark_results)
+    payload = {
+      generated_at: Time.current.iso8601,
+      mode: mode,
+      summary: summarize(benchmark_results),
+      benchmarks: benchmark_results
+    }
+
+    benchmark_run.update_columns(result_json: payload.to_json, updated_at: Time.current)
+  end
+
+  def summarize(benchmark_results)
+    {
+      total: benchmark_results.size,
+      pass: benchmark_results.count { |row| row[:verdict] == "pass" },
+      warn: benchmark_results.count { |row| row[:verdict] == "warn" },
+      fail: benchmark_results.count { |row| row[:verdict] == "fail" }
+    }
   end
 end

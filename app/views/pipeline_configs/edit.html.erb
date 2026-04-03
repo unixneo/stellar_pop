@@ -239,7 +239,7 @@
         <tbody>
           <tr>
             <td><%= f.label :calibration_mass_log_offset_dex, "Mass log offset (dex)" %></td>
-            <td><%= f.number_field :calibration_mass_log_offset_dex, value: @settings["calibration_mass_log_offset_dex"], step: 0.001 %></td>
+            <td><%= f.number_field :calibration_mass_log_offset_dex, value: @settings["calibration_mass_log_offset_dex"], step: :any %></td>
           </tr>
         </tbody>
       </table>
