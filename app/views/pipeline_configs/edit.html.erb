@@ -229,6 +229,22 @@
       </table>
     </div>
 
+    <div class="form-card">
+      <h2>Tuning</h2>
+      <p>Calibration knobs for interpreting benchmark outputs without changing grid physics settings.</p>
+      <table>
+        <thead>
+          <tr><th>Name</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><%= f.label :calibration_mass_log_offset_dex, "Mass log offset (dex)" %></td>
+            <td><%= f.number_field :calibration_mass_log_offset_dex, value: @settings["calibration_mass_log_offset_dex"], step: 0.001 %></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <div class="config-save-row">
       <%= f.submit "Save Configuration" %>
     </div>

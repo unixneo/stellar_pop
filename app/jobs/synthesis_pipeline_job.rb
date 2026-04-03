@@ -69,7 +69,7 @@ class SynthesisPipelineJob < ApplicationJob
           end
       end
       chi_squared = compute_chi_squared(composite_spectrum, sdss_photometry) if sdss_photometry
-      stellar_mass = estimate_stellar_mass(synthesis_run, sdss_photometry, chi_squared)
+      stellar_mass = estimate_stellar_mass(synthesis_run, sdss_photometry, chi_squared, config)
     end
 
     wavelengths = composite_spectrum.keys.sort
@@ -246,7 +246,7 @@ class SynthesisPipelineJob < ApplicationJob
     end
   end
 
-  def estimate_stellar_mass(synthesis_run, sdss_photometry, chi_squared)
+  def estimate_stellar_mass(synthesis_run, sdss_photometry, chi_squared, config)
     return nil if sdss_photometry.nil?
     return nil if chi_squared.nil?
 
@@ -262,7 +262,8 @@ class SynthesisPipelineJob < ApplicationJob
       age_gyr: synthesis_run.age_gyr,
       observed_r_mag: observed_r_mag,
       redshift_z: redshift,
-      burst_age_gyr: synthesis_run.burst_age_gyr
+      burst_age_gyr: synthesis_run.burst_age_gyr,
+      mass_log_offset_dex: config.float_value("calibration_mass_log_offset_dex")
     )
   end
 

@@ -116,6 +116,28 @@ chi-squared metric.
   - `/benchmark_runs/new` includes sortable `AGN` (`true/false`) per target row
   - `/benchmark_runs` includes `Targets (AGN)` to show AGN status for galaxies included in each run result
 
+## v0.3.7 Mass Calibration Tuning
+
+- Added a configurable stellar-mass calibration offset: `calibration_mass_log_offset_dex`.
+- Exposed this setting in Pipeline Config under a standalone **Tuning** section on both show and edit pages.
+- Applied the offset consistently in:
+  - synthesis-run stellar-mass estimation
+  - benchmark stellar-mass comparison calculations
+- Offset interpretation:
+  - `M_corrected = M_base * 10^(calibration_mass_log_offset_dex)`
+  - default is `0.0` (no correction)
+- Added tests for:
+  - PipelineConfig default/persistence of `calibration_mass_log_offset_dex`
+  - StellarMassEstimator scaling behavior for non-zero dex offsets
+- Calibration run (`BM3`-derived offset test):
+  - configured `calibration_mass_log_offset_dex = 0.0845`
+  - fast Tier1 benchmark rerun (`NGC4387`, `NGC4564`, `NGC4570`, `NGC4660`)
+  - mass ratios (`SPS/Observed`) moved from:
+    - `0.488, 0.900, 2.373, 0.754`
+    to:
+    - `0.593, 1.093, 2.882, 0.916`
+  - result: global offset reduces underestimation for several targets but increases the high outlier (`NGC4570`), indicating future need for target-class or quality-aware mass calibration.
+
 ## FIT Crossmatch Snapshot (DR19 sample)
 
 Recent DR19 sample crossmatch against DR7 FIT metadata (`gal_info_dr7_v5_2.fit`) found 3 matches within 1 arcsec for the active benchmark subset (`NGC4889`, `NGC4874`, `NGC4387`). Stellar-mass PDF extraction from `totlgm_dr7_v5_2.fit` and comparison against `observations.stellar_mass` showed 3/3 inside the 95% interval (`P2P5-P97P5`) after updating `NGC4387` to the FIT-derived `AVG` value with explicit FIT provenance.

@@ -59,6 +59,7 @@ class PipelineConfigsController < ApplicationController
       :calibration_progress_write_every,
       :calibration_enable_validation_gate,
       :calibration_allow_multi_benchmark_targets,
+      :calibration_mass_log_offset_dex,
       :calibration_fast_ages_gyr,
       :calibration_fast_metallicities_z,
       :calibration_fast_sfh_models,

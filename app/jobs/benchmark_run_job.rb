@@ -58,7 +58,7 @@ class BenchmarkRunJob < ApplicationJob
 
       evaluation = evaluate_best_fit(best, benchmark, gate_enabled: gate_enabled)
       photometric_diagnostics = build_photometric_diagnostics(best, photometry, grid_job, bench_idx, config)
-      stellar_mass_comparison = compare_stellar_mass(best, benchmark, photometry)
+      stellar_mass_comparison = compare_stellar_mass(best, benchmark, photometry, config)
 
       {
         key: benchmark[:key],
@@ -350,7 +350,7 @@ class BenchmarkRunJob < ApplicationJob
     end
   end
 
-  def compare_stellar_mass(best, benchmark, photometry)
+  def compare_stellar_mass(best, benchmark, photometry, config)
     expected = benchmark[:expected] || {}
     observed_min = expected[:stellar_mass_min] || expected["stellar_mass_min"]
     observed_max = expected[:stellar_mass_max] || expected["stellar_mass_max"]
@@ -363,7 +363,7 @@ class BenchmarkRunJob < ApplicationJob
         observed_max.to_f
       end
 
-    sps_mass = estimate_sps_stellar_mass(best, photometry)
+    sps_mass = estimate_sps_stellar_mass(best, photometry, config)
     return {} if observed_mass.nil? || sps_mass.nil?
     return {} unless observed_mass.positive? && sps_mass.positive?
 
@@ -377,7 +377,7 @@ class BenchmarkRunJob < ApplicationJob
     }
   end
 
-  def estimate_sps_stellar_mass(best, photometry)
+  def estimate_sps_stellar_mass(best, photometry, config)
     return nil unless best.is_a?(Hash)
     return nil unless photometry.is_a?(Hash)
 
@@ -387,7 +387,8 @@ class BenchmarkRunJob < ApplicationJob
       age_gyr: best[:age_gyr] || best["age_gyr"],
       observed_r_mag: photometry[:r] || photometry["r"],
       redshift_z: photometry[:redshift_z] || photometry["redshift_z"],
-      burst_age_gyr: best[:burst_age_gyr] || best["burst_age_gyr"]
+      burst_age_gyr: best[:burst_age_gyr] || best["burst_age_gyr"],
+      mass_log_offset_dex: config.float_value("calibration_mass_log_offset_dex")
     )
   end
 

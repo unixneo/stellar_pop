@@ -19,25 +19,27 @@ module StellarPop
     }.freeze
 
     class << self
-      def estimate(sfh_model:, imf_type:, age_gyr:, observed_r_mag:, redshift_z:, burst_age_gyr: nil)
+      def estimate(sfh_model:, imf_type:, age_gyr:, observed_r_mag:, redshift_z:, burst_age_gyr: nil, mass_log_offset_dex: 0.0)
         new(
           sfh_model: sfh_model,
           imf_type: imf_type,
           age_gyr: age_gyr,
           observed_r_mag: observed_r_mag,
           redshift_z: redshift_z,
-          burst_age_gyr: burst_age_gyr
+          burst_age_gyr: burst_age_gyr,
+          mass_log_offset_dex: mass_log_offset_dex
         ).estimate
       end
     end
 
-    def initialize(sfh_model:, imf_type:, age_gyr:, observed_r_mag:, redshift_z:, burst_age_gyr: nil)
+    def initialize(sfh_model:, imf_type:, age_gyr:, observed_r_mag:, redshift_z:, burst_age_gyr: nil, mass_log_offset_dex: 0.0)
       @sfh_model = sfh_model.to_s
       @imf_type = imf_type.to_s
       @age_gyr = age_gyr.to_f
       @observed_r_mag = observed_r_mag.to_f
       @redshift_z = redshift_z.to_f
       @burst_age_gyr = burst_age_gyr.to_f
+      @mass_log_offset_dex = mass_log_offset_dex.to_f
     end
 
     def estimate
@@ -50,7 +52,8 @@ module StellarPop
       mass_to_light = mass_to_light_ratio
       return nil unless mass_to_light.positive?
 
-      luminosity_r_lsun * mass_to_light
+      base_mass = luminosity_r_lsun * mass_to_light
+      base_mass * (10.0**@mass_log_offset_dex)
     rescue StandardError
       nil
     end

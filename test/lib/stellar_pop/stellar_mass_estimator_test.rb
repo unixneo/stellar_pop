@@ -44,5 +44,27 @@ module StellarPop
 
       assert salpeter_mass > chabrier_mass
     end
+
+    test "mass log offset scales stellar mass by 10^dex" do
+      baseline = StellarMassEstimator.estimate(
+        sfh_model: "exponential",
+        imf_type: "kroupa",
+        age_gyr: 10.0,
+        observed_r_mag: 13.0,
+        redshift_z: 0.01,
+        mass_log_offset_dex: 0.0
+      )
+      adjusted = StellarMassEstimator.estimate(
+        sfh_model: "exponential",
+        imf_type: "kroupa",
+        age_gyr: 10.0,
+        observed_r_mag: 13.0,
+        redshift_z: 0.01,
+        mass_log_offset_dex: 0.1
+      )
+
+      expected_scale = 10.0**0.1
+      assert_in_delta baseline * expected_scale, adjusted, baseline * 1.0e-9
+    end
   end
 end

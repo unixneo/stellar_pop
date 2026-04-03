@@ -37,6 +37,7 @@ class PipelineConfig < ApplicationRecord
     "calibration_enable_validation_gate" => false,
     "calibration_allow_multi_benchmark_targets" => false,
     "calibration_allowed_redshift_confidences" => %w[high],
+    "calibration_mass_log_offset_dex" => 0.0,
     "calibration_fast_ages_gyr" => [0.1, 0.5, 2.0, 8.0, 12.0, 13.0, 14.0],
     "calibration_fast_metallicities_z" => [0.0020, 0.0040, 0.0080, 0.0200],
     "calibration_fast_sfh_models" => %w[exponential delayed_exponential constant burst],
@@ -113,6 +114,7 @@ class PipelineConfig < ApplicationRecord
     assign_list(merged, "calibration_allowed_redshift_confidences", form_params[:calibration_allowed_redshift_confidences], :string)
     merged["calibration_allowed_redshift_confidences"] =
       normalized_calibration_redshift_confidences(merged["calibration_allowed_redshift_confidences"])
+    assign_scalar(merged, "calibration_mass_log_offset_dex", form_params[:calibration_mass_log_offset_dex], :float)
     assign_list(merged, "calibration_fast_ages_gyr", form_params[:calibration_fast_ages_gyr], :float)
     assign_list(merged, "calibration_fast_metallicities_z", form_params[:calibration_fast_metallicities_z], :float)
     assign_list(merged, "calibration_fast_sfh_models", form_params[:calibration_fast_sfh_models], :string)

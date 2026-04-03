@@ -56,6 +56,14 @@ v0.3.5 galaxy data-model split:
 - 🟨 Resolve remaining DR19 AGN classification coverage (`21/26` unresolved under strict SDSS `bestObjID`) via controlled fallback policy
 - 🟨 Restore SIMBAD connectivity (or provide offline SIMBAD export) so `external:classify_simbad_agn_for_unresolved_dr19` can classify unresolved AGN rows
 
+v0.3.7 mass calibration tuning:
+- 🟩 Add `calibration_mass_log_offset_dex` to `PipelineConfig` defaults/form persistence
+- 🟩 Add standalone `Tuning` section in Pipeline Config UI (show/edit) for mass calibration controls
+- 🟩 Apply `calibration_mass_log_offset_dex` in synthesis and benchmark stellar-mass estimation paths
+- 🟩 Add tests for config persistence and estimator `10^dex` scaling behavior
+- 🟨 Evaluate whether a single global mass offset should be replaced by tier/type-specific or confidence-weighted mass calibration
+- 🟨 Add benchmark report helper to emit before/after mass-offset deltas in one JSON artifact for calibration tracking
+
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution
 - 🟨 Add more galaxy targets to local SDSS catalog covering wider range of types and environments
