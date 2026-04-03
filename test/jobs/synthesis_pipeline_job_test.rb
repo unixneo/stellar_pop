@@ -241,7 +241,22 @@ class SynthesisPipelineJobTest < ActiveJob::TestCase
 
     assert_equal "complete", run.status
     assert_equal "SDSS photometry sourced from galaxies table", run.error_message
-    assert_equal({ "u" => 14.0, "g" => 13.0, "r" => 12.9, "i" => 12.6, "z" => 13.2, "redshift_z" => nil }, phot)
+    assert_equal(
+      {
+        "u" => 14.0,
+        "g" => 13.0,
+        "r" => 12.9,
+        "i" => 12.6,
+        "z" => 13.2,
+        "err_u" => nil,
+        "err_g" => nil,
+        "err_r" => nil,
+        "err_i" => nil,
+        "err_z" => nil,
+        "redshift_z" => nil
+      },
+      phot
+    )
     assert_nil run.stellar_mass
     assert_equal "NGC4564B", run.sdss_object_name
   end

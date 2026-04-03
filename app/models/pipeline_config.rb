@@ -6,7 +6,7 @@ class PipelineConfig < ApplicationRecord
   validates :mag_type, inclusion: { in: MAG_TYPES }
 
   DEFAULTS = {
-    "synthesis_age_bins_gyr" => [0.1, 0.5, 1.0, 2.0, 4.0, 8.0, 12.0],
+    "synthesis_age_bins_gyr" => [0.1, 0.5, 1.0, 2.0, 4.0, 8.0, 12.0, 13.0, 14.0],
     "synthesis_imf_sample_size" => 1000,
     "synthesis_exponential_tau" => 3.0,
     "synthesis_delayed_exponential_tau" => 3.0,
@@ -19,12 +19,12 @@ class PipelineConfig < ApplicationRecord
     "synthesis_sdss_base_backoff_seconds" => 0.5,
     "sdss_dataset_release" => "DR19",
     "mag_type" => "petrosian",
-    "grid_ages_gyr" => [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0],
-    "grid_metallicities_z" => [0.0006, 0.0020, 0.0063, 0.0200, 0.0632],
+    "grid_ages_gyr" => [0.01, 0.05, 0.1, 0.5, 1.0, 3.0, 5.0, 8.0, 10.0, 12.0, 13.0, 14.0],
+    "grid_metallicities_z" => [0.0006, 0.0020, 0.0063, 0.0100, 0.0140, 0.0200, 0.0250, 0.0320, 0.0632],
     "grid_sfh_models" => %w[exponential delayed_exponential constant burst],
     "grid_imf_types" => %w[kroupa salpeter chabrier],
     "grid_burst_ages_gyr" => [0.1, 0.5, 1.0, 2.0],
-    "grid_age_bins_gyr" => [0.1, 0.5, 1.0, 2.0, 4.0, 8.0, 12.0],
+    "grid_age_bins_gyr" => [0.1, 0.5, 1.0, 2.0, 4.0, 8.0, 12.0, 13.0, 14.0],
     "grid_imf_sample_size" => 1000,
     "grid_wavelength_min_nm" => 350.0,
     "grid_wavelength_max_nm" => 1100.0,
@@ -37,8 +37,8 @@ class PipelineConfig < ApplicationRecord
     "calibration_enable_validation_gate" => false,
     "calibration_allow_multi_benchmark_targets" => false,
     "calibration_allowed_redshift_confidences" => %w[high],
-    "calibration_fast_ages_gyr" => [0.1, 0.5, 2.0, 8.0, 12.0],
-    "calibration_fast_metallicities_z" => [0.0020, 0.0200],
+    "calibration_fast_ages_gyr" => [0.1, 0.5, 2.0, 8.0, 12.0, 13.0, 14.0],
+    "calibration_fast_metallicities_z" => [0.0020, 0.0040, 0.0080, 0.0200],
     "calibration_fast_sfh_models" => %w[exponential delayed_exponential constant burst],
     "calibration_fast_imf_types" => %w[kroupa salpeter],
     "calibration_fast_burst_ages_gyr" => [0.5, 2.0]

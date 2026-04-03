@@ -1,5 +1,6 @@
 class SynthesisPipelineJob < ApplicationJob
   queue_as :synthesis
+  MAG_SIGMA_FLOOR = 0.03
 
   def perform(synthesis_run_id)
     config = PipelineConfig.current
@@ -214,8 +215,20 @@ class SynthesisPipelineJob < ApplicationJob
 
     bands.sum do |band|
       delta = norm_syn[band].to_f - norm_obs[band].to_f
-      delta**2
+      sigma_band = magnitude_sigma_for(sdss_photometry, band)
+      sigma_r = magnitude_sigma_for(sdss_photometry, :r)
+      variance = (sigma_band**2) + (sigma_r**2)
+      variance = (MAG_SIGMA_FLOOR**2) if variance <= 0.0
+      (delta**2) / variance
     end
+  end
+
+  def magnitude_sigma_for(sdss_photometry, band)
+    raw = sdss_photometry[:"err_#{band}"] || sdss_photometry["err_#{band}"]
+    sigma = raw.to_f
+    return MAG_SIGMA_FLOOR unless sigma.finite? && sigma.positive?
+
+    [sigma, MAG_SIGMA_FLOOR].max
   end
 
   def build_sdss_unavailable_note(reason)

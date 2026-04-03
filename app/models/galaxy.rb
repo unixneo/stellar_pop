@@ -38,6 +38,11 @@ class Galaxy < ApplicationRecord
       r: phot&.mag_r,
       i: phot&.mag_i,
       z: phot&.mag_z,
+      err_u: phot&.err_u,
+      err_g: phot&.err_g,
+      err_r: phot&.err_r,
+      err_i: phot&.err_i,
+      err_z: phot&.err_z,
       redshift_z: spec&.redshift_z
     }
   end

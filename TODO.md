@@ -56,6 +56,12 @@ v0.3.5 galaxy data-model split:
 - 🟨 Resolve remaining DR19 AGN classification coverage (`21/26` unresolved under strict SDSS `bestObjID`) via controlled fallback policy
 - 🟨 Restore SIMBAD connectivity (or provide offline SIMBAD export) so `external:classify_simbad_agn_for_unresolved_dr19` can classify unresolved AGN rows
 
+v0.3.7 GALEX UV ingestion foundation:
+- 🟩 Add GALEX VO client service (`StellarPop::Clients::GalexClient`) with cone-search query, VOTable parsing, nearest-match selection, and non-raising nil-on-error behavior
+- 🟨 Wire `GalexClient` into ingestion workflow to populate `galex_photometries` for benchmark targets
+- 🟨 Add controlled retry/backoff and diagnostics for GALEX endpoint/network failures in runtime tasks
+- 🟨 Add tests for GALEX VOTable parsing, nearest-match selection, and nil-on-error behavior
+
 ## Science/Physics
 - 🟦 Validate grid fit results for M101 against published SPS fits — pending, blocked on DR18 photometry resolution
 - 🟨 Add more galaxy targets to local SDSS catalog covering wider range of types and environments

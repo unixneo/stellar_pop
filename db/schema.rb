@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_03_093000) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_03_094500) do
   create_table "calibration_runs", force: :cascade do |t|
     t.string "name", null: false
     t.string "status", default: "pending", null: false
@@ -117,6 +117,20 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_03_093000) do
     t.index ["galaxy_id"], name: "index_galaxy_spectroscopies_on_galaxy_id"
   end
 
+  create_table "galex_photometries", force: :cascade do |t|
+    t.integer "galaxy_id", null: false
+    t.float "nuv_mag"
+    t.float "nuv_mag_err"
+    t.float "fuv_mag"
+    t.float "fuv_mag_err"
+    t.string "galex_objid"
+    t.string "galex_source", default: "GALEX_GR6_7"
+    t.datetime "galex_checked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["galaxy_id"], name: "index_galex_photometries_on_galaxy_id"
+  end
+
   create_table "grid_fits", force: :cascade do |t|
     t.string "name"
     t.string "target_name"
@@ -196,6 +210,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_03_093000) do
 
   add_foreign_key "galaxy_photometries", "galaxies"
   add_foreign_key "galaxy_spectroscopies", "galaxies"
+  add_foreign_key "galex_photometries", "galaxies"
   add_foreign_key "grid_fits", "galaxies"
   add_foreign_key "observations", "galaxies"
   add_foreign_key "spectrum_results", "synthesis_runs"
