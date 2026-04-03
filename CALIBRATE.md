@@ -241,6 +241,24 @@ Interpretation:
 - objective minimum and observation proximity are still misaligned for this target.
 - next decision point remains the same: tune scoring/priors (or acceptance policy) toward observationally grounded realism, not chi-squared rank alone.
 
+### 2026-04-03 - Full benchmark confirmation (NGC4564, exponential-only)
+
+Run:
+- `bm_20260403_132302`
+- mode: `full`
+- target: `NGC4564`
+- SFH models in run: `exponential`
+- status: completed (`1620/1620` steps)
+
+Measured vs observational:
+- age: `14.0` vs `11.88` (too old)
+- metallicity: `0.0100` vs `0.02076` (too low)
+- stellar mass ratio: `1.137x` (`2.876e10 / 2.529e10`)
+
+Notes:
+- This reproduces the same age/Z tendency seen in the single-galaxy debug sweep.
+- Mass agreement is closer than prior underestimation runs, but age/Z remain outside benchmark acceptance.
+
 Galaxies:
 - NGC4660, NGC4564, NGC4570, NGC4387 (Tier 1, ATLAS3D)
 
