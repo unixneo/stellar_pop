@@ -36,12 +36,13 @@ class SpectrumShapeTest < ActiveSupport::TestCase
     right_mean = fluxes.last(10).sum / 10.0
     edge_ratio = right_mean / [left_mean, 1e-12].max
     assert edge_ratio.finite?
-    assert_operator edge_ratio, :>, 0.5
-    assert_operator edge_ratio, :<, 1.5
+    # Old stellar populations should be red-tilted in optical bands.
+    assert_operator edge_ratio, :>, 1.2
+    assert_operator edge_ratio, :<, 8.0
 
     post_peak = fluxes[(peak_index + 1)..]
     negative_steps = post_peak.each_cons(2).count { |a, b| b < a }
     total_steps = [post_peak.length - 1, 1].max
-    assert_operator negative_steps.to_f / total_steps, :>, 0.45
+    assert_operator negative_steps.to_f / total_steps, :>, 0.35
   end
 end

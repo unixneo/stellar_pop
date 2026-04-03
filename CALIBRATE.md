@@ -219,6 +219,28 @@ Runs:
 - `bm_tier1_fast_weighted_20260403_041528` (BM2)
 - `bm_tier1_fast_weighted_ageZ_20260403_043205` (BM3)
 
+### 2026-04-03 - SFH/Luminosity weighting follow-up (NGC4564)
+
+Code-path update applied:
+- `SpectralIntegrator#build_sfh_weighted_star_contribution` now weights per-age-bin spectral accumulation by `sfh_weight * luminosity_scale` (using MIST luminosity when present, fallback to mass scaling), instead of SFH weight alone.
+
+Verification:
+- focused tests pass:
+  - `test/integration/sfh_distinguishability_test.rb`
+  - `test/integration/spectrum_shape_test.rb`
+  - `test/lib/stellar_pop/knowledge_sources/sfh_model_test.rb`
+
+Single-galaxy check executed:
+- `bin/rails claude:benchmark_single[NGC4564,exponential]`
+- best fit from objective function:
+  - age `14.0` Gyr, Z `0.0100`, chi-squared `64.546020`
+- physically closer alternative in top-5:
+  - age `10.0` Gyr, Z `0.0250`, chi-squared `65.496918`
+
+Interpretation:
+- objective minimum and observation proximity are still misaligned for this target.
+- next decision point remains the same: tune scoring/priors (or acceptance policy) toward observationally grounded realism, not chi-squared rank alone.
+
 Galaxies:
 - NGC4660, NGC4564, NGC4570, NGC4387 (Tier 1, ATLAS3D)
 

@@ -102,7 +102,6 @@ module StellarPop
         weighted_spectrum = Hash.new(0.0)
         weighted_flux_sum = 0.0
         weighted_raw_weight = 0.0
-        total_used_weight = 0.0
 
         age_bins.zip(sfh_weights).each do |age_bin, sfh_weight|
           weight = sfh_weight.to_f
@@ -117,24 +116,19 @@ module StellarPop
           next unless star_flux_sum.positive?
 
           mist_luminosity = mist_row && mist_row[:luminosity_solar].to_f
-          raw_weight = mist_luminosity&.positive? ? mist_luminosity : mass_f
-          next unless raw_weight.positive?
+          luminosity_scale = mist_luminosity&.positive? ? mist_luminosity : mass_f
+          next unless luminosity_scale.positive?
+          contribution_weight = weight * luminosity_scale
+          next unless contribution_weight.positive?
 
           base_spectrum.each do |wavelength_nm, flux|
-            weighted_spectrum[wavelength_nm] += flux.to_f * weight
+            weighted_spectrum[wavelength_nm] += flux.to_f * contribution_weight
           end
-          weighted_flux_sum += star_flux_sum * weight
-          weighted_raw_weight += raw_weight * weight
-          total_used_weight += weight
+          weighted_flux_sum += star_flux_sum * contribution_weight
+          weighted_raw_weight += contribution_weight
         end
 
-        return nil unless total_used_weight.positive?
         return nil unless weighted_flux_sum.positive? && weighted_raw_weight.positive?
-
-        normalization = 1.0 / total_used_weight
-        weighted_spectrum.transform_values! { |flux| flux * normalization }
-        weighted_flux_sum *= normalization
-        weighted_raw_weight *= normalization
 
         {
           spectrum: weighted_spectrum,

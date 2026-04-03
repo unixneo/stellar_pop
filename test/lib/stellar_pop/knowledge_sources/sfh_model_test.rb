@@ -1,10 +1,11 @@
 require "test_helper"
 
 class SfhModelTest < ActiveSupport::TestCase
-  test "exponential_decay returns exp(-age/tau)" do
+  test "exponential_decay returns exp(-(total_age - stellar_age) / tau)" do
     sfh = StellarPop::KnowledgeSources::SfhModel.new
 
-    assert_in_delta Math.exp(-2.0 / 4.0), sfh.exponential_decay(2.0, 4.0), 1e-12
+    # stellar_age=2, total_age=10, tau=4 → lookback=8 → exp(-8/4) = exp(-2)
+    assert_in_delta Math.exp(-2.0), sfh.exponential_decay(2.0, 4.0, 10.0), 1e-12
   end
 
   test "constant returns 1.0" do

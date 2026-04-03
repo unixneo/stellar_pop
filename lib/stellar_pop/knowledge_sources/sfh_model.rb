@@ -1,11 +1,13 @@
 module StellarPop
   module KnowledgeSources
     class SfhModel
-      def exponential_decay(age_gyr, tau)
-        validate_non_negative!(age_gyr, "age_gyr")
+      def exponential_decay(stellar_age_gyr, tau, total_age_gyr)
+        validate_non_negative!(stellar_age_gyr, "stellar_age_gyr")
         validate_positive!(tau, "tau")
+        validate_non_negative!(total_age_gyr, "total_age_gyr")
 
-        Math.exp(-age_gyr.to_f / tau.to_f)
+        lookback = [total_age_gyr.to_f - stellar_age_gyr.to_f, 0.0].max
+        Math.exp(-lookback / tau.to_f)
       end
 
       def constant(age_gyr)
@@ -13,11 +15,12 @@ module StellarPop
         1.0
       end
 
-      def delayed_exponential(age_gyr, tau = 3.0)
-        validate_non_negative!(age_gyr, "age_gyr")
+      def delayed_exponential(stellar_age_gyr, tau, total_age_gyr)
+        validate_non_negative!(stellar_age_gyr, "stellar_age_gyr")
         validate_positive!(tau, "tau")
+        validate_non_negative!(total_age_gyr, "total_age_gyr")
 
-        t = age_gyr.to_f
+        t = [total_age_gyr.to_f - stellar_age_gyr.to_f, 0.0].max
         tau_f = tau.to_f
         (t / (tau_f**2)) * Math.exp(-t / tau_f)
       end
@@ -34,13 +37,14 @@ module StellarPop
 
       def weights(model, age_bins, options = {})
         ages = normalize_age_bins(age_bins)
+        total_age = ages.max
 
         raw = ages.map do |age|
           case model
           when :exponential
-            exponential_decay(age, fetch_option(options, :tau))
+            exponential_decay(age, fetch_option(options, :tau), total_age)
           when :delayed_exponential
-            delayed_exponential(age, options.fetch(:tau, options.fetch("tau", 3.0)))
+            delayed_exponential(age, options.fetch(:tau, options.fetch("tau", 3.0)), total_age)
           when :constant
             constant(age)
           when :burst

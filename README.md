@@ -138,6 +138,18 @@ chi-squared metric.
     - `0.593, 1.093, 2.882, 0.916`
   - result: global offset reduces underestimation for several targets but increases the high outlier (`NGC4570`), indicating future need for target-class or quality-aware mass calibration.
 
+## v0.3.8 SFH Weighting Debug (in progress)
+
+- Updated spectral integration to apply luminosity-aware SFH accumulation per age bin:
+  - per-bin contribution now uses `sfh_weight * luminosity_scale` in the integrator path.
+  - `luminosity_scale` uses MIST luminosity when available, with mass fallback.
+- Added/updated focused checks to validate SFH distinguishability and broad spectrum behavior after the weighting change.
+- Current calibration status:
+  - NGC4564 exponential single-target benchmark still shows scoring-vs-reality tension:
+    - chi-squared winner: age `14.0`, `Z=0.0100`
+    - physically closer top-ranked alternative: age `10.0`, `Z=0.0250`
+  - this indicates remaining objective-function calibration work, not just SFH-weighting mechanics.
+
 ## FIT Crossmatch Snapshot (DR19 sample)
 
 Recent DR19 sample crossmatch against DR7 FIT metadata (`gal_info_dr7_v5_2.fit`) found 3 matches within 1 arcsec for the active benchmark subset (`NGC4889`, `NGC4874`, `NGC4387`). Stellar-mass PDF extraction from `totlgm_dr7_v5_2.fit` and comparison against `observations.stellar_mass` showed 3/3 inside the 95% interval (`P2P5-P97P5`) after updating `NGC4387` to the FIT-derived `AVG` value with explicit FIT provenance.
