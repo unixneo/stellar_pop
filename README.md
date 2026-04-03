@@ -116,28 +116,6 @@ chi-squared metric.
   - `/benchmark_runs/new` includes sortable `AGN` (`true/false`) per target row
   - `/benchmark_runs` includes `Targets (AGN)` to show AGN status for galaxies included in each run result
 
-## v0.3.7 GALEX UV Ingestion Foundation (in progress)
-
-- Added `StellarPop::Clients::GalexClient` at `lib/stellar_pop/clients/galex_client.rb`.
-- Client queries the GALEX GR6+7 MAST VO cone-search endpoint and accepts:
-  - `ra:`
-  - `dec:`
-  - `radius_arcsec:` (default `5.0`, converted internally to degrees for the request)
-- VOTable XML is parsed with Nokogiri and maps GALEX fields:
-  - `NUV_MAG` / `nuv_mag`
-  - `NUV_MAGERR` / `nuv_magerr`
-  - `FUV_MAG` / `fuv_mag`
-  - `FUV_MAGERR` / `fuv_magerr`
-  - `OBJID` / `objid`
-  - source `RA`/`DEC`
-- Client computes angular separation and returns the nearest in-radius match as:
-  - `nuv_mag`, `nuv_mag_err`, `fuv_mag`, `fuv_mag_err`
-  - `galex_objid`
-  - `galex_source` (`GALEX_GR6_7`)
-  - `match_distance_arcsec`
-- Error behavior is intentionally non-raising: on HTTP/parse/network failure or no in-radius match, it returns `nil` and logs a warning.
-- Current environment note: GALEX endpoint reachability is currently blocked by DNS resolution failure to `galex.stsci.edu`, so live fetch calls currently return `nil` in this runtime.
-
 ## FIT Crossmatch Snapshot (DR19 sample)
 
 Recent DR19 sample crossmatch against DR7 FIT metadata (`gal_info_dr7_v5_2.fit`) found 3 matches within 1 arcsec for the active benchmark subset (`NGC4889`, `NGC4874`, `NGC4387`). Stellar-mass PDF extraction from `totlgm_dr7_v5_2.fit` and comparison against `observations.stellar_mass` showed 3/3 inside the 95% interval (`P2P5-P97P5`) after updating `NGC4387` to the FIT-derived `AVG` value with explicit FIT provenance.
