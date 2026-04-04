@@ -138,7 +138,7 @@ chi-squared metric.
     - `0.593, 1.093, 2.882, 0.916`
   - result: global offset reduces underestimation for several targets but increases the high outlier (`NGC4570`), indicating future need for target-class or quality-aware mass calibration.
 
-## v0.3.8 SFH Weighting Debug (experimental — patch on hold, not merged)
+## v0.3.8 SFH Weighting Debug (merged; calibration work pending)
 
 - Updated spectral integration to apply luminosity-aware SFH accumulation per age bin:
   - per-bin contribution now uses `sfh_weight * luminosity_scale` in the integrator path.
@@ -147,7 +147,7 @@ chi-squared metric.
 - Post-fix regression found (run 73, exponential-only Tier1):
   - age recovery degraded significantly vs pre-fix baseline (NGC4387 fit 0.1 Gyr vs observed 12.45 Gyr; NGC4564 fit 0.1 Gyr vs observed 11.88 Gyr).
   - interpretation: prior calibration was partially benefiting from the SFH weighting bug; the fix exposes an underlying objective-function mismatch.
-  - the SFH weighting patch is **not committed or pushed** pending post-fix diagnostics and an explicit accept/reject decision.
+  - the SFH weighting patch is merged to main (v0.3.8); further calibration work is needed before results can be trusted.
 - Current calibration status:
   - NGC4564 exponential single-target benchmark shows scoring-vs-reality tension even before the weighting patch:
     - chi-squared winner: age `14.0`, `Z=0.0100`
