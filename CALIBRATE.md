@@ -259,6 +259,38 @@ Notes:
 - This reproduces the same age/Z tendency seen in the single-galaxy debug sweep.
 - Mass agreement is closer than prior underestimation runs, but age/Z remain outside benchmark acceptance.
 
+### 2026-04-04 - NGC4564 SFH head-to-head (exponential vs delayed_exponential)
+
+Commands:
+- `bin/rails claude:benchmark_single[NGC4564,exponential]`
+- `bin/rails claude:benchmark_single[NGC4564,delayed_exponential]`
+
+Observed anchors (literature aggregate):
+- age: `11.88` Gyr
+- metallicity Z: `0.02076`
+
+Exponential result:
+- best fit: age `14.00`, Z `0.0100`, IMF `kroupa`
+- chi-squared: `64.546020`
+- age error: `+17.8%`
+- Z error: `-51.8%`
+
+Delayed-exponential result:
+- best fit: age `14.00`, Z `0.0250`, IMF `salpeter`
+- chi-squared: `554.750195`
+- age error: `+17.8%`
+- Z error: `+20.4%`
+
+Direct comparison:
+- age: tie (both too old at 14 Gyr)
+- metallicity: delayed is numerically closer to observed Z than exponential
+- objective score: exponential dominates (`554.75 / 64.55 = 8.59x` worse for delayed)
+
+Interpretation:
+- Current objective strongly prefers exponential for this target.
+- SFH switch alone does not resolve age mismatch.
+- Calibration focus remains on objective/constraint design rather than SFH family selection.
+
 Galaxies:
 - NGC4660, NGC4564, NGC4570, NGC4387 (Tier 1, ATLAS3D)
 

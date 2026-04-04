@@ -21,6 +21,8 @@ module StellarPop
         validate_non_negative!(total_age_gyr, "total_age_gyr")
 
         t = [total_age_gyr.to_f - stellar_age_gyr.to_f, 0.0].max
+        return Float::EPSILON if t.zero?
+
         tau_f = tau.to_f
         (t / (tau_f**2)) * Math.exp(-t / tau_f)
       end
