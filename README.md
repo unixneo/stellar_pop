@@ -138,17 +138,21 @@ chi-squared metric.
     - `0.593, 1.093, 2.882, 0.916`
   - result: global offset reduces underestimation for several targets but increases the high outlier (`NGC4570`), indicating future need for target-class or quality-aware mass calibration.
 
-## v0.3.8 SFH Weighting Debug (in progress)
+## v0.3.8 SFH Weighting Debug (experimental — patch on hold, not merged)
 
 - Updated spectral integration to apply luminosity-aware SFH accumulation per age bin:
   - per-bin contribution now uses `sfh_weight * luminosity_scale` in the integrator path.
   - `luminosity_scale` uses MIST luminosity when available, with mass fallback.
 - Added/updated focused checks to validate SFH distinguishability and broad spectrum behavior after the weighting change.
+- Post-fix regression found (run 73, exponential-only Tier1):
+  - age recovery degraded significantly vs pre-fix baseline (NGC4387 fit 0.1 Gyr vs observed 12.45 Gyr; NGC4564 fit 0.1 Gyr vs observed 11.88 Gyr).
+  - interpretation: prior calibration was partially benefiting from the SFH weighting bug; the fix exposes an underlying objective-function mismatch.
+  - the SFH weighting patch is **not committed or pushed** pending post-fix diagnostics and an explicit accept/reject decision.
 - Current calibration status:
-  - NGC4564 exponential single-target benchmark still shows scoring-vs-reality tension:
+  - NGC4564 exponential single-target benchmark shows scoring-vs-reality tension even before the weighting patch:
     - chi-squared winner: age `14.0`, `Z=0.0100`
     - physically closer top-ranked alternative: age `10.0`, `Z=0.0250`
-  - this indicates remaining objective-function calibration work, not just SFH-weighting mechanics.
+  - this indicates objective-function calibration work is needed before the SFH weighting change can be safely adopted.
 
 ## FIT Crossmatch Snapshot (DR19 sample)
 
@@ -320,10 +324,10 @@ the orchestration layer.
 ## Current Limitations
 
 The current physics model is intentionally simplified compared with production
-SPS frameworks. In particular, StellarPop does not yet include full
-state-of-the-art isochrone tracks (for example Padova or MIST). Stabilizing
-and validating the BaSeL-based workflow is a prerequisite before deeper
-isochrone upgrades.
+SPS frameworks. StellarPop uses MIST v1.2 isochrones (Choi et al. 2016) but
+does not yet include Padova tracks or the latest MIST v2.5 grid. Upgrading
+isochrone grids is deferred until age/metallicity calibration is stable on the
+current v1.2 grid.
 
 ## Scientific Background
 
